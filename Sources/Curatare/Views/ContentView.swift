@@ -199,25 +199,33 @@ public struct ContentView: View {
         .listStyle(.sidebar)
     }
 
+    // İki cümle tek paragraf olarak akar; dar pencerede "…" ile kırpılmak yerine alt satıra sarar.
+    // `fixedSize(vertical:)` kullanılmaz: dar genişlik yoklamasında metin binlerce punto yüksekliğe
+    // şişip tüm pencere içeriğini (kenar çubuğu dahil) görünür alanın dışına itiyordu.
     private var safetyHeaderBanner: some View {
-        HStack(spacing: 8) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "shield.checkmark.fill")
                 .foregroundStyle(.green)
                 .font(.callout)
-            Text(model.L(.safetyBannerDatedTrash))
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.primary)
-            Text("·")
-                .foregroundStyle(.secondary)
-            Text(model.L(.safetyBannerProtected))
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            Spacer()
+            Text(safetyBannerText)
+                .lineLimit(3)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 5)
         .background(.ultraThinMaterial)
+    }
+
+    private var safetyBannerText: AttributedString {
+        var datedTrash = AttributedString(model.L(.safetyBannerDatedTrash))
+        datedTrash.font = .caption.weight(.medium)
+        var separator = AttributedString("  ·  ")
+        separator.font = .caption
+        separator.foregroundColor = .secondary
+        var protected = AttributedString(model.L(.safetyBannerProtected))
+        protected.font = .caption2
+        protected.foregroundColor = .secondary
+        return datedTrash + separator + protected
     }
 
     private func smartDeleteBanner(_ event: TrashedAppEvent) -> some View {

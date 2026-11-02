@@ -181,17 +181,32 @@ public struct SystemStatusView: View {
         }
     }
 
+    // Başlık + Yenile üst satırda, 4'lü segment kendi satırında: uzun tr/en/ro etiketleri
+    // alt başlığın üstüne taşmaz ve Yenile düğmesinin altında kırpılmaz.
     private var headerBar: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(model.L(.statusTitle))
-                    .font(.title2.bold())
-                Text(model.L(.statusSubtitle))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(model.L(.statusTitle))
+                        .font(.title2.bold())
+                    Text(model.L(.statusSubtitle))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+                Spacer(minLength: 16)
+
+                Button {
+                    Task {
+                        await model.refreshSystemStatus()
+                        await model.loadSystemCenterInfo(force: true)
+                    }
+                } label: {
+                    Label(model.L(.buttonRefresh), systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.glassProminent)
+                .fixedSize()
             }
-            Spacer(minLength: 16)
 
             Picker("", selection: $model.systemStatusSubTab) {
                 Text(model.L(.statusTabSystemCenter)).tag(SystemStatusSubTab.systemCenter)
@@ -200,17 +215,8 @@ public struct SystemStatusView: View {
                 Text(model.L(.statusTabChecksum)).tag(SystemStatusSubTab.checksum)
             }
             .pickerStyle(.segmented)
-            .frame(width: 480)
-
-            Button {
-                Task {
-                    await model.refreshSystemStatus()
-                    await model.loadSystemCenterInfo(force: true)
-                }
-            } label: {
-                Label(model.L(.buttonRefresh), systemImage: "arrow.clockwise")
-            }
-            .buttonStyle(.glassProminent)
+            .labelsHidden()
+            .fixedSize()
         }
     }
 
