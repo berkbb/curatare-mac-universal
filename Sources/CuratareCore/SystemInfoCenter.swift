@@ -10,8 +10,13 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
     public var modelIdentifier: String
     public var chip: String
     public var architecture: String
+    /// Mantıksal çekirdek sayısı (yalnızca sayı); performans/verimlilik dökümü görünümde yerelleştirilir.
     public var totalCores: String
+    public var performanceCores: Int
+    public var efficiencyCores: Int
+    /// GPU model adı (ör. "Apple M1"); "Yerleşik" etiketi görünümde `gpuIsBuiltIn` ile yerelleştirilir.
     public var gpu: String
+    public var gpuIsBuiltIn: Bool
     public var gpuCores: Int
     public var resolution: String
     public var systemFirmwareVersion: String
@@ -25,7 +30,10 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
         chip: String = "",
         architecture: String = "",
         totalCores: String = "",
+        performanceCores: Int = 0,
+        efficiencyCores: Int = 0,
         gpu: String = "",
+        gpuIsBuiltIn: Bool = false,
         gpuCores: Int = 0,
         resolution: String = "",
         systemFirmwareVersion: String = "",
@@ -38,7 +46,10 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
         self.chip = chip
         self.architecture = architecture
         self.totalCores = totalCores
+        self.performanceCores = performanceCores
+        self.efficiencyCores = efficiencyCores
         self.gpu = gpu
+        self.gpuIsBuiltIn = gpuIsBuiltIn
         self.gpuCores = gpuCores
         self.resolution = resolution
         self.systemFirmwareVersion = systemFirmwareVersion
@@ -91,16 +102,30 @@ public struct SystemCenterMemory: Sendable, Codable, Equatable {
     }
 }
 
+/// Birim türü; başlığı görünümde `titleKey` ile yerelleştirilir.
+public enum SystemCenterVolumeKind: String, Sendable, Codable, Equatable {
+    case bootSnapshot
+    case data
+
+    public var titleKey: LKey {
+        switch self {
+        case .bootSnapshot: .sysCenterVolumeKindBootSnapshot
+        case .data: .sysCenterVolumeKindData
+        }
+    }
+}
+
 public struct SystemCenterVolumeItem: Sendable, Codable, Equatable, Identifiable {
-    public var id: String { bsdNode }
+    /// Bağlama noktası her birim için benzersizdir; `bsdNode` `diskutil` okunamazsa boş kalabilir.
+    public var id: String { mountPoint }
     public var name: String
-    public var kind: String
+    public var kind: SystemCenterVolumeKind
     public var usedBytes: Int64
     public var usedPercent: Int
     public var bsdNode: String
     public var mountPoint: String
 
-    public init(name: String, kind: String, usedBytes: Int64, usedPercent: Int, bsdNode: String, mountPoint: String) {
+    public init(name: String, kind: SystemCenterVolumeKind, usedBytes: Int64, usedPercent: Int, bsdNode: String, mountPoint: String) {
         self.name = name
         self.kind = kind
         self.usedBytes = usedBytes
@@ -114,18 +139,19 @@ public struct SystemCenterVolumes: Sendable, Codable, Equatable {
     public var totalCapacityBytes: Int64
     public var availableBytes: Int64
     public var volumes: [SystemCenterVolumeItem]
-    public var lastVerification: String
+    /// Birim bilgisinin okunduğu an; görünümde uygulama dilinin yerel ayarıyla biçimlenir.
+    public var refreshedAt: Date?
 
     public init(
         totalCapacityBytes: Int64 = 0,
         availableBytes: Int64 = 0,
         volumes: [SystemCenterVolumeItem] = [],
-        lastVerification: String = ""
+        refreshedAt: Date? = nil
     ) {
         self.totalCapacityBytes = totalCapacityBytes
         self.availableBytes = availableBytes
         self.volumes = volumes
-        self.lastVerification = lastVerification
+        self.refreshedAt = refreshedAt
     }
 }
 
@@ -139,7 +165,9 @@ public struct SystemCenterOSAndIdentity: Sendable, Codable, Equatable {
     public var computerName: String
     public var userName: String
     public var userUUID: String
-    public var uptime: String
+    /// Son açılıştan bu yana geçen saniye; gün/saat/dakika metni görünümde yerelleştirilir.
+    public var uptimeSeconds: TimeInterval
+    /// `id` komutunun ham çıktısı; satırlara bölünmüş hali `formatIdentity(_:groupsLabel:)` ile üretilir.
     public var identityDump: String
 
     public init(
@@ -152,7 +180,7 @@ public struct SystemCenterOSAndIdentity: Sendable, Codable, Equatable {
         computerName: String = "",
         userName: String = "",
         userUUID: String = "",
-        uptime: String = "",
+        uptimeSeconds: TimeInterval = 0,
         identityDump: String = ""
     ) {
         self.osMarketingName = osMarketingName
@@ -164,7 +192,7 @@ public struct SystemCenterOSAndIdentity: Sendable, Codable, Equatable {
         self.computerName = computerName
         self.userName = userName
         self.userUUID = userUUID
-        self.uptime = uptime
+        self.uptimeSeconds = uptimeSeconds
         self.identityDump = identityDump
     }
 }
@@ -179,14 +207,14 @@ public enum SystemProfilerProfileKind: String, Sendable, CaseIterable, Identifia
 
     public var id: String { rawValue }
 
-    public var titleTR: String {
+    public var titleKey: LKey {
         switch self {
-        case .hardware: "Donanım Özeti"
-        case .memory: "Bellek Yapılandırması"
-        case .storage: "Depolama ve Birimler"
-        case .display: "Ekranlar ve GPU"
-        case .network: "Ağ Yapılandırması"
-        case .software: "Yazılım ve Uygulamalar"
+        case .hardware: .sysCenterProfileKindHardware
+        case .memory: .sysCenterProfileKindMemory
+        case .storage: .sysCenterProfileKindStorage
+        case .display: .sysCenterProfileKindDisplay
+        case .network: .sysCenterProfileKindNetwork
+        case .software: .sysCenterProfileKindSoftware
         }
     }
 }
@@ -197,10 +225,10 @@ public enum SystemProfilerFormat: String, Sendable, CaseIterable, Identifiable {
 
     public var id: String { rawValue }
 
-    public var title: String {
+    public var titleKey: LKey {
         switch self {
-        case .text: "Düz Metin (.txt)"
-        case .json: "JSON (.json)"
+        case .text: .sysCenterProfileFormatText
+        case .json: .sysCenterProfileFormatJSON
         }
     }
 }
@@ -213,23 +241,20 @@ public enum SystemCenterCollector {
         var hw = SystemCenterHardware()
 
         // Model identifier & name
+        // Okunamayan alanlar boş/sıfır kalır ve görünümde "—" olarak gösterilir; uydurma varsayılan değer yazılmaz.
         hw.modelIdentifier = readSysctl("hw.model")
-        let archStr = readSysctl("hw.machine")
-        hw.architecture = archStr.isEmpty ? "ARM64" : archStr.uppercased()
+        hw.architecture = readSysctl("hw.machine").uppercased()
 
         // CPU Brand
-        let cpuBrand = readSysctl("machdep.cpu.brand_string")
-        hw.chip = cpuBrand.isEmpty ? "Apple Silicon" : cpuBrand
+        hw.chip = readSysctl("machdep.cpu.brand_string")
 
         // Cores
         let totalCores = readSysctlInt("hw.ncpu")
-        let pCores = readSysctlInt("hw.perflevel0.logicalcpu")
-        let eCores = readSysctlInt("hw.perflevel1.logicalcpu")
-        if pCores > 0 && eCores > 0 {
-            hw.totalCores = "\(totalCores) (\(pCores) performans ve \(eCores) verimlilik)"
-        } else if totalCores > 0 {
+        if totalCores > 0 {
             hw.totalCores = "\(totalCores)"
         }
+        hw.performanceCores = readSysctlInt("hw.perflevel0.logicalcpu")
+        hw.efficiencyCores = readSysctlInt("hw.perflevel1.logicalcpu")
 
         // IOKit: UUID, Serial Number
         let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"))
@@ -278,17 +303,12 @@ public enum SystemCenterCollector {
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let arr = json["SPDisplaysDataType"] as? [[String: Any]],
                let first = arr.first {
-                if let chipModel = first["sppci_model"] as? String {
-                    hw.gpu = "Yerleşik (\(chipModel))"
-                } else {
-                    hw.gpu = "Yerleşik"
-                }
+                hw.gpu = first["sppci_model"] as? String ?? ""
+                hw.gpuIsBuiltIn = (first["sppci_bus"] as? String) == "spdisplays_builtin"
                 if let coresStr = first["sppci_cores"] as? String, let c = Int(coresStr) {
                     hw.gpuCores = c
                 } else if let c = first["sppci_cores"] as? Int {
                     hw.gpuCores = c
-                } else {
-                    hw.gpuCores = 8
                 }
             }
         }
@@ -305,10 +325,6 @@ public enum SystemCenterCollector {
                 }
             }
         }
-        if hw.physicalDisk.isEmpty {
-            hw.physicalDisk = "Apple Internal NVMe SSD"
-        }
-
         if hw.modelName.isEmpty {
             hw.modelName = hw.modelIdentifier
         }
@@ -333,9 +349,6 @@ public enum SystemCenterCollector {
                     mem.memoryType = type
                 }
             }
-        }
-        if mem.memoryType.isEmpty {
-            mem.memoryType = "Unified Memory (LPDDR)"
         }
 
         // vm_stat statistics
@@ -430,8 +443,8 @@ public enum SystemCenterCollector {
 
         // 1. Root Boot Snapshot
         if let stdout = await runCommand("/usr/sbin/diskutil", arguments: ["info", "/"]) {
-            var node = "disk3s1s1"
-            var name = "Macintosh HD"
+            var node = ""
+            var name = ""
             var usedBytes: Int64 = 0
 
             for line in stdout.components(separatedBy: .newlines) {
@@ -443,12 +456,11 @@ public enum SystemCenterCollector {
                     usedBytes = extractBytes(from: line)
                 }
             }
-            let pct = vols.totalCapacityBytes > 0 ? Int((Double(usedBytes) / Double(vols.totalCapacityBytes)) * 100) : 3
             items.append(SystemCenterVolumeItem(
                 name: name,
-                kind: "APFS başlatma anlık görüntüsü",
+                kind: .bootSnapshot,
                 usedBytes: usedBytes,
-                usedPercent: max(1, pct),
+                usedPercent: usedPercent(usedBytes, of: vols.totalCapacityBytes),
                 bsdNode: node.replacingOccurrences(of: "/dev/", with: ""),
                 mountPoint: "/"
             ))
@@ -458,8 +470,8 @@ public enum SystemCenterCollector {
         let dataMount = "/System/Volumes/Data"
         if FileManager.default.fileExists(atPath: dataMount),
            let stdout = await runCommand("/usr/sbin/diskutil", arguments: ["info", dataMount]) {
-            var node = "disk3s5"
-            var name = "Macintosh HD - Data"
+            var node = ""
+            var name = ""
             var usedBytes: Int64 = 0
 
             for line in stdout.components(separatedBy: .newlines) {
@@ -471,25 +483,26 @@ public enum SystemCenterCollector {
                     usedBytes = extractBytes(from: line)
                 }
             }
-            let pct = vols.totalCapacityBytes > 0 ? Int((Double(usedBytes) / Double(vols.totalCapacityBytes)) * 100) : 41
             items.append(SystemCenterVolumeItem(
                 name: name,
-                kind: "APFS veri birimi",
+                kind: .data,
                 usedBytes: usedBytes,
-                usedPercent: min(100, max(1, pct)),
+                usedPercent: usedPercent(usedBytes, of: vols.totalCapacityBytes),
                 bsdNode: node.replacingOccurrences(of: "/dev/", with: ""),
                 mountPoint: dataMount
             ))
         }
 
         vols.volumes = items
-
-        let df = DateFormatter()
-        df.dateStyle = .long
-        df.timeStyle = .short
-        vols.lastVerification = df.string(from: Date())
+        vols.refreshedAt = Date()
 
         return vols
+    }
+
+    /// Birimin kapasiteye oranı (0…100); kapasite okunamazsa 0 (uydurma oran yazılmaz).
+    static func usedPercent(_ usedBytes: Int64, of capacityBytes: Int64) -> Int {
+        guard capacityBytes > 0 else { return 0 }
+        return min(100, max(0, Int((Double(usedBytes) / Double(capacityBytes)) * 100)))
     }
 
     public static func fetchOSAndIdentity() async -> SystemCenterOSAndIdentity {
@@ -506,24 +519,16 @@ public enum SystemCenterCollector {
         if let dict = NSDictionary(contentsOfFile: finderPlist) as? [String: Any],
            let v = dict["CFBundleShortVersionString"] as? String {
             os.finderVersion = v
-        } else {
-            os.finderVersion = "\(osVer.majorVersion).0"
         }
 
         // AppleScript Version
         if let stdout = await runCommand("/usr/bin/osascript", arguments: ["-e", "AppleScript's version"]) {
             os.appleScriptVersion = stdout.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        if os.appleScriptVersion.isEmpty {
-            os.appleScriptVersion = "2.8"
-        }
 
         // SQLite3 Version
         if let stdout = await runCommand("/usr/bin/sqlite3", arguments: ["--version"]) {
-            os.sqliteVersion = stdout.components(separatedBy: .whitespaces).first ?? "3.43"
-        }
-        if os.sqliteVersion.isEmpty {
-            os.sqliteVersion = "3.54.0"
+            os.sqliteVersion = stdout.components(separatedBy: .whitespaces).first ?? ""
         }
 
         // Host and Computer Name
@@ -551,43 +556,33 @@ public enum SystemCenterCollector {
         var size = MemoryLayout<timeval>.size
         if sysctlbyname("kern.boottime", &boottime, &size, nil, 0) == 0 {
             let bootDate = Date(timeIntervalSince1970: TimeInterval(boottime.tv_sec))
-            let diff = Date().timeIntervalSince(bootDate)
-            let days = Int(diff) / 86400
-            let hours = (Int(diff) % 86400) / 3600
-            let mins = (Int(diff) % 3600) / 60
-            if days > 0 {
-                os.uptime = "\(days) gün, \(hours) saat, \(mins) dakika"
-            } else {
-                os.uptime = "\(hours) saat, \(mins) dakika"
-            }
+            os.uptimeSeconds = max(0, Date().timeIntervalSince(bootDate))
         }
 
-        // Identity dump via `id`
+        // Identity dump via `id` (ham çıktı; satırlara bölme görünümde yerelleştirilmiş başlıkla yapılır)
         if let stdout = await runCommand("/usr/bin/id", arguments: []) {
-            let raw = stdout.trimmingCharacters(in: .whitespacesAndNewlines)
-            // Format into nice multi-line
-            var formatted = raw
-            if let groupsIdx = raw.range(of: "groups=") {
-                let header = String(raw[..<groupsIdx.lowerBound])
-                let groupsPart = String(raw[groupsIdx.upperBound...])
-                let groupItems = groupsPart.components(separatedBy: ",")
-                formatted = header + "\nGruplar:\n" + groupItems.map { "  • \($0)" }.joined(separator: "\n")
-            }
-            os.identityDump = formatted
+            os.identityDump = stdout.trimmingCharacters(in: .whitespacesAndNewlines)
         }
 
         return os
     }
 
-    public static func generateProfile(kind: SystemProfilerProfileKind, format: SystemProfilerFormat) async -> String {
+    /// `id` çıktısını okunur satırlara böler: `uid=… gid=…` başlığı, ardından yerelleştirilmiş grup başlığı ve
+    /// her grup için bir madde. `groups=` yoksa çıktı olduğu gibi döner.
+    public static func formatIdentity(_ raw: String, groupsLabel: String) -> String {
+        guard let groupsIdx = raw.range(of: "groups=") else { return raw }
+        let header = raw[..<groupsIdx.lowerBound].trimmingCharacters(in: .whitespaces)
+        let groupItems = raw[groupsIdx.upperBound...].components(separatedBy: ",")
+        return header + "\n" + groupsLabel + "\n" + groupItems.map { "  • \($0)" }.joined(separator: "\n")
+    }
+
+    /// `system_profiler` çıktısı; komut çalışmazsa `nil` (hata metni çağıranda yerelleştirilir).
+    public static func generateProfile(kind: SystemProfilerProfileKind, format: SystemProfilerFormat) async -> String? {
         var args = [kind.rawValue]
         if format == .json {
             args.append("-json")
         }
-        if let stdout = await runCommand("/usr/sbin/system_profiler", arguments: args, timeout: 30) {
-            return stdout
-        }
-        return "Sistem profili alınamadı."
+        return await runCommand("/usr/sbin/system_profiler", arguments: args, timeout: 30)
     }
 
     // MARK: - Yardımcılar

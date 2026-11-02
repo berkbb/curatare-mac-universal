@@ -171,7 +171,7 @@ public enum LKey: String, CaseIterable, Sendable {
 
     // 5. Disk Analizi (`analyze-go`)
     case diskTitle, diskSubtitle
-    case diskChooseFolder, diskNavigateUp, diskTotalSize, diskEmptyFolder
+    case diskChooseFolder, diskNavigateUp, diskTotalSize, diskEmptyFolder, diskInspectFolder
 
     // 6. Sistem Durumu ve Bakım (`status-go`, `optimize` & `SystemTweaks`)
     case statusTitle, statusSubtitle
@@ -185,6 +185,14 @@ public enum LKey: String, CaseIterable, Sendable {
     case sysCenterCapacity, sysCenterAvailable, sysCenterUsedSpace, sysCenterBsdNode, sysCenterMountPoint, sysCenterLastVerification
     case sysCenterOSVersion, sysCenterKernelVersion, sysCenterFinderVersion, sysCenterAppleScriptVersion, sysCenterSQLiteVersion, sysCenterComputerName, sysCenterUserName, sysCenterUserUUID, sysCenterUptime, sysCenterIdentityTitle
     case sysCenterProfileDesc, sysCenterProfileKind, sysCenterFileFormat, sysCenterButtonShowProfile, sysCenterButtonSaveProfile
+    case sysCenterCoresBreakdown, sysCenterGPUBuiltIn, sysCenterBytesValue, sysCenterGroupsLabel
+    case sysCenterVolumeKindBootSnapshot, sysCenterVolumeKindData
+    case sysCenterProfileKindHardware, sysCenterProfileKindMemory, sysCenterProfileKindStorage
+    case sysCenterProfileKindDisplay, sysCenterProfileKindNetwork, sysCenterProfileKindSoftware
+    case sysCenterProfileFormatText, sysCenterProfileFormatJSON
+    case sysCenterProfileLoading, sysCenterProfileEmptyTitle, sysCenterProfileEmptyMessage
+    case sysCenterProfileFailed, sysCenterProfileSaved, sysCenterProfileSaveFailed, sysCenterProfileFileName
+    case statusCoresCount
     case statusSecurityOverviewTitle, statusSIPProtected, statusGatekeeperEnabled
     case statusFileVaultProtected, statusXProtectVersion, statusXProtectRemediator, statusLockdownMode
     case statusSecuritySIP, statusSecurityFileVault, statusSecurityGatekeeper, statusSecurityXProtect

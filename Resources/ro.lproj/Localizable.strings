@@ -239,6 +239,7 @@
 "diskNavigateUp" = "Dosar Părinte";
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "Niciun element de analizat.";
+"diskInspectFolder" = "Inspectează Acest Dosar";
 
 "statusTitle" = "Stare Sistem în Timp Real și Întreținere Sigură";
 "statusSubtitle" = "Monitorizați procesorul, memoria, discul și scorul de sănătate prin Mole status-go și rulați sarcini sigure de reîmprospătare a cache-ului.";
@@ -320,6 +321,28 @@
 "sysCenterFileFormat" = "Format fișier";
 "sysCenterButtonShowProfile" = "Afișează";
 "sysCenterButtonSaveProfile" = "Salvează...";
+"sysCenterCoresBreakdown" = "%1$lld (%2$lld de performanță și %3$lld de eficiență)";
+"sysCenterGPUBuiltIn" = "Integrat (%@)";
+"sysCenterBytesValue" = "%1$@ (%2$@ octeți)";
+"sysCenterGroupsLabel" = "Grupuri:";
+"sysCenterVolumeKindBootSnapshot" = "Instantaneu de pornire APFS";
+"sysCenterVolumeKindData" = "Volum de date APFS";
+"sysCenterProfileKindHardware" = "Prezentare Hardware";
+"sysCenterProfileKindMemory" = "Configurația Memoriei";
+"sysCenterProfileKindStorage" = "Stocare și Volume";
+"sysCenterProfileKindDisplay" = "Afișaje și GPU";
+"sysCenterProfileKindNetwork" = "Configurația Rețelei";
+"sysCenterProfileKindSoftware" = "Software și Aplicații";
+"sysCenterProfileFormatText" = "Text Simplu (.txt)";
+"sysCenterProfileFormatJSON" = "JSON (.json)";
+"sysCenterProfileLoading" = "Se încarcă profilul sistemului…";
+"sysCenterProfileEmptyTitle" = "Profilul Sistemului Este Pregătit";
+"sysCenterProfileEmptyMessage" = "Folosiți opțiunile de mai sus pentru a vizualiza sau salva profilul hardware și software.";
+"sysCenterProfileFailed" = "Profilul sistemului nu a putut fi citit.";
+"sysCenterProfileSaved" = "Profil salvat: %@";
+"sysCenterProfileSaveFailed" = "Profilul nu a putut fi salvat: %@";
+"sysCenterProfileFileName" = "Curatare-Profil-Sistem";
+"statusCoresCount" = "%lld nuclee";
 "statusSecurityOverviewTitle" = "Stare Securitate Sistem";
 "statusSIPProtected" = "Integritate Sistem (SIP): Protejat";
 "statusGatekeeperEnabled" = "Gatekeeper și XProtect: Activat";

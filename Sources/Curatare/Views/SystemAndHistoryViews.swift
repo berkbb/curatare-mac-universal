@@ -105,7 +105,7 @@ public struct DiskAnalyzerView: View {
                             Button {
                                 Task { await model.analyzeFolder(URL(fileURLWithPath: entry.path)) }
                             } label: {
-                                Label("Bu Klasörü İncele", systemImage: "arrow.down.right.circle")
+                                Label(model.L(.diskInspectFolder), systemImage: "arrow.down.right.circle")
                             }
                         }
                         Button {
@@ -298,21 +298,21 @@ public struct SystemStatusView: View {
                 Divider()
                 infoRow(label: model.L(.sysCenterArchitecture), value: hw.architecture.uppercased())
                 Divider()
-                infoRow(label: model.L(.sysCenterTotalCores), value: hw.totalCores)
+                infoRow(label: model.L(.sysCenterTotalCores), value: totalCoresText(hw))
             }
 
             // Kart 3: Grafik & Ekran
             infoCard {
-                infoRow(label: model.L(.sysCenterGPU), value: hw.gpu)
+                infoRow(label: model.L(.sysCenterGPU), value: hw.gpu.isEmpty || !hw.gpuIsBuiltIn ? hw.gpu : model.LF(.sysCenterGPUBuiltIn, hw.gpu))
                 Divider()
-                infoRow(label: model.L(.sysCenterGPUCores), value: "\(hw.gpuCores)")
+                infoRow(label: model.L(.sysCenterGPUCores), value: hw.gpuCores > 0 ? "\(hw.gpuCores)" : "")
                 Divider()
                 infoRow(label: model.L(.sysCenterResolution), value: hw.resolution)
             }
 
             // Kart 4: Firmware & Donanım UUID
             infoCard {
-                infoRow(label: model.L(.sysCenterSystemFirmware), value: hw.systemFirmwareVersion.isEmpty ? "20457.1.29" : hw.systemFirmwareVersion)
+                infoRow(label: model.L(.sysCenterSystemFirmware), value: hw.systemFirmwareVersion)
                 Divider()
                 infoRow(label: model.L(.sysCenterHardwareUUID), value: hw.hardwareUUID, copyable: true)
             }
@@ -421,12 +421,12 @@ public struct SystemStatusView: View {
             infoCard {
                 infoRow(
                     label: model.L(.sysCenterCapacity),
-                    value: "\(DiskSpace.formatBytes(vols.totalCapacityBytes)) - (\(vols.totalCapacityBytes) bayt)"
+                    value: bytesWithExactCount(vols.totalCapacityBytes)
                 )
                 Divider()
                 infoRow(
                     label: model.L(.sysCenterAvailable),
-                    value: "\(DiskSpace.formatBytes(vols.availableBytes)) - (\(vols.availableBytes) bayt)"
+                    value: bytesWithExactCount(vols.availableBytes)
                 )
             }
 
@@ -435,10 +435,10 @@ public struct SystemStatusView: View {
                 infoCard {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(vol.kind)
+                            Text(model.L(vol.kind.titleKey))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text(vol.name)
+                            Text(vol.name.isEmpty ? "—" : vol.name)
                                 .font(.headline)
                         }
                         Spacer()
@@ -450,7 +450,7 @@ public struct SystemStatusView: View {
                         Text(model.L(.sysCenterUsedSpace))
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text("\(DiskSpace.formatBytes(vol.usedBytes)) - (\(vol.usedBytes) bayt)")
+                        Text(bytesWithExactCount(vol.usedBytes))
                             .font(.callout.monospacedDigit())
                     }
                     .padding(.vertical, 2)
@@ -485,7 +485,7 @@ public struct SystemStatusView: View {
                     Text(model.L(.sysCenterLastVerification))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(vols.lastVerification.isEmpty ? "Doğrulandı" : vols.lastVerification)
+                    Text(vols.refreshedAt.map { $0.formatted(Date.FormatStyle(date: .long, time: .shortened).locale(appLocale)) } ?? "—")
                         .font(.callout.weight(.medium))
                     Button {
                         Task {
@@ -536,7 +536,7 @@ public struct SystemStatusView: View {
                     Text(model.L(.sysCenterUptime))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Text(os.uptime.isEmpty ? "11 saat 50 dakika" : os.uptime)
+                    Text(formattedUptime(os.uptimeSeconds))
                         .font(.callout.monospacedDigit().weight(.medium))
                     Button {
                         Task { await model.loadSystemCenterInfo(force: true) }
@@ -555,7 +555,7 @@ public struct SystemStatusView: View {
                     Text(model.L(.sysCenterIdentityTitle))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.secondary)
-                    Text(os.identityDump.isEmpty ? "uid=501 (staff)" : os.identityDump)
+                    Text(os.identityDump.isEmpty ? "—" : SystemCenterCollector.formatIdentity(os.identityDump, groupsLabel: model.L(.sysCenterGroupsLabel)))
                         .font(.caption.monospaced())
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(10)
@@ -582,7 +582,7 @@ public struct SystemStatusView: View {
                     Spacer()
                     Picker("", selection: $model.selectedProfileKind) {
                         ForEach(SystemProfilerProfileKind.allCases) { kind in
-                            Text(kind.titleTR).tag(kind)
+                            Text(model.L(kind.titleKey)).tag(kind)
                         }
                     }
                     .pickerStyle(.menu)
@@ -597,7 +597,7 @@ public struct SystemStatusView: View {
                     Spacer()
                     Picker("", selection: $model.selectedProfileFormat) {
                         ForEach(SystemProfilerFormat.allCases) { fmt in
-                            Text(fmt.title).tag(fmt)
+                            Text(model.L(fmt.titleKey)).tag(fmt)
                         }
                     }
                     .pickerStyle(.menu)
@@ -613,7 +613,7 @@ public struct SystemStatusView: View {
                         Spacer()
                         ProgressView()
                             .scaleEffect(0.8)
-                        Text("Sistem profili alınıyor...")
+                        Text(model.L(.sysCenterProfileLoading))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -621,9 +621,9 @@ public struct SystemStatusView: View {
                     .frame(minHeight: 220)
                 } else if model.systemCenterProfileText.isEmpty {
                     ContentUnavailableView(
-                        "Sistem Profili Hazır",
+                        model.L(.sysCenterProfileEmptyTitle),
                         systemImage: "doc.text.magnifyingglass",
-                        description: Text("Yukarıdaki seçeneklerle donanım ve yazılım profilinizi görüntüleyin veya kaydedin.")
+                        description: Text(model.L(.sysCenterProfileEmptyMessage))
                     )
                     .frame(minHeight: 220)
                 } else {
@@ -677,6 +677,35 @@ public struct SystemStatusView: View {
         }
     }
 
+    // MARK: - Uygulama Diline Göre Biçimlendirme (Sistem Merkezi değerleri çekirdekte ham tutulur)
+
+    private var appLocale: Locale {
+        Locale(identifier: model.settings.resolvedLanguageCode)
+    }
+
+    private func totalCoresText(_ hw: SystemCenterHardware) -> String {
+        guard let total = Int64(hw.totalCores) else { return hw.totalCores }
+        guard hw.performanceCores > 0, hw.efficiencyCores > 0 else { return hw.totalCores }
+        return model.LF(.sysCenterCoresBreakdown, total, Int64(hw.performanceCores), Int64(hw.efficiencyCores))
+    }
+
+    /// "494,38 GB (494.384.795.648 bayt)" biçimi; değer okunamadıysa "—".
+    private func bytesWithExactCount(_ bytes: Int64) -> String {
+        guard bytes > 0 else { return "—" }
+        return model.LF(.sysCenterBytesValue, DiskSpace.formatBytes(bytes), bytes.formatted(.number.locale(appLocale)))
+    }
+
+    private func formattedUptime(_ seconds: TimeInterval) -> String {
+        guard seconds > 0 else { return "—" }
+        let formatter = DateComponentsFormatter()
+        var calendar = Calendar.current
+        calendar.locale = appLocale
+        formatter.calendar = calendar
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = seconds >= 86_400 ? [.day, .hour, .minute] : [.hour, .minute]
+        return formatter.string(from: seconds) ?? "—"
+    }
+
     private func infoRow(label: String, value: String, copyable: Bool = false) -> some View {
         HStack {
             Text(label)
@@ -712,7 +741,7 @@ public struct SystemStatusView: View {
                         tint: .green
                     )
                     let cpu = model.systemStatus.cpu
-                    let cpuSub = (cpu.pCoreCount > 0 && cpu.eCoreCount > 0) ? "\(cpu.pCoreCount)P + \(cpu.eCoreCount)E" : "\(cpu.logicalCPU) cores"
+                    let cpuSub = (cpu.pCoreCount > 0 && cpu.eCoreCount > 0) ? "\(cpu.pCoreCount)P + \(cpu.eCoreCount)E" : model.LF(.statusCoresCount, Int64(cpu.logicalCPU))
                     metricCard(
                         title: model.L(.statusCPU),
                         value: String(format: "%.1f%%", model.systemStatus.cpu.usage),

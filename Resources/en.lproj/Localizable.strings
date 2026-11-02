@@ -239,6 +239,7 @@
 "diskNavigateUp" = "Parent Folder";
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "No items to analyze.";
+"diskInspectFolder" = "Inspect This Folder";
 
 "statusTitle" = "Live System Status & Safe Maintenance";
 "statusSubtitle" = "Monitor CPU, memory, disk, and health score via Mole status-go telemetry and run non-destructive macOS cache refresh tasks.";
@@ -320,6 +321,28 @@
 "sysCenterFileFormat" = "File Format";
 "sysCenterButtonShowProfile" = "Show";
 "sysCenterButtonSaveProfile" = "Save...";
+"sysCenterCoresBreakdown" = "%1$lld (%2$lld performance and %3$lld efficiency)";
+"sysCenterGPUBuiltIn" = "Built-in (%@)";
+"sysCenterBytesValue" = "%1$@ (%2$@ bytes)";
+"sysCenterGroupsLabel" = "Groups:";
+"sysCenterVolumeKindBootSnapshot" = "APFS boot snapshot";
+"sysCenterVolumeKindData" = "APFS data volume";
+"sysCenterProfileKindHardware" = "Hardware Overview";
+"sysCenterProfileKindMemory" = "Memory Configuration";
+"sysCenterProfileKindStorage" = "Storage and Volumes";
+"sysCenterProfileKindDisplay" = "Displays and GPU";
+"sysCenterProfileKindNetwork" = "Network Configuration";
+"sysCenterProfileKindSoftware" = "Software and Applications";
+"sysCenterProfileFormatText" = "Plain Text (.txt)";
+"sysCenterProfileFormatJSON" = "JSON (.json)";
+"sysCenterProfileLoading" = "Loading system profile…";
+"sysCenterProfileEmptyTitle" = "System Profile Ready";
+"sysCenterProfileEmptyMessage" = "Use the options above to view or save your hardware and software profile.";
+"sysCenterProfileFailed" = "Could not read the system profile.";
+"sysCenterProfileSaved" = "Profile saved: %@";
+"sysCenterProfileSaveFailed" = "Could not save the profile: %@";
+"sysCenterProfileFileName" = "Curatare-System-Profile";
+"statusCoresCount" = "%lld cores";
 "statusSecurityOverviewTitle" = "System Security Status";
 "statusSIPProtected" = "System Integrity (SIP): Protected";
 "statusGatekeeperEnabled" = "Gatekeeper & XProtect: Enabled";

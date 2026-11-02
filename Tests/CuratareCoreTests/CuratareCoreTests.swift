@@ -1695,3 +1695,36 @@ struct SystemTweaksTests {
         #expect(!os.userName.isEmpty)
     }
 }
+
+@Suite("System Center Formatting Tests")
+struct SystemCenterFormattingTests {
+    @Test("Identity dump is split into lines with the caller's localized groups label")
+    func identityFormatting() {
+        let raw = "uid=501(kullanici) gid=20(staff) groups=20(staff),12(everyone),80(admin)"
+        let tr = SystemCenterCollector.formatIdentity(raw, groupsLabel: "Gruplar:")
+        #expect(tr == "uid=501(kullanici) gid=20(staff)\nGruplar:\n  • 20(staff)\n  • 12(everyone)\n  • 80(admin)")
+
+        let ro = SystemCenterCollector.formatIdentity(raw, groupsLabel: "Grupuri:")
+        #expect(ro.contains("\nGrupuri:\n"))
+        #expect(!ro.contains("Gruplar"))
+
+        // `groups=` yoksa çıktı olduğu gibi kalır.
+        #expect(SystemCenterCollector.formatIdentity("uid=0(root)", groupsLabel: "Groups:") == "uid=0(root)")
+    }
+
+    @Test("Profile kinds, formats and volume kinds map to localized keys present in every table")
+    func localizedTitleKeys() {
+        let table = StringTable()
+        let keys = SystemProfilerProfileKind.allCases.map(\.titleKey)
+            + SystemProfilerFormat.allCases.map(\.titleKey)
+            + [SystemCenterVolumeKind.bootSnapshot.titleKey, SystemCenterVolumeKind.data.titleKey]
+        for key in keys {
+            for code in AppLanguage.supportedCodes {
+                let value = table.string(key, language: code)
+                #expect(value != key.rawValue, "Missing \(code) translation for \(key.rawValue)")
+            }
+        }
+        #expect(table.string(SystemProfilerProfileKind.hardware.titleKey, language: "en") == "Hardware Overview")
+        #expect(table.string(SystemCenterVolumeKind.data.titleKey, language: "ro") == "Volum de date APFS")
+    }
+}

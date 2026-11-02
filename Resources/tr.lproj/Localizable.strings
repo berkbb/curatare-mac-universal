@@ -239,6 +239,7 @@
 "diskNavigateUp" = "Üst Klasör";
 "diskTotalSize" = "Toplam: %@";
 "diskEmptyFolder" = "Analiz edilecek öğe bulunamadı.";
+"diskInspectFolder" = "Bu Klasörü İncele";
 
 "statusTitle" = "Canlı Sistem Durumu ve Güvenli Bakım";
 "statusSubtitle" = "Mole status-go telemetrisi ile CPU, bellek, disk ve sistem sağlığı puanını izleyin; zararsız önbellek yenileme görevlerini çalıştırın.";
@@ -320,6 +321,28 @@
 "sysCenterFileFormat" = "Dosya biçimi";
 "sysCenterButtonShowProfile" = "Göster";
 "sysCenterButtonSaveProfile" = "Kaydet...";
+"sysCenterCoresBreakdown" = "%1$lld (%2$lld performans ve %3$lld verimlilik)";
+"sysCenterGPUBuiltIn" = "Yerleşik (%@)";
+"sysCenterBytesValue" = "%1$@ (%2$@ bayt)";
+"sysCenterGroupsLabel" = "Gruplar:";
+"sysCenterVolumeKindBootSnapshot" = "APFS başlatma anlık görüntüsü";
+"sysCenterVolumeKindData" = "APFS veri birimi";
+"sysCenterProfileKindHardware" = "Donanım Özeti";
+"sysCenterProfileKindMemory" = "Bellek Yapılandırması";
+"sysCenterProfileKindStorage" = "Depolama ve Birimler";
+"sysCenterProfileKindDisplay" = "Ekranlar ve GPU";
+"sysCenterProfileKindNetwork" = "Ağ Yapılandırması";
+"sysCenterProfileKindSoftware" = "Yazılım ve Uygulamalar";
+"sysCenterProfileFormatText" = "Düz Metin (.txt)";
+"sysCenterProfileFormatJSON" = "JSON (.json)";
+"sysCenterProfileLoading" = "Sistem profili alınıyor…";
+"sysCenterProfileEmptyTitle" = "Sistem Profili Hazır";
+"sysCenterProfileEmptyMessage" = "Yukarıdaki seçeneklerle donanım ve yazılım profilinizi görüntüleyin veya kaydedin.";
+"sysCenterProfileFailed" = "Sistem profili alınamadı.";
+"sysCenterProfileSaved" = "Profil kaydedildi: %@";
+"sysCenterProfileSaveFailed" = "Profil kaydedilemedi: %@";
+"sysCenterProfileFileName" = "Curatare-Sistem-Profili";
+"statusCoresCount" = "%lld çekirdek";
 "statusSecurityOverviewTitle" = "Sistem Güvenlik Durumu";
 "statusSIPProtected" = "Sistem Bütünlüğü (SIP): Korumalı";
 "statusGatekeeperEnabled" = "Gatekeeper ve XProtect: Etkin";

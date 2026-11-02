@@ -1626,7 +1626,11 @@ public final class AppModel {
     public func generateSystemProfile() async {
         isGeneratingProfile = true
         defer { isGeneratingProfile = false }
-        let text = await SystemCenterCollector.generateProfile(kind: selectedProfileKind, format: selectedProfileFormat)
+        guard let text = await SystemCenterCollector.generateProfile(kind: selectedProfileKind, format: selectedProfileFormat) else {
+            self.systemCenterProfileText = ""
+            activeErrorMessage = L(.sysCenterProfileFailed)
+            return
+        }
         self.systemCenterProfileText = text
     }
 
@@ -1635,7 +1639,7 @@ public final class AppModel {
         let panel = NSSavePanel()
         panel.canCreateDirectories = true
         let ext = selectedProfileFormat.rawValue
-        panel.nameFieldStringValue = "Curatare-Sistem-Profili-\(selectedProfileKind.rawValue).\(ext)"
+        panel.nameFieldStringValue = "\(L(.sysCenterProfileFileName))-\(selectedProfileKind.rawValue).\(ext)"
         if panel.runModal() == .OK, let url = panel.url {
             do {
                 try systemCenterProfileText.write(to: url, atomically: true, encoding: .utf8)
