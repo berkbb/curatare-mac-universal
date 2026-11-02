@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
+- **System Status loads once:** The tab no longer re-runs `status-go`, `system_profiler` and `diskutil` on every visit; data is cached until **Refresh**. Live CPU, memory and disk metrics refresh every 15 seconds while the Live Status dashboard is visible. App launch now fetches only the light `status-go` metrics.
+
+### Fixed
+- **Uninstaller app list ~300× faster:** The list no longer walks every bundle to compute sizes it never displays (32 s → 0.1 s for 92 apps); the selected app is still sized during inspection.
+- **System Status header:** The four-tab picker no longer overlaps the subtitle or hides behind the Refresh button; the safety banner wraps instead of truncating.
+- **Homebrew tab** no longer shows "Homebrew is not installed" while its first scan is running.
+- **System Center localization:** Core breakdown, built-in GPU label, APFS volume kinds, byte counts, uptime, last-refresh date, identity groups, profile kinds/formats and profile messages are now localized 1:1 in `tr`, `en` and `ro` (previously Turkish or English text leaked into other languages).
+- **No more invented values:** System Center shows "—" when a value cannot be read instead of placeholder data (firmware version, uptime, `id` output, GPU core count, disk/memory type, volume names and usage).
+- **Wrong toasts:** Saving a system profile no longer reports "Item permanently deleted", and copying a checksum shows "Copied: SHA-256" instead of a raw `%@`.
+
 ## [1.0.0] - 2026-10-31
 
 ### Added

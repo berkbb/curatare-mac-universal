@@ -790,3 +790,21 @@
 
 
 
+
+### Episode 50 — System Status Header Overlap Fix & `fixedSize` Window-Height Regression
+
+- **Date:** 2026-11-02
+- **Task:** The System Status segmented picker (fixed `frame(width: 480)`) overlapped the subtitle and was clipped by the Refresh button; the safety banner truncated its second sentence with `…`.
+- **Fix:** Moved the four-segment picker to its own row (`.labelsHidden().fixedSize()`), kept title/subtitle (`lineLimit(2)`) and Refresh on the top row, and rendered the safety banner as one wrapping `AttributedString` paragraph (`lineLimit(3)`).
+- **Regression & Root Cause:** The first banner fix used `Text(...).fixedSize(horizontal: false, vertical: true)` without a line limit. When `NavigationSplitView` probes minimum sizes with a near-zero width, that text reported ~2844 pt of height, forcing the window content to 3011 pt; the window was clamped to the screen, so the sidebar list, banner, and header were pushed out of view and only the bottom of the dashboard remained visible.
+- **Lesson:** Never apply `fixedSize(horizontal: false, vertical: true)` to unbounded `Text` inside the main window's detail column or any banner shared by every section; bound it with `lineLimit` instead. Offscreen snapshots of a detail view alone do not catch this — verify inside the real `NavigationSplitView` window by checking the window content height and the sidebar table frame.
+- **Verification:** Window content height back to 1048 pt with 11 sidebar rows inside the window; `swift test` 44/44 passed; `build_app.sh` + `verify_bundle.sh` passed.
+
+### Episode 51 — Load-Once Tabs, Inline Scan Progress & Unused Bundle Size Walk
+
+- **Date:** 2026-11-02
+- **Task:** Decide between a startup loader and per-tab loading (aligned with Arhivar, Copiator, Descarcator), and explain why the uninstaller app list arrived late.
+- **Findings:** Sibling apps show no startup loader; a one-time `launch()` does light work while the window opens. In Curatare, `scanInstalledBundles` walked every bundle to compute `bundleSizeBytes` (92 apps: 32.3 s; without sizes: 0.1 s) although no view displays it — `discoverAssociatedFiles` already sizes the selected bundle when the value is 0. System Status re-ran `status-go` (~3 s, ~1.9 s CPU), three `system_profiler` calls and `diskutil` on every visit. Read-only scans used the dimming `ProgressOverlay`, which also hid misleading empty states (Homebrew defaults to `.notInstalled` until its first scan).
+- **Fix:** `computeBundleSizes: false` for the list; `performCancellableOperation(inline:)` keeps the single-operation `isBusy` model (so every cleanup button guard stays intact) but shows `InlineLoadingBar` for read-only scans; `loadOnFirstVisit` starts loads in an unstructured task (leaving a tab no longer cancels its scan) keyed on `isBusy` (loads after another operation ends, never auto-restarts after a cancel); System Status loads once with coalesced refreshes and polls live metrics every 15 s only while the dashboard is visible and the app is active.
+- **Lesson:** Before optimizing a slow list, check whether the expensive field is displayed at all. When removing a blocking overlay, audit what it was hiding (empty states, default model values) and whether view-scoped `.task` lifetimes now cancel work the user expects to continue.
+- **Verification:** `swift test` 45/45 (new `uninstallerListSkipsBundleSizes`); real-window measurement keeps content height at 1048 pt with the sidebar inside the window for both inline and overlay states; `build_app.sh` + `verify_bundle.sh` passed.
