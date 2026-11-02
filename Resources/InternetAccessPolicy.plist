@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ApplicationDescription</key>
+	<string>Curatare is a native, high-assurance macOS system cleaner, library orphan auditor, application uninstaller, and disk analyzer.</string>
+	<key>DeveloperName</key>
+	<string>Babadogan Tech and Edu</string>
+	<key>Website</key>
+	<string>https://github.com/berkbb/curatare-mac-universal</string>
+	<key>Connections</key>
+	<array>
+		<dict>
+			<key>IsIncoming</key>
+			<false/>
+			<key>Host</key>
+			<string>api.github.com</string>
+			<key>NetworkProtocol</key>
+			<string>TCP</string>
+			<key>Port</key>
+			<string>443</string>
+			<key>Purpose</key>
+			<string>Curatare queries GitHub Releases to check for application updates and Mole engine updates.</string>
+			<key>DenyConsequences</key>
+			<string>If denied, Curatare will not be able to notify you about new versions or download Mole updates automatically.</string>
+		</dict>
+	</array>
+</dict>
+</plist>

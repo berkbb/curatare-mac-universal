@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>tr</string>
+	<key>CFBundleDisplayName</key>
+	<string>Curatare</string>
+	<key>CFBundleExecutable</key>
+	<string>Curatare</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.babadogantech.curatare</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>tr</string>
+		<string>en</string>
+		<string>ro</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>Curatare</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>CuratareRepository</key>
+	<string>berkbb/curatare-mac-universal</string>
+	<key>CuratareUpdatePublicEDKey</key>
+	<string>ugIpfYfpgjMoIIL0Zaj63kkJPAVaRTiQ9Rc8zW4C45c=</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>26.0</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>Babadogan Tech and Edu. GPL-3.0-or-later. Mole © Tw93 (GPL-3.0).</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Application Bundle</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.application-bundle</string>
+				<string>com.apple.bundle</string>
+				<string>com.apple.package</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Clean Uninstall with Curatare</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>uninstallWithCuratare</string>
+			<key>NSPortName</key>
+			<string>Curatare</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>com.apple.application-bundle</string>
+				<string>com.apple.bundle</string>
+				<string>public.folder</string>
+				<string>public.item</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

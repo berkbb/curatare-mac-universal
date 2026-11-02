@@ -1,0 +1,4 @@
+version=1.67.0
+tag=V1.67.0
+source=https://github.com/tw93/Mole/archive/refs/tags/V1.67.0.tar.gz
+sha256=f263992189c33e54dba12081e3455b1f25078e4e9806e5d6a1df67f7fa552645

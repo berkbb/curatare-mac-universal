@@ -1,0 +1,8 @@
+{
+  "project": "curatare-mac-universal",
+  "output_dir": "graphify-out",
+  "languages": ["swift", "bash", "markdown"],
+  "no_tips": true,
+  "query_log_disable": true,
+  "cloud": false
+}
