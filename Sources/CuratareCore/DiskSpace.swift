@@ -3,6 +3,7 @@ import CoreServices
 import Darwin
 import Foundation
 import os
+import Synchronization
 
 /// İş parçacığı güvenli tarama iptal belirteci; hem atomik bayrağı hem de `Task.isCancelled` durumunu denetler.
 public final class ScanCancellationToken: Sendable {
@@ -71,8 +72,46 @@ public enum DiskSpace {
         return total
     }
 
-    static func regularFileBytes(below path: String, isCancelled: () -> Bool) -> Int64 {
-        guard !isCancelled() else { return 0 }
+    /// Her kök için `size(of:)` ile aynı değeri döndürür; dizinleri tüm çekirdeklere dağıtarak paralel gezer.
+    /// On binlerce dosyalı önbelleklerde (`~/.gradle/caches`, `~/.pub-cache`, `Cellar`) süre, dosya başına `lstat` gecikmesinden ötürü
+    /// çekirdek sayısına yakın oranda kısalır. `isCancelled` yalnızca çağıran iş parçacığında ~50 ms aralıkla sorgulanır.
+    public static func sizes(of urls: [URL], isCancelled: () -> Bool = { false }) -> [Int64] {
+        var totals = [Int64](repeating: 0, count: urls.count)
+        var directories: [ParallelWalk.Job] = []
+        for (index, url) in urls.enumerated() {
+            guard !isCancelled() else { return totals }
+            var info = stat()
+            guard lstat(url.path, &info) == 0 else { continue }
+            switch info.st_mode & S_IFMT {
+            case S_IFREG:
+                totals[index] = max(0, Int64(info.st_size))
+            case S_IFDIR:
+                directories.append(ParallelWalk.Job(root: index, path: url.path))
+            default:
+                break
+            }
+        }
+        guard !directories.isEmpty else { return totals }
+
+        let walk = ParallelWalk(jobs: directories, rootCount: urls.count)
+        let group = DispatchGroup()
+        let queue = DispatchQueue.global(qos: DispatchQoS.QoSClass(rawValue: qos_class_self()) ?? .userInitiated)
+        for _ in 0..<min(max(1, ProcessInfo.processInfo.activeProcessorCount), 16) {
+            queue.async(group: group) { walk.work() }
+        }
+        // İşçiler paylaşılan durdurma bayrağını izler; böylece `isCancelled` iş parçacığı güvenli olmak zorunda kalmaz.
+        while group.wait(timeout: .now() + .milliseconds(50)) == .timedOut {
+            if isCancelled() { walk.stop() }
+        }
+        for (index, bytes) in walk.result().enumerated() {
+            totals[index] = totals[index].saturatingAdding(bytes)
+        }
+        return totals
+    }
+
+    /// Tek bir dizindeki düzenli dosyaların boyutunu toplar; alt dizinleri kendisi gezmek yerine `subdirectory` ile bildirir.
+    /// Sıralı (`regularFileBytes(below:)`) ve paralel (`sizes(of:)`) gezinti aynı girdi kurallarını bu işlev üzerinden paylaşır.
+    static func regularFileBytes(in path: String, isCancelled: () -> Bool, subdirectory: (String) -> Void) -> Int64 {
         guard let directory = opendir(path) else { return 0 }
         defer { closedir(directory) }
 
@@ -100,7 +139,7 @@ public enum DiskSpace {
                     total = total.saturatingAdding(max(0, Int64(info.st_size)))
                 }
             } else if dType == DT_DIR {
-                total = total.saturatingAdding(regularFileBytes(below: child, isCancelled: isCancelled))
+                subdirectory(child)
             } else {
                 // DT_UNKNOWN vb. dosya sistemlerinde lstat ile kesin tür kontrolü
                 var info = stat()
@@ -109,12 +148,21 @@ public enum DiskSpace {
                     if mode == S_IFREG {
                         total = total.saturatingAdding(max(0, Int64(info.st_size)))
                     } else if mode == S_IFDIR {
-                        total = total.saturatingAdding(regularFileBytes(below: child, isCancelled: isCancelled))
+                        subdirectory(child)
                     }
                 }
             }
         }
         return total
+    }
+
+    static func regularFileBytes(below path: String, isCancelled: () -> Bool) -> Int64 {
+        guard !isCancelled() else { return 0 }
+        var nested: Int64 = 0
+        let own = regularFileBytes(in: path, isCancelled: isCancelled) { child in
+            nested = nested.saturatingAdding(regularFileBytes(below: child, isCancelled: isCancelled))
+        }
+        return own.saturatingAdding(nested)
     }
 
     public static func entries(ofDirectory path: String) throws -> [String] {
@@ -170,5 +218,79 @@ public enum DiskSpace {
             current = current.deletingLastPathComponent()
         }
         return current
+    }
+}
+
+/// `DiskSpace.sizes(of:)` için paylaşılan dizin kuyruğu: boştaki işçiler, diğerlerinin bulduğu alt dizinleri alır.
+final class ParallelWalk: @unchecked Sendable {
+    struct Job {
+        let root: Int
+        let path: String
+    }
+
+    private let condition = NSCondition()
+    private let stopFlag = Atomic<Bool>(false)
+    private let rootCount: Int
+    private var pending: [Job]
+    private var busyWorkers = 0
+    private var totals: [Int64]
+
+    init(jobs: [Job], rootCount: Int) {
+        self.rootCount = rootCount
+        pending = jobs
+        totals = [Int64](repeating: 0, count: rootCount)
+    }
+
+    var isStopped: Bool { stopFlag.load(ordering: .relaxed) }
+
+    /// Kuyruk boşalana ya da `stop()` çağrılana dek dizin alıp gezer; kök başına toplamları sonda birleştirir.
+    func work() {
+        var local = [Int64](repeating: 0, count: rootCount)
+        var found: [Job] = []
+        var job = next(adding: [], finishedOne: false)
+        while let current = job {
+            found.removeAll(keepingCapacity: true)
+            let bytes = DiskSpace.regularFileBytes(in: current.path, isCancelled: { isStopped }) { subdirectory in
+                found.append(Job(root: current.root, path: subdirectory))
+            }
+            local[current.root] = local[current.root].saturatingAdding(bytes)
+            job = next(adding: found, finishedOne: true)
+        }
+        condition.lock()
+        for index in local.indices { totals[index] = totals[index].saturatingAdding(local[index]) }
+        condition.unlock()
+    }
+
+    /// Bitirilen işin alt dizinlerini kuyruğa ekler ve sıradaki işi verir; iş kalmadıysa ya da durdurulduysa `nil` döner.
+    private func next(adding found: [Job], finishedOne: Bool) -> Job? {
+        condition.lock()
+        defer { condition.unlock() }
+        if finishedOne { busyWorkers -= 1 }
+        if !isStopped, !found.isEmpty {
+            pending.append(contentsOf: found)
+            condition.broadcast()
+        } else if busyWorkers == 0 {
+            condition.broadcast() // Kuyruk boş ve kimse çalışmıyor: bekleyen işçiler çıksın
+        }
+        while pending.isEmpty, busyWorkers > 0, !isStopped {
+            condition.wait()
+        }
+        guard !isStopped, let job = pending.popLast() else { return nil }
+        busyWorkers += 1
+        return job
+    }
+
+    func stop() {
+        stopFlag.store(true, ordering: .relaxed)
+        condition.lock()
+        pending.removeAll()
+        condition.broadcast()
+        condition.unlock()
+    }
+
+    func result() -> [Int64] {
+        condition.lock()
+        defer { condition.unlock() }
+        return totals
     }
 }

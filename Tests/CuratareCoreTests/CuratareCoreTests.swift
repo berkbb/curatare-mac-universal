@@ -1062,6 +1062,45 @@ struct LaunchdAndDiagnosticsTests {
     }
 }
 
+@Suite("DiskSpace Parallel Walk Tests")
+struct DiskSpaceParallelWalkTests {
+    @Test("DiskSpace.sizes matches size(of:) per root: nested dirs, symlinks, file, missing and empty roots")
+    func parallelSizesMatchSerial() throws {
+        let fm = FileManager.default
+        let tmp = fm.temporaryDirectory.appendingPathComponent("curatare-walk-test-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tmp) }
+
+        let tree = tmp.appendingPathComponent("tree", isDirectory: true)
+        for i in 0..<40 {
+            let dir = tree.appendingPathComponent("d\(i % 7)/n\(i % 3)/leaf\(i)", isDirectory: true)
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            try Data(repeating: 0x41, count: 100 + i * 37).write(to: dir.appendingPathComponent("f\(i).bin"))
+        }
+        let empty = tree.appendingPathComponent("empty", isDirectory: true)
+        try fm.createDirectory(at: empty, withIntermediateDirectories: true)
+        let outside = tmp.appendingPathComponent("outside.bin")
+        try Data(repeating: 0x42, count: 5_000).write(to: outside)
+        // Sembolik bağlantılar izlenmez: dosyaya, üst dizine (döngü) ve köke verilen bağlantılar 0 bayt sayılır.
+        try fm.createSymbolicLink(at: tree.appendingPathComponent("link-to-outside"), withDestinationURL: outside)
+        try fm.createSymbolicLink(at: tree.appendingPathComponent("link-to-parent"), withDestinationURL: tmp)
+        let rootLink = tmp.appendingPathComponent("root-link")
+        try fm.createSymbolicLink(at: rootLink, withDestinationURL: tree)
+
+        let roots = [tree, outside, tmp.appendingPathComponent("missing"), rootLink, empty, tree.appendingPathComponent("d1")]
+        let parallel = DiskSpace.sizes(of: roots)
+        #expect(parallel == roots.map { DiskSpace.size(of: $0) })
+        let expectedTreeBytes: Int64 = (0..<40).map { Int64(100 + $0 * 37) }.reduce(0, +)
+        #expect(parallel[0] == expectedTreeBytes)
+        #expect(parallel[1] == 5_000)
+        #expect(parallel[2] == 0)
+        #expect(parallel[3] == 0)
+        #expect(parallel[4] == 0)
+        #expect(DiskSpace.sizes(of: []).isEmpty)
+        #expect(DiskSpace.sizes(of: [tree], isCancelled: { true }) == [0])
+    }
+}
+
 @Suite("HomebrewScanner Tests")
 struct HomebrewScannerTests {
     @Test("HomebrewScanner: Nonexistent brew path returns notInstalled")
