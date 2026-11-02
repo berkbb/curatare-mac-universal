@@ -1371,6 +1371,10 @@ public struct ExtendedScanners: Sendable {
             }
         }
 
+        // Adaylar önce yalnızca varlık denetimiyle toplanır; boyutları sonda tek bir paralel gezintide hesaplanır
+        // (`~/.gradle/caches`, `~/.pub-cache` gibi on binlerce dosyalı önbellekler sıralı gezintinin çoğunu tüketiyordu).
+        var candidates: [(url: URL, make: (Int64) -> LanguageEcosystemItem)] = []
+
         func probe(
             ecosystem: LanguageEcosystemItem.Ecosystem,
             origin: LanguageEcosystemItem.Origin = .userStandalone,
@@ -1382,20 +1386,20 @@ public struct ExtendedScanners: Sendable {
             if isCancelled() { return }
             let targetURL = fullURL ?? (relPath.hasPrefix("/") ? URL(fileURLWithPath: relPath) : homeDirectoryURL.appendingPathComponent(relPath))
             guard fm.fileExists(atPath: targetURL.path) else { return }
-            let size = DiskSpace.size(of: targetURL, isCancelled: isCancelled)
-            guard size > 0 else { return }
             let displayPath = relPath.hasPrefix("/") ? relPath : "~/\(relPath)"
-            items.append(LanguageEcosystemItem(
-                ecosystem: ecosystem,
-                origin: origin,
-                toolName: toolName,
-                path: displayPath,
-                url: targetURL,
-                sizeBytes: size,
-                explanation: explanation,
-                isSystemProtected: origin == .macosSystem,
-                isSelected: origin != .macosSystem
-            ))
+            candidates.append((targetURL, { size in
+                LanguageEcosystemItem(
+                    ecosystem: ecosystem,
+                    origin: origin,
+                    toolName: toolName,
+                    path: displayPath,
+                    url: targetURL,
+                    sizeBytes: size,
+                    explanation: explanation,
+                    isSystemProtected: origin == .macosSystem,
+                    isSelected: origin != .macosSystem
+                )
+            }))
         }
 
         // 1. Python (pip, uv, pipx, poetry, pdm, conda/mamba)
@@ -1548,6 +1552,10 @@ public struct ExtendedScanners: Sendable {
         // Homebrew Downloads / Caches
         probe(ecosystem: .otherEcosystem, origin: .homebrew, toolName: "Homebrew İndirme Önbelleği", relPath: "Library/Caches/Homebrew/downloads", explanation: "Homebrew şişe (bottle) ve kaynak arşiv indirmeleri")
 
+        let sizes = DiskSpace.sizes(of: candidates.map(\.url), isCancelled: isCancelled)
+        for (candidate, size) in zip(candidates, sizes) where size > 0 {
+            items.append(candidate.make(size))
+        }
         return items
     }
 

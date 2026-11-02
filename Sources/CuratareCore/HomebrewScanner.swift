@@ -122,13 +122,13 @@ public struct HomebrewScanner: Sendable {
             ]
         )
 
-        // 1. Sürüm bilgisi
-        var version: String?
-        if let res = try? await runner.run(["--version"], timeout: 4), res.exitCode == 0 {
-            version = res.stdout.split(whereSeparator: \.isNewline).first.map(String.init)
-        }
+        // Üç `brew` çağrısı birbirinden bağımsız ve salt okunurdur; hepsi hemen başlar. En yavaşı `cleanup --dry-run`
+        // (~7 sn, çoğu önek dizinlerindeki kırık bağlantı taraması) beklenirken diğerleri ve önbellek boyutu onunla birlikte biter.
+        async let versionRun = try? runner.run(["--version"], timeout: 4)
+        async let cleanupRun = Self.cleanupDryRun(runner)
+        async let autoremoveRun = try? runner.run(["autoremove", "--dry-run"], timeout: 12)
 
-        // 2. Önbellek Yolu ve Boyutu (Library/Caches/Homebrew)
+        // 1. Önbellek Yolu ve Boyutu (Library/Caches/Homebrew)
         let home = NSHomeDirectory()
         let cacheURL = URL(fileURLWithPath: home).appendingPathComponent("Library/Caches/Homebrew", isDirectory: true)
         var cacheSizeBytes: Int64 = 0
@@ -136,6 +136,13 @@ public struct HomebrewScanner: Sendable {
             cacheSizeBytes = DiskSpace.size(of: cacheURL, isCancelled: isCancelled)
         }
 
+        // 2. Sürüm bilgisi
+        var version: String?
+        if let res = await versionRun, res.exitCode == 0 {
+            version = res.stdout.split(whereSeparator: \.isNewline).first.map(String.init)
+        }
+
+        // İptalde beklenmeyen `async let` çağrıları kapsamdan çıkarken iptal edilir; `CommandRunner` süreçleri sonlandırır.
         if isCancelled() {
             return HomebrewStatus(
                 isInstalled: true,
@@ -152,14 +159,7 @@ public struct HomebrewScanner: Sendable {
         // 3. `brew cleanup --dry-run --prune=all -s` adayları ve tahmini tasarruf
         var items: [HomebrewItem] = []
         var estimatedSpace: String?
-        var dryRunRes: ProcessResult?
-        if let res = try? await runner.run(["cleanup", "--dry-run", "--prune=all", "-s"], timeout: 18) {
-            dryRunRes = res
-        } else if let fallback = try? await runner.run(["cleanup", "--dry-run"], timeout: 12) {
-            dryRunRes = fallback
-        }
-
-        if let cleanRes = dryRunRes, cleanRes.exitCode == 0 {
+        if let cleanRes = await cleanupRun, cleanRes.exitCode == 0 {
             for line in cleanRes.stdout.split(whereSeparator: \.isNewline) {
                 let trimmed = line.trimmingCharacters(in: .whitespaces)
                 if trimmed.hasPrefix("Would remove: ") {
@@ -197,7 +197,7 @@ public struct HomebrewScanner: Sendable {
 
         // 4. `brew autoremove --dry-run` adayları
         var unneeded: [String] = []
-        if !isCancelled(), let autoRes = try? await runner.run(["autoremove", "--dry-run"], timeout: 12), autoRes.exitCode == 0 {
+        if !isCancelled(), let autoRes = await autoremoveRun, autoRes.exitCode == 0 {
             for line in autoRes.stdout.split(whereSeparator: \.isNewline) {
                 let trimmed = line.trimmingCharacters(in: .whitespaces)
                 if trimmed.hasPrefix("Would uninstall: ") {
@@ -223,6 +223,15 @@ public struct HomebrewScanner: Sendable {
             unneededDependencies: unneeded,
             estimatedSpaceFreed: estimatedSpace
         )
+    }
+
+    /// `cleanup --dry-run --prune=all -s` hata verirse (zaman aşımı, başlatılamama) yalın `cleanup --dry-run` ile yeniden dener.
+    private static func cleanupDryRun(_ runner: CommandRunner) async -> ProcessResult? {
+        if let res = try? await runner.run(["cleanup", "--dry-run", "--prune=all", "-s"], timeout: 18) {
+            return res
+        }
+        guard !Task.isCancelled else { return nil }
+        return try? await runner.run(["cleanup", "--dry-run"], timeout: 12)
     }
 
     /// `brew cleanup` komutunu parametrelerle çalıştırır (`--prune=all`, `-s` scrub, `--prune-prefix`).
@@ -311,33 +320,32 @@ public struct HomebrewScanner: Sendable {
            let data = res.stdout.data(using: .utf8),
            let payload = try? JSONDecoder().decode(HomebrewInfoPayload.self, from: data) {
 
-            var result: [HomebrewPackage] = []
+            // Boyutlar paket paket değil, tek bir paralel gezintide hesaplanır: önce her paketin ölçülecek kökleri toplanır.
+            var sizing = PackageSizing()
 
             for f in payload.formulae ?? [] {
                 if isCancelled() { break }
                 let ver = f.installed?.first?.version ?? "unknown"
                 let onReq = f.installed?.first?.installed_on_request ?? true
                 let fPath = "\(cellarPath)/\(f.name)/\(ver)"
-                var size: Int64 = 0
-                if fm.fileExists(atPath: fPath) {
-                    let u = URL(fileURLWithPath: fPath)
-                    size = DiskSpace.size(of: u, isCancelled: isCancelled)
+                let exists = fm.fileExists(atPath: fPath)
+                sizing.add(roots: exists ? [fPath] : []) { size in
+                    HomebrewPackage(
+                        id: f.name,
+                        name: f.full_name ?? f.name,
+                        kind: .formula,
+                        version: ver,
+                        description: f.desc ?? "",
+                        homepage: f.homepage,
+                        path: exists ? fPath : nil,
+                        sizeBytes: size,
+                        isInstalledOnRequest: onReq,
+                        isDependency: !onReq,
+                        dependencies: f.dependencies ?? [],
+                        dependents: [],
+                        caveats: f.caveats
+                    )
                 }
-                result.append(HomebrewPackage(
-                    id: f.name,
-                    name: f.full_name ?? f.name,
-                    kind: .formula,
-                    version: ver,
-                    description: f.desc ?? "",
-                    homepage: f.homepage,
-                    path: fm.fileExists(atPath: fPath) ? fPath : nil,
-                    sizeBytes: size,
-                    isInstalledOnRequest: onReq,
-                    isDependency: !onReq,
-                    dependencies: f.dependencies ?? [],
-                    dependents: [],
-                    caveats: f.caveats
-                ))
             }
 
             for c in payload.casks ?? [] {
@@ -345,87 +353,71 @@ public struct HomebrewScanner: Sendable {
                 let ver = c.installed ?? c.version ?? "unknown"
                 let cName = c.name?.first ?? c.token
                 let cPath = "\(caskroomPath)/\(c.token)/\(ver)"
-                var size: Int64 = 0
-                if fm.fileExists(atPath: cPath) {
-                    let u = URL(fileURLWithPath: cPath)
-                    size = DiskSpace.size(of: u, isCancelled: isCancelled)
-                }
+                let exists = fm.fileExists(atPath: cPath)
+                var roots = exists ? [cPath] : []
 
                 // Caskroom metadata haricinde, /Applications altındaki asıl GUI uygulamasının gerçek boyutunu ekle/kontrol et
+                // (paket boyutu, ölçülen köklerin en büyüğüdür)
                 let homeDir = NSHomeDirectory()
                 let candidateAppNames = [cName, c.token, cName.replacingOccurrences(of: " ", with: "")]
                 for candidate in candidateAppNames {
                     let appPath = "/Applications/\(candidate).app"
                     let userAppPath = "\(homeDir)/Applications/\(candidate).app"
                     if fm.fileExists(atPath: appPath) {
-                        let appSize = DiskSpace.size(of: URL(fileURLWithPath: appPath), isCancelled: isCancelled)
-                        if appSize > size { size = appSize }
+                        roots.append(appPath)
                         break
                     } else if fm.fileExists(atPath: userAppPath) {
-                        let appSize = DiskSpace.size(of: URL(fileURLWithPath: userAppPath), isCancelled: isCancelled)
-                        if appSize > size { size = appSize }
+                        roots.append(userAppPath)
                         break
                     }
                 }
 
-                result.append(HomebrewPackage(
-                    id: c.token,
-                    name: cName,
-                    kind: .cask,
-                    version: ver,
-                    description: c.desc ?? "",
-                    homepage: c.homepage,
-                    path: fm.fileExists(atPath: cPath) ? cPath : nil,
-                    sizeBytes: size,
-                    isInstalledOnRequest: true,
-                    isDependency: false,
-                    dependencies: [],
-                    dependents: [],
-                    caveats: c.caveats
-                ))
+                sizing.add(roots: roots) { size in
+                    HomebrewPackage(
+                        id: c.token,
+                        name: cName,
+                        kind: .cask,
+                        version: ver,
+                        description: c.desc ?? "",
+                        homepage: c.homepage,
+                        path: exists ? cPath : nil,
+                        sizeBytes: size,
+                        isInstalledOnRequest: true,
+                        isDependency: false,
+                        dependencies: [],
+                        dependents: [],
+                        caveats: c.caveats
+                    )
+                }
             }
 
+            let result = sizing.packages(isCancelled: isCancelled)
             return result.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
         }
 
         // 2. Fallback: Cellar ve Caskroom doğrudan dosya sistemi taraması
-        var fallback: [HomebrewPackage] = []
-        if let cellarItems = try? fm.contentsOfDirectory(atPath: cellarPath) {
-            for item in cellarItems where !item.hasPrefix(".") {
+        var sizing = PackageSizing()
+        for (root, kind) in [(cellarPath, HomebrewPackage.Kind.formula), (caskroomPath, .cask)] {
+            guard let entries = try? fm.contentsOfDirectory(atPath: root) else { continue }
+            for item in entries where !item.hasPrefix(".") {
                 if isCancelled() { break }
-                let itemDir = "\(cellarPath)/\(item)"
+                let itemDir = "\(root)/\(item)"
                 let versions = (try? fm.contentsOfDirectory(atPath: itemDir))?.filter { !$0.hasPrefix(".") } ?? []
                 let ver = versions.first ?? "unknown"
                 let p = "\(itemDir)/\(ver)"
-                let size = fm.fileExists(atPath: p) ? DiskSpace.size(of: URL(fileURLWithPath: p), isCancelled: isCancelled) : 0
-                fallback.append(HomebrewPackage(
-                    id: item,
-                    name: item,
-                    kind: .formula,
-                    version: ver,
-                    path: p,
-                    sizeBytes: size
-                ))
+                sizing.add(roots: fm.fileExists(atPath: p) ? [p] : []) { size in
+                    HomebrewPackage(
+                        id: item,
+                        name: item,
+                        kind: kind,
+                        version: ver,
+                        path: p,
+                        sizeBytes: size
+                    )
+                }
             }
         }
-        if let caskItems = try? fm.contentsOfDirectory(atPath: caskroomPath) {
-            for item in caskItems where !item.hasPrefix(".") {
-                if isCancelled() { break }
-                let itemDir = "\(caskroomPath)/\(item)"
-                let versions = (try? fm.contentsOfDirectory(atPath: itemDir))?.filter { !$0.hasPrefix(".") } ?? []
-                let ver = versions.first ?? "unknown"
-                let p = "\(itemDir)/\(ver)"
-                let size = fm.fileExists(atPath: p) ? DiskSpace.size(of: URL(fileURLWithPath: p), isCancelled: isCancelled) : 0
-                fallback.append(HomebrewPackage(
-                    id: item,
-                    name: item,
-                    kind: .cask,
-                    version: ver,
-                    path: p,
-                    sizeBytes: size
-                ))
-            }
-        }
+        let fallback = sizing.packages(isCancelled: isCancelled)
         return fallback.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 
@@ -486,6 +478,26 @@ public struct HomebrewScanner: Sendable {
             results.append(res)
         }
         return results
+    }
+}
+
+// MARK: - Package Sizing
+
+/// Paket taslaklarını biriktirir; tüm kökleri tek `DiskSpace.sizes(of:)` çağrısıyla ölçüp paketleri kurar.
+/// Bir paketin boyutu, köklerinin en büyüğüdür (kök yoksa 0).
+private struct PackageSizing {
+    private var roots: [URL] = []
+    private var drafts: [(rootIndices: Range<Int>, make: (Int64) -> HomebrewPackage)] = []
+
+    mutating func add(roots paths: [String], make: @escaping (Int64) -> HomebrewPackage) {
+        let first = roots.count
+        roots.append(contentsOf: paths.map { URL(fileURLWithPath: $0) })
+        drafts.append((first..<roots.count, make))
+    }
+
+    func packages(isCancelled: () -> Bool) -> [HomebrewPackage] {
+        let sizes = DiskSpace.sizes(of: roots, isCancelled: isCancelled)
+        return drafts.map { draft in draft.make(sizes[draft.rootIndices].max() ?? 0) }
     }
 }
 

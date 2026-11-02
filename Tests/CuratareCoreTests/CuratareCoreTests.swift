@@ -1062,6 +1062,45 @@ struct LaunchdAndDiagnosticsTests {
     }
 }
 
+@Suite("DiskSpace Parallel Walk Tests")
+struct DiskSpaceParallelWalkTests {
+    @Test("DiskSpace.sizes matches size(of:) per root: nested dirs, symlinks, file, missing and empty roots")
+    func parallelSizesMatchSerial() throws {
+        let fm = FileManager.default
+        let tmp = fm.temporaryDirectory.appendingPathComponent("curatare-walk-test-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tmp) }
+
+        let tree = tmp.appendingPathComponent("tree", isDirectory: true)
+        for i in 0..<40 {
+            let dir = tree.appendingPathComponent("d\(i % 7)/n\(i % 3)/leaf\(i)", isDirectory: true)
+            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            try Data(repeating: 0x41, count: 100 + i * 37).write(to: dir.appendingPathComponent("f\(i).bin"))
+        }
+        let empty = tree.appendingPathComponent("empty", isDirectory: true)
+        try fm.createDirectory(at: empty, withIntermediateDirectories: true)
+        let outside = tmp.appendingPathComponent("outside.bin")
+        try Data(repeating: 0x42, count: 5_000).write(to: outside)
+        // Sembolik bağlantılar izlenmez: dosyaya, üst dizine (döngü) ve köke verilen bağlantılar 0 bayt sayılır.
+        try fm.createSymbolicLink(at: tree.appendingPathComponent("link-to-outside"), withDestinationURL: outside)
+        try fm.createSymbolicLink(at: tree.appendingPathComponent("link-to-parent"), withDestinationURL: tmp)
+        let rootLink = tmp.appendingPathComponent("root-link")
+        try fm.createSymbolicLink(at: rootLink, withDestinationURL: tree)
+
+        let roots = [tree, outside, tmp.appendingPathComponent("missing"), rootLink, empty, tree.appendingPathComponent("d1")]
+        let parallel = DiskSpace.sizes(of: roots)
+        #expect(parallel == roots.map { DiskSpace.size(of: $0) })
+        let expectedTreeBytes: Int64 = (0..<40).map { Int64(100 + $0 * 37) }.reduce(0, +)
+        #expect(parallel[0] == expectedTreeBytes)
+        #expect(parallel[1] == 5_000)
+        #expect(parallel[2] == 0)
+        #expect(parallel[3] == 0)
+        #expect(parallel[4] == 0)
+        #expect(DiskSpace.sizes(of: []).isEmpty)
+        #expect(DiskSpace.sizes(of: [tree], isCancelled: { true }) == [0])
+    }
+}
+
 @Suite("HomebrewScanner Tests")
 struct HomebrewScannerTests {
     @Test("HomebrewScanner: Nonexistent brew path returns notInstalled")
@@ -1228,6 +1267,58 @@ struct HomebrewScannerTests {
         let batchRes = try await scanner.uninstallPackages(packages: packages, zapCasks: true)
         #expect(batchRes.count >= 1)
         #expect(batchRes.allSatisfy { $0.exitCode == 0 })
+    }
+
+    @Test("HomebrewScanner: Batched package sizing keeps Cellar/Caskroom sizes and paths per package")
+    func batchedPackageSizing() async throws {
+        let fm = FileManager.default
+        let tmpDir = fm.temporaryDirectory.appendingPathComponent("curatare_brew_size_test_\(UUID().uuidString)", isDirectory: true)
+        let binDir = tmpDir.appendingPathComponent("bin", isDirectory: true)
+        try fm.createDirectory(at: binDir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tmpDir) }
+
+        let formulaDir = tmpDir.appendingPathComponent("Cellar/mockformula/1.0/bin", isDirectory: true)
+        try fm.createDirectory(at: formulaDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x41, count: 1_234).write(to: formulaDir.appendingPathComponent("tool"))
+        let caskDir = tmpDir.appendingPathComponent("Caskroom/mockcask/2.0", isDirectory: true)
+        try fm.createDirectory(at: caskDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x42, count: 321).write(to: caskDir.appendingPathComponent("meta.json"))
+
+        let jsonFile = tmpDir.appendingPathComponent("info.json")
+        try """
+        {
+          "formulae": [
+            { "name": "mockformula", "installed": [{ "version": "1.0", "installed_on_request": false }] },
+            { "name": "ghostformula", "installed": [{ "version": "9.9", "installed_on_request": true }] }
+          ],
+          "casks": [
+            { "token": "mockcask", "name": ["Curatare Missing Mock Cask \(UUID().uuidString)"], "installed": "2.0" }
+          ]
+        }
+        """.write(to: jsonFile, atomically: true, encoding: .utf8)
+        let mockBrewURL = binDir.appendingPathComponent("brew")
+        try """
+        #!/bin/sh
+        if [ "$1" = "info" ]; then cat "\(jsonFile.path)"; fi
+        exit 0
+        """.write(to: mockBrewURL, atomically: true, encoding: .utf8)
+        try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: mockBrewURL.path)
+
+        let packages = await HomebrewScanner(brewPath: mockBrewURL.path).scanPackages()
+        #expect(packages.count == 3)
+
+        let formula = packages.first { $0.id == "mockformula" }
+        #expect(formula?.sizeBytes == 1_234)
+        #expect(formula?.path == tmpDir.appendingPathComponent("Cellar/mockformula/1.0").path)
+        #expect(formula?.isDependency == true)
+
+        let ghost = packages.first { $0.id == "ghostformula" }
+        #expect(ghost?.sizeBytes == 0)
+        #expect(ghost?.path == nil)
+
+        let cask = packages.first { $0.id == "mockcask" }
+        #expect(cask?.sizeBytes == 321)
+        #expect(cask?.path == caskDir.path)
     }
 
     @Test("ExtendedScanners: Language ecosystem package managers & immutable macOS system runtimes")
