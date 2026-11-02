@@ -1643,9 +1643,9 @@ public final class AppModel {
         if panel.runModal() == .OK, let url = panel.url {
             do {
                 try systemCenterProfileText.write(to: url, atomically: true, encoding: .utf8)
-                showToast(LF(.toastItemPurged, url.lastPathComponent))
+                showToast(LF(.sysCenterProfileSaved, url.lastPathComponent))
             } catch {
-                activeErrorMessage = "Profil kaydedilemedi: \(error.localizedDescription)"
+                activeErrorMessage = LF(.sysCenterProfileSaveFailed, error.localizedDescription)
             }
         }
     }

@@ -1264,8 +1264,7 @@ public struct SystemStatusView: View {
                 .textSelection(.enabled)
             Spacer()
             Button {
-                model.copyToClipboard(hash)
-                model.showToast(model.L(.toastTweakApplied))
+                model.copyToClipboard(hash, label: "\(model.L(.buttonCopied)): \(title)")
             } label: {
                 Image(systemName: "doc.on.doc")
             }
