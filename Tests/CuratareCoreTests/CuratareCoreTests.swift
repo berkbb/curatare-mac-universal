@@ -1269,6 +1269,58 @@ struct HomebrewScannerTests {
         #expect(batchRes.allSatisfy { $0.exitCode == 0 })
     }
 
+    @Test("HomebrewScanner: Batched package sizing keeps Cellar/Caskroom sizes and paths per package")
+    func batchedPackageSizing() async throws {
+        let fm = FileManager.default
+        let tmpDir = fm.temporaryDirectory.appendingPathComponent("curatare_brew_size_test_\(UUID().uuidString)", isDirectory: true)
+        let binDir = tmpDir.appendingPathComponent("bin", isDirectory: true)
+        try fm.createDirectory(at: binDir, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tmpDir) }
+
+        let formulaDir = tmpDir.appendingPathComponent("Cellar/mockformula/1.0/bin", isDirectory: true)
+        try fm.createDirectory(at: formulaDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x41, count: 1_234).write(to: formulaDir.appendingPathComponent("tool"))
+        let caskDir = tmpDir.appendingPathComponent("Caskroom/mockcask/2.0", isDirectory: true)
+        try fm.createDirectory(at: caskDir, withIntermediateDirectories: true)
+        try Data(repeating: 0x42, count: 321).write(to: caskDir.appendingPathComponent("meta.json"))
+
+        let jsonFile = tmpDir.appendingPathComponent("info.json")
+        try """
+        {
+          "formulae": [
+            { "name": "mockformula", "installed": [{ "version": "1.0", "installed_on_request": false }] },
+            { "name": "ghostformula", "installed": [{ "version": "9.9", "installed_on_request": true }] }
+          ],
+          "casks": [
+            { "token": "mockcask", "name": ["Curatare Missing Mock Cask \(UUID().uuidString)"], "installed": "2.0" }
+          ]
+        }
+        """.write(to: jsonFile, atomically: true, encoding: .utf8)
+        let mockBrewURL = binDir.appendingPathComponent("brew")
+        try """
+        #!/bin/sh
+        if [ "$1" = "info" ]; then cat "\(jsonFile.path)"; fi
+        exit 0
+        """.write(to: mockBrewURL, atomically: true, encoding: .utf8)
+        try fm.setAttributes([.posixPermissions: 0o755], ofItemAtPath: mockBrewURL.path)
+
+        let packages = await HomebrewScanner(brewPath: mockBrewURL.path).scanPackages()
+        #expect(packages.count == 3)
+
+        let formula = packages.first { $0.id == "mockformula" }
+        #expect(formula?.sizeBytes == 1_234)
+        #expect(formula?.path == tmpDir.appendingPathComponent("Cellar/mockformula/1.0").path)
+        #expect(formula?.isDependency == true)
+
+        let ghost = packages.first { $0.id == "ghostformula" }
+        #expect(ghost?.sizeBytes == 0)
+        #expect(ghost?.path == nil)
+
+        let cask = packages.first { $0.id == "mockcask" }
+        #expect(cask?.sizeBytes == 321)
+        #expect(cask?.path == caskDir.path)
+    }
+
     @Test("ExtendedScanners: Language ecosystem package managers & immutable macOS system runtimes")
     func languageEcosystemScannersAndProtection() throws {
         let fm = FileManager.default
