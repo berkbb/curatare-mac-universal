@@ -197,6 +197,46 @@ struct CuratareAppTests {
         #expect(model.toastMessage == "Tarama iptal edildi.")
     }
 
+    @Test("Uninstaller list loads without walking bundle sizes; the selected bundle is sized on inspection")
+    func uninstallerListSkipsBundleSizes() async throws {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+
+        let root = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
+            .appendingPathComponent("curatare-apps-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let apps = root.appendingPathComponent("Applications", isDirectory: true)
+        let contents = apps.appendingPathComponent("Ornek.app/Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents.appendingPathComponent("Resources"), withIntermediateDirectories: true)
+        _ = (["CFBundleIdentifier": "net.example.ornek", "CFBundleName": "Ornek"] as NSDictionary)
+            .write(to: contents.appendingPathComponent("Info.plist"), atomically: true)
+        try Data(count: 64 * 1024).write(to: contents.appendingPathComponent("Resources/payload.bin"))
+
+        let uninstaller = AppUninstaller(homeDirectoryURL: root, applicationDirectories: [apps], pluginDirectories: [], widgetDirectories: [])
+        let model = AppModel(
+            settings: AppSettings(defaults: defaults),
+            log: AppLog(directory: nil),
+            homeDirectoryURL: root,
+            appUninstaller: uninstaller,
+            startBackgroundWatchers: false
+        )
+
+        await model.scanUninstallerBundles()
+
+        #expect(model.isBusy == false)
+        #expect(model.isBusyInline == false)
+        #expect(model.hasScannedUninstaller)
+        let bundle = try #require(model.installedBundles.first { $0.bundleID == "net.example.ornek" })
+        #expect(bundle.bundleSizeBytes == 0)
+
+        // Liste boyut hesaplamaz; seçilen paketin boyutu inceleme sırasında hesaplanır.
+        for _ in 0..<200 where model.isInspectingBundleLoading {
+            try? await Task.sleep(for: .milliseconds(10))
+        }
+        let bundleEntry = try #require(model.associatedFiles.first { $0.kind == .appBundle })
+        #expect(bundleEntry.sizeBytes >= 64 * 1024)
+    }
+
     @Test("All studio views render off-screen without crashing across tr, en, and ro")
     func renderAllViews() {
         let (defaults, cleanup) = TestDefaults.make()

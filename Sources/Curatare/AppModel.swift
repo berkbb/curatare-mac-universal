@@ -986,7 +986,13 @@ public final class AppModel {
                     userWhitelistPatterns: whitelist,
                     allowUninstallingProtectedApps: allowProtected
                 )
-                return uninstaller.scanInstalledBundles(protectionRules: protection, isCancelled: { token.isCancelled })
+                // Liste paket boyutunu göstermez; boyut, seçilen paket incelenirken `discoverAssociatedFiles`
+                // içinde hesaplanır. Tüm paketleri baştan gezmek (Xcode ~10 GB) listeyi ~30 sn geciktiriyordu.
+                return uninstaller.scanInstalledBundles(
+                    protectionRules: protection,
+                    computeBundleSizes: false,
+                    isCancelled: { token.isCancelled }
+                )
             },
             onComplete: { bundles in
                 self.installedBundles = bundles
