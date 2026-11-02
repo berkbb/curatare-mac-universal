@@ -155,6 +155,10 @@ public struct DiskAnalyzerView: View {
 public struct SystemStatusView: View {
     @Bindable public var model: AppModel
     @State private var selectedTweakCategory: SystemTweakCategory? = nil
+    @Environment(\.controlActiveState) private var controlActiveState
+
+    /// `status-go` bir turda ~3 sn sürer (~1,9 sn CPU); daha sık yoklama panoyu açık tutan kullanıcıda bir çekirdeği sürekli meşgul eder.
+    private static let liveMetricsInterval: Duration = .seconds(15)
 
     public init(model: AppModel) {
         self.model = model
@@ -177,8 +181,8 @@ public struct SystemStatusView: View {
         }
         .padding(16)
         .task {
-            await model.refreshSystemStatus()
-            await model.loadSystemCenterInfo()
+            // Görünümden bağımsız görev: yükleme sürerken sekmeden çıkılırsa yarıda kesilmez.
+            Task { await model.loadSystemStatusIfNeeded() }
         }
     }
 
@@ -197,16 +201,20 @@ public struct SystemStatusView: View {
                 }
                 Spacer(minLength: 16)
 
+                if model.isLoadingSystemStatus {
+                    ProgressView()
+                        .controlSize(.small)
+                        .padding(.top, 6)
+                }
+
                 Button {
-                    Task {
-                        await model.refreshSystemStatus()
-                        await model.loadSystemCenterInfo(force: true)
-                    }
+                    Task { await model.refreshSystemStatus() }
                 } label: {
                     Label(model.L(.buttonRefresh), systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.glassProminent)
                 .fixedSize()
+                .disabled(model.isLoadingSystemStatus)
             }
 
             Picker("", selection: $model.systemStatusSubTab) {
@@ -768,6 +776,15 @@ public struct SystemStatusView: View {
             .padding(.vertical, 2)
         }
         .scrollContentBackground(.hidden)
+        .task(id: controlActiveState) {
+            // Canlı ölçümler yalnızca pano görünür ve uygulama etkinken tazelenir; sekmeden çıkınca döngü iptal olur.
+            guard controlActiveState != .inactive else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.liveMetricsInterval)
+                guard !Task.isCancelled, !model.isLoadingSystemStatus else { continue }
+                await model.refreshLiveMetrics()
+            }
+        }
     }
 
     private var memoryMetricCard: some View {

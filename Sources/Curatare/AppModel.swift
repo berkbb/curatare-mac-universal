@@ -417,6 +417,8 @@ public final class AppModel {
     public var selectedProfileFormat: SystemProfilerFormat = .text
     public var isGeneratingProfile: Bool = false
     public var hasLoadedSystemCenter: Bool = false
+    public var hasLoadedSystemStatus: Bool = false
+    public var isLoadingSystemStatus: Bool = false
     public var systemTweaks: [SystemTweakItem] = []
     public let tweakManager: SystemTweakManager
     public var checksumResult: FileChecksumResult?
@@ -482,7 +484,9 @@ public final class AppModel {
             configureSmartDeleteWatcher()
             Task {
                 await refreshEngine()
-                await refreshSystemStatus()
+                // Açılışta yalnızca hafif canlı ölçümler (alt başlıktaki sağlık puanı); Sistem Merkezi ve güvenlik
+                // durumu Sistem Durumu sekmesi ilk açıldığında yüklenir.
+                await refreshLiveMetrics()
                 if !resolvedSettings.updateConsentAsked {
                     consentPending = true
                     presentPendingConsentIfIdle()
@@ -1647,15 +1651,35 @@ public final class AppModel {
         NSWorkspace.shared.activateFileViewerSelecting([swapURL])
     }
 
-    public func refreshSystemStatus() async {
+    /// Yalnızca `status-go` canlı ölçümleri (CPU, bellek, disk, sağlık puanı). Açılışta pencere alt başlığı ve
+    /// menü çubuğu paneli için, Canlı Durum panosu açıkken de periyodik olarak çağrılır.
+    public func refreshLiveMetrics() async {
         let bridge = MoleBridge(engine: engineInfo)
         if let status = try? await bridge.fetchSystemStatus() {
             systemStatus = status
         }
+    }
+
+    /// Sistem Durumu sekmesinin tüm verisi: canlı ölçümler, güvenlik durumu, ince ayarlar ve Sistem Merkezi.
+    /// Aynı anda ikinci bir çağrı gelirse süren yenilemeye bırakılır (çift `system_profiler` turu olmaz).
+    public func refreshSystemStatus() async {
+        guard !isLoadingSystemStatus else { return }
+        isLoadingSystemStatus = true
+        defer {
+            isLoadingSystemStatus = false
+            hasLoadedSystemStatus = true
+        }
+        await refreshLiveMetrics()
         let sec = await MoleBridge.fetchSecurityStatus()
         self.securityStatus = sec
         refreshSystemTweaks()
         await loadSystemCenterInfo(force: true)
+    }
+
+    /// Sekme ilk açıldığında bir kez yükler; sonraki ziyaretlerde önbellekteki veri gösterilir (Yenile ile tazelenir).
+    public func loadSystemStatusIfNeeded() async {
+        guard !hasLoadedSystemStatus else { return }
+        await refreshSystemStatus()
     }
 
     public func purgeMemory() async {

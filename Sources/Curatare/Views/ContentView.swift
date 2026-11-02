@@ -450,7 +450,6 @@ public struct WelcomeView: View {
                     isProminent: false
                 ) {
                     model.selectedSection = .systemStatus
-                    Task { await model.refreshSystemStatus() }
                 }
             }
         }
