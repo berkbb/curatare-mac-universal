@@ -429,6 +429,9 @@ public final class AppModel {
     // Durum & Geri Bildirim
     public var isBusy: Bool = false
     public var busyMessage: String?
+    /// `true` iken süren işlem salt okunur bir taramadır: tam ekran katman yerine sekme içi şerit gösterilir.
+    /// Temizlik ve silme işlemleri `false` kalır ve `ProgressOverlay` ile gösterilir.
+    public var isBusyInline: Bool = false
     public var toastMessage: String?
     public var activeErrorMessage: String?
     public var pendingTrashConfirmation: PendingTrashConfirmation?
@@ -514,6 +517,7 @@ public final class AppModel {
 
     private func performCancellableOperation<T: Sendable>(
         message: String? = nil,
+        inline: Bool = false,
         operation: @escaping @Sendable (ScanCancellationToken) async -> T,
         onComplete: (T) async -> Void
     ) async {
@@ -525,6 +529,7 @@ public final class AppModel {
         activeOperationID = opID
         activeCancelToken = token
         isBusy = true
+        isBusyInline = inline
         busyMessage = message ?? L(.statusScanning)
 
         let worker = Task.detached(priority: .userInitiated) {
@@ -538,6 +543,7 @@ public final class AppModel {
         defer {
             if activeOperationID == opID {
                 isBusy = false
+                isBusyInline = false
                 busyMessage = nil
                 activeCancelToken = nil
                 activeCancelHandler = nil
@@ -882,6 +888,7 @@ public final class AppModel {
         let scanner = libraryScanner
         let whitelist = settings.customWhitelistPaths
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 scanner.scanAll(customWhitelist: whitelist, isCancelled: { token.isCancelled })
             },
@@ -973,6 +980,7 @@ public final class AppModel {
         let whitelist = settings.customWhitelistPaths
         let allowProtected = settings.allowUninstallingProtectedApps
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 let protection = ProtectionRules(
                     userWhitelistPatterns: whitelist,
@@ -1123,6 +1131,7 @@ public final class AppModel {
         let scanners = extendedScanners
         let currentWorkspace = Bundle.main.bundleURL.deletingLastPathComponent().path
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 async let repos = scanners.scanGitHubBuildArtifacts(excludeRepoPath: currentWorkspace, isCancelled: { token.isCancelled })
                 async let ai = scanners.scanAIFootprint(isCancelled: { token.isCancelled })
@@ -1145,6 +1154,7 @@ public final class AppModel {
     public func scanLanguageEcosystems() async {
         let scanners = extendedScanners
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 scanners.scanLanguageEcosystemItems(isCancelled: { token.isCancelled })
             },
@@ -1276,6 +1286,7 @@ public final class AppModel {
         }
 
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 async let pkgsTask = scanner.scanPackages(isCancelled: { token.isCancelled })
                 async let statusTask = scanner.scan(isCancelled: { token.isCancelled })
@@ -1485,6 +1496,7 @@ public final class AppModel {
     public func scanBrowserAndCaches() async {
         let scanners = extendedScanners
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 let caches = scanners.scanHeavyCachesAndInstallers(isCancelled: { token.isCancelled })
                 guard !token.isCancelled else { return ([HeavyCacheItem](), [TimeMachineSnapshot]()) }
@@ -1569,6 +1581,7 @@ public final class AppModel {
         currentAnalyzedURL = target
         let bridge = MoleBridge(engine: engineInfo)
         await performCancellableOperation(
+            inline: true,
             operation: { token in
                 await bridge.analyzeDirectory(at: target, isCancelled: { token.isCancelled })
             },

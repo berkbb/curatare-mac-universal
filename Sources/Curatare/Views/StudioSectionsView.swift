@@ -564,7 +564,10 @@ public struct UninstallerView: View {
             VStack(spacing: 8) {
                 uninstallerNavigationHeader
 
-                if model.filteredBundles.isEmpty {
+                if model.filteredBundles.isEmpty && !model.hasScannedUninstaller && model.isBusy {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if model.filteredBundles.isEmpty {
                     ContentUnavailableView(
                         model.L(.uninstallerSelectAppHint),
                         systemImage: "magnifyingglass"
@@ -677,10 +680,8 @@ public struct UninstallerView: View {
         .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
             handleDrop(providers: providers)
         }
-        .task {
-            if !model.hasScannedUninstaller && !model.isBusy {
-                await model.scanUninstallerBundles()
-            }
+        .loadOnFirstVisit(isLoaded: model.hasScannedUninstaller, isBusy: model.isBusy) {
+            await model.scanUninstallerBundles()
         }
     }
 
@@ -1348,6 +1349,9 @@ public struct DevAICleanupView: View {
 
             if model.devAISubTab == .languageEcosystems {
                 LanguageEcosystemsMasterDetailView(model: model)
+            } else if !model.hasScannedDevAndAI && model.isBusy {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if model.repoArtifacts.isEmpty && model.aiFootprintItems.isEmpty && model.cleanableEcosystemItems.isEmpty {
                 ContentUnavailableView(
                     model.L(.devAINoItems),
@@ -1582,10 +1586,8 @@ public struct DevAICleanupView: View {
             }
         }
         .padding(16)
-        .task {
-            if !model.hasScannedDevAndAI && !model.isBusy {
-                await model.scanDevAndAI()
-            }
+        .loadOnFirstVisit(isLoaded: model.hasScannedDevAndAI, isBusy: model.isBusy) {
+            await model.scanDevAndAI()
         }
     }
 }

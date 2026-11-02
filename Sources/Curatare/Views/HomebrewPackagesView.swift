@@ -15,18 +15,21 @@ public struct HomebrewStudioView: View {
         VStack(alignment: .leading, spacing: 12) {
             headerBar
 
-            if !model.homebrewStatus.isInstalled {
+            // `homebrewStatus` ilk tarama bitene kadar `.notInstalled` varsayılanındadır; o sürede
+            // "Homebrew kurulu değil" kartı yerine yükleme göstergesi gösterilir.
+            if model.hasScannedHomebrew && !model.homebrewStatus.isInstalled {
                 notInstalledCard
+            } else if !model.hasScannedHomebrew && model.isBusy {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 maintenanceAndStatsHeader
                 HomebrewPackagesMasterDetailView(model: model)
             }
         }
         .padding(16)
-        .task {
-            if !model.hasScannedHomebrew && !model.isBusy {
-                await model.scanHomebrewStudio()
-            }
+        .loadOnFirstVisit(isLoaded: model.hasScannedHomebrew, isBusy: model.isBusy) {
+            await model.scanHomebrewStudio()
         }
     }
 

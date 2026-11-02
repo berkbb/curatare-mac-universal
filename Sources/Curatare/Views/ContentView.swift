@@ -32,11 +32,16 @@ public struct ContentView: View {
                     if let err = model.activeErrorMessage {
                         errorBar(err)
                     }
+                    if model.isBusy && model.isBusyInline {
+                        InlineLoadingBar(message: model.busyMessage ?? model.L(.statusScanning))
+                    }
                     detailContent
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
 
-                if model.isBusy {
+                // Tam ekran katman yalnızca temizlik/silme gibi kullanıcının başlattığı işlemler içindir;
+                // salt okunur taramalar yukarıdaki sekme içi şeritle gösterilir.
+                if model.isBusy && !model.isBusyInline {
                     ProgressOverlay(model: model)
                         .transition(.opacity.combined(with: .scale(scale: 0.96)))
                 }
@@ -695,6 +700,62 @@ struct ProgressOverlay: View {
             .glassEffect(.regular, in: .rect(cornerRadius: 26))
             .shadow(color: .black.opacity(0.22), radius: 24, y: 12)
         }
+    }
+}
+
+/// Salt okunur tarama sürerken içerik alanının üstündeki ince şerit: içeriği karartmaz, gezinmeyi engellemez.
+/// Kısa taramalarda (ör. ~0,1 sn süren uygulama listesi) yanıp sönmesin diye kısa bir gecikmeyle belirir.
+struct InlineLoadingBar: View {
+    let message: String
+    @State private var isVisible = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            if isVisible {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text(message)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(Color.accentColor.opacity(0.08))
+                .transition(.opacity)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .task {
+            try? await Task.sleep(for: .milliseconds(350))
+            withAnimation(.smooth(duration: 0.2)) { isVisible = true }
+        }
+    }
+}
+
+/// Sekme ilk açıldığında verisini bir kez yükler.
+/// - Yükleme görünümden bağımsız bir görevde başlar: tarama sürerken başka sekmeye geçmek onu iptal etmez.
+/// - Başka bir işlem sürüyorsa, o bitince yükler.
+/// - Kullanıcı taramayı iptal ederse aynı ziyarette kendiliğinden yeniden başlatmaz.
+struct LoadOnFirstVisit: ViewModifier {
+    let isLoaded: Bool
+    let isBusy: Bool
+    let load: @MainActor @Sendable () async -> Void
+    @State private var didRequest = false
+
+    func body(content: Content) -> some View {
+        content.task(id: isBusy) {
+            guard !didRequest, !isLoaded, !isBusy else { return }
+            didRequest = true
+            Task { await load() }
+        }
+    }
+}
+
+extension View {
+    func loadOnFirstVisit(isLoaded: Bool, isBusy: Bool, load: @escaping @MainActor @Sendable () async -> Void) -> some View {
+        modifier(LoadOnFirstVisit(isLoaded: isLoaded, isBusy: isBusy, load: load))
     }
 }
 

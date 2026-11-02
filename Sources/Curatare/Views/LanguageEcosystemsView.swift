@@ -66,10 +66,8 @@ public struct LanguageEcosystemsMasterDetailView: View {
                 Text(model.LF(.ecosystemsConfirmMoveMessage, 1, DiskSpace.formatBytes(item.sizeBytes)) + " (\(item.toolName))")
             }
         }
-        .task {
-            if !model.hasScannedLanguageEcosystems && !model.isBusy {
-                await model.scanLanguageEcosystems()
-            }
+        .loadOnFirstVisit(isLoaded: model.hasScannedLanguageEcosystems, isBusy: model.isBusy) {
+            await model.scanLanguageEcosystems()
         }
     }
 

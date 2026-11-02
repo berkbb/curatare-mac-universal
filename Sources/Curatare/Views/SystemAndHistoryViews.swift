@@ -121,6 +121,9 @@ public struct DiskAnalyzerView: View {
                     }
                 }
                 .listStyle(.inset)
+            } else if model.isBusy {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ContentUnavailableView(
                     model.L(.diskEmptyFolder),
@@ -131,10 +134,8 @@ public struct DiskAnalyzerView: View {
             }
         }
         .padding(16)
-        .task {
-            if model.diskAnalysis == nil {
-                await model.analyzeFolder()
-            }
+        .loadOnFirstVisit(isLoaded: model.diskAnalysis != nil, isBusy: model.isBusy) {
+            await model.analyzeFolder()
         }
     }
 
