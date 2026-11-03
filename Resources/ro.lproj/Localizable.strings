@@ -12,7 +12,7 @@
 "safetyBannerDatedTrash" = "Fără Ștergere Permanentă (rm -rf Interzis) — Toate Curățările Mută Elementele în ~/.Trash/Curatare-DATĂ";
 "safetyBannerProtected" = "Componentele de sistem Apple, cadrele partajate (Sparkle/Firebase/Google/Microsoft), cache-urile de dezvoltare și aplicațiile active sunt protejate automat.";
 
-"searchPrompt" = "Caută…";
+"searchPrompt" = "Caută";
 "buttonScan" = "Scanează Acum";
 "buttonRefresh" = "Reîmprospătează";
 "buttonMoveToDatedTrash" = "Mută în Coșul Datat";
@@ -28,8 +28,8 @@
 "buttonCancel" = "Renunță";
 "buttonOK" = "OK";
 "buttonClose" = "Închide";
-"buttonChoose" = "Alege…";
-"buttonOpenSettings" = "Configurări…";
+"buttonChoose" = "Alege";
+"buttonOpenSettings" = "Configurări";
 
 "sidebarSectionStudio" = "Studio de Curățare";
 "sidebarSectionSystem" = "Analiză și Istoric";
@@ -45,8 +45,8 @@
 
 "menuAbout" = "Despre Curatare";
 "menuScanNow" = "Pornește Scanarea Bibliotecii";
-"menuUpdateMole" = "Actualizează Motorul Mole…";
-"menuCheckAppUpdates" = "Verifică Actualizările Curatare…";
+"menuUpdateMole" = "Actualizează Motorul Mole";
+"menuCheckAppUpdates" = "Verifică Actualizările Curatare";
 "menuShowLog" = "Arată Fereastra Jurnal";
 "menuWebsite" = "Depozit GitHub Curatare";
 "menuEngineManual" = "Documentație Mole";
@@ -91,7 +91,7 @@
 "auditNoFindingsTitle" = "Totul Este Curat";
 "auditNoFindingsMessage" = "Apăsați pe «Scanează Acum» pentru a audita dosarele din Bibliotecă sau schimbați filtrul activ.";
 "auditSudoSectionTitle" = "Comandă Terminal Sigură pentru Grupa E (/Library - /Bibliotecă și pkgutil)";
-"auditSudoSectionHint" = "Mută reziduurile din /Library (/Bibliotecă) în ~/.Trash/Curatare-.../system și afișează TAMAM la final:";
+"auditSudoSectionHint" = "Mută reziduurile din /Library (/Bibliotecă) în ~/.Trash/Curatare-DATĂ/system și afișează TAMAM la final:";
 "auditRequiresSudoBadge" = "prin comandă sudo";
 
 "uninstallerTitle" = "Dezinstalator de Aplicații, Widgeturi și Pluginuri";
@@ -105,7 +105,7 @@
 "uninstallerWrapperBadge" = "Înveliș iOS/iPadOS";
 "uninstallerAssociatedTitle" = "Pachetul și Fișierele Asociate din Bibliotecă";
 "uninstallerSelectAppHint" = "Selectați o aplicație, un widget sau un plugin din lista din stânga pentru a vedea fișierele asociate.";
-"uninstallerScanningAssociated" = "Se scanează fișierele asociate…";
+"uninstallerScanningAssociated" = "Se scanează fișierele asociate";
 "smartDeleteBannerTitle" = "SmartDelete: %@ a fost mutat în Coș";
 "smartDeleteBannerDetail" = "S-au găsit %lld fișiere rămase în Bibliotecă (%@). Le mutați într-un lot din Coșul datat?";
 "smartDeleteCleanButton" = "Mută Reziduurile în Coșul Datat";
@@ -222,7 +222,7 @@
 "ecosystemsMoveSelectedButton" = "Mută Selectatele în Coș (%d)";
 "ecosystemsMoveSingleButton" = "Mută Acest Cache în Coș Datat";
 "ecosystemsProtectedNotice" = "Acest runtime aparține sistemului de operare macOS. Constituția Curatare interzice cu strictețe modificarea sau scrierea peste binarele și framework-urile de sistem.";
-"ecosystemsCleanableNotice" = "Acest cache este mutat în siguranță în ~/.Trash/Curatare-... și poate fi restaurat cu un clic. Când proiectele sunt recompilate, vor fi descărcate doar dependențele necesare.";
+"ecosystemsCleanableNotice" = "Acest cache este mutat în siguranță în ~/.Trash/Curatare-DATĂ și poate fi restaurat cu un clic. Când proiectele sunt recompilate, vor fi descărcate doar dependențele necesare.";
 "ecosystemsContentsTitle" = "Subdirectoare și Fișiere Cache";
 "ecosystemsConfirmMoveTitle" = "Mută Cache-urile Ecosistemului în Coș Datat";
 "ecosystemsConfirmMoveMessage" = "Sigur doriți să mutați cele %d cache-uri de limbaj/manager de versiuni selectate (~%@) în Coșul Datat?";
@@ -261,7 +261,7 @@
 
 "diskTitle" = "Analizor Interactiv de Disc (Mole analyze-go)";
 "diskSubtitle" = "Inspectați distribuția spațiului pe disc, explorați subdirectoarele sau afișați fișierele în Finder.";
-"diskChooseFolder" = "Alege Dosar…";
+"diskChooseFolder" = "Alege Dosar";
 "diskNavigateUp" = "Dosar Părinte";
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "Niciun element de analizat.";
@@ -351,7 +351,7 @@
 "sysCenterProfileKind" = "Tip profil";
 "sysCenterFileFormat" = "Format fișier";
 "sysCenterButtonShowProfile" = "Afișează";
-"sysCenterButtonSaveProfile" = "Salvează...";
+"sysCenterButtonSaveProfile" = "Salvează";
 "sysCenterCoresBreakdown" = "%1$lld (%2$lld de performanță și %3$lld de eficiență)";
 "sysCenterGPUBuiltIn" = "Integrat (%@)";
 "sysCenterBytesValue" = "%1$@ (%2$@ octeți)";
@@ -366,7 +366,7 @@
 "sysCenterProfileKindSoftware" = "Software și Aplicații";
 "sysCenterProfileFormatText" = "Text Simplu (.txt)";
 "sysCenterProfileFormatJSON" = "JSON (.json)";
-"sysCenterProfileLoading" = "Se încarcă profilul sistemului…";
+"sysCenterProfileLoading" = "Se încarcă profilul sistemului";
 "sysCenterProfileEmptyTitle" = "Profilul Sistemului Este Pregătit";
 "sysCenterProfileEmptyMessage" = "Folosiți opțiunile de mai sus pentru a vizualiza sau salva profilul hardware și software.";
 "sysCenterProfileFailed" = "Profilul sistemului nu a putut fi citit.";
@@ -409,8 +409,8 @@
 "checksumTitle" = "Calculator Sumă de Control (Hash)";
 "checksumSubtitle" = "Trageți și plasați orice fișier pentru a calcula și verifica instantaneu sumele de control MD5, SHA-1 și SHA-256.";
 "checksumDropPrompt" = "Trageți un fișier aici sau alegeți un fișier pentru calcul";
-"checksumChooseFile" = "Alege Fișier…";
-"checksumComparePlaceholder" = "Lipiți hash-ul așteptat pentru verificare…";
+"checksumChooseFile" = "Alege Fișier";
+"checksumComparePlaceholder" = "Lipiți hash-ul așteptat pentru verificare";
 "checksumMatch" = "✓ Suma de control se potrivește! (%@)";
 "checksumMismatch" = "✕ Suma de control nu se potrivește";
 
@@ -534,14 +534,14 @@
 "tweakPowerButtonSleepTitle" = "Butonul de pornire pune Mac-ul în repaus";
 "tweakPowerButtonSleepDesc" = "Stabilește dacă o apăsare scurtă pe butonul de pornire pune Mac-ul în repaus; cu Dezactivat, apăsarea scurtă nu o face. Cu Implicit macOS selectat, cheia este eliminată și macOS revine la comportamentul său propriu.";
 "tweakScreenshotLocationDefault" = "Birou (implicit macOS)";
-"tweakScreenshotLocationChoose" = "Alege folderul…";
+"tweakScreenshotLocationChoose" = "Alege folderul";
 "tweakScreenshotLocationReset" = "Revino la implicit";
 "tweakSafariOpenButton" = "Deschide Safari";
 "trashStatItemCount" = "Număr de elemente";
 "trashStatTotalSize" = "Dimensiune totală";
 "trashStatDate" = "Dată";
 "homebrewCaveats" = "Avertismente";
-"trashFilterItemsPlaceholder" = "Filtrează fișierele…";
+"trashFilterItemsPlaceholder" = "Filtrează fișierele";
 "trashBatchCountFiltered" = "Loturi: %1$lld / %2$lld";
 "homebrewPackageCount" = "Pachete: %lld";
 "menuBarMetricCPU" = "CPU";
@@ -553,6 +553,7 @@
 "logProcessLabel" = "%1$@ (%2$lld)";
 "logPIDLabel" = "PID %lld";
 "bundleVersionLabel" = "v%@";
+"engineVersionUnknown" = "necunoscută";
 "trashTitleEcosystem" = "Curățare ecosistem: %@";
 "trashTitleLibraryAudit" = "Audit bibliotecă (grupurile A–E)";
 "trashTitleDevAI" = "Curățare dezvoltare și IA";
@@ -767,7 +768,7 @@
 "settingsFullDiskAccessGranted" = "Acces complet la disc activat";
 "settingsFullDiskAccessMissing" = "Acces complet la disc necesar";
 "settingsFullDiskAccessDesc" = "Accesul complet la disc este recomandat în Configurări de sistem macOS pentru a scana și șterge complet resturile de aplicații din toate containerele protejate.";
-"settingsOpenSystemSettings" = "Deschide Configurări de sistem…";
+"settingsOpenSystemSettings" = "Deschide Configurări de sistem";
 "uninstallerSystemImmutableNotice" = "Aplicație de sistem macOS (Protejată de SIP · Doar citire)";
 "uninstallerSystemImmutableDesc" = "Această aplicație este protejată de Volumul de Sistem Semnat (SSV) și SIP din macOS. Nu poate fi dezinstalată deoarece se află pe un volum doar-citire.";
 "uninstallerProtectedUnlockNotice" = "Aplicație protejată (Poate fi deblocată în Setări → Curățare și protecție)";
@@ -780,7 +781,7 @@
 "settingsTabSmartDelete" = "SmartDelete";
 "settingsTabUpdates" = "Actualizări";
 "settingsConfirmation" = "Cere confirmare înainte de mutarea în Coșul Datat";
-"settingsConfirmationNote" = "Afișează un dialog de confirmare înainte de a muta fișierele selectate în ~/.Trash/Curatare-....";
+"settingsConfirmationNote" = "Afișează un dialog de confirmare înainte de a muta fișierele selectate în ~/.Trash/Curatare-.";
 "settingsPlaySoundEffects" = "Redă efecte sonore";
 "settingsPlaySoundEffectsDesc" = "Redă efecte audio native macOS la ștergere și restaurare.";
 "uninstallerMountedVolumeNotice" = "Această aplicație se află pe o imagine de disc montată (DMG).";
@@ -797,11 +798,11 @@
 "settingsProtectedRuleAIAndVMs" = "Virtualizare și stări AI active: VMware/Parallels, Claude vm_bundles, ~/.codex, ~/.gemini, .antigravity-ide";
 "settingsWhitelistTitle" = "Listă Albă Personalizată";
 "settingsWhitelistNote" = "Căile sau identificatorii din această listă nu sunt niciodată marcați în timpul scanărilor.";
-"settingsWhitelistAdd" = "Adaugă Dosar…";
+"settingsWhitelistAdd" = "Adaugă Dosar";
 "settingsWhitelistRemove" = "Elimină Selecția";
 "settingsWhitelistEmpty" = "Nicio cale personalizată adăugată încă.";
 "settingsShortcutsDesc" = "Faceți clic pe orice câmp de scurtătură și apăsați noua combinație de taste. Conflictele sunt prevenite automat.";
-"shortcutPressKeys" = "Apăsați tastele…";
+"shortcutPressKeys" = "Apăsați tastele";
 "shortcutReset" = "Resetează la implicit";
 "shortcutResetAll" = "Resetează Toate Scurtăturile la Valorile Implicite";
 "shortcutConflict" = "Această scurtătură este deja folosită de «%@».";
@@ -832,8 +833,8 @@
 "updateSource" = "Se descarcă de pe github.com/tw93/mole și se verifică prin SHA-256.";
 "updateCheck" = "Verifică actualizările";
 "updateInstall" = "Actualizează Mole de pe GitHub";
-"updateChecking" = "Se verifică actualizările Mole…";
-"updateInstalling" = "Se actualizează motorul Mole…";
+"updateChecking" = "Se verifică actualizările Mole";
+"updateInstalling" = "Se actualizează motorul Mole";
 "updateAvailable" = "Versiune nouă Mole disponibilă: %@";
 "updateUpToDate" = "Mole este la zi (%@).";
 "updateInstalled" = "Mole a fost actualizat la %@";
@@ -865,14 +866,14 @@
 "updateMoleTitle" = "Utilitare Mole CLI & Go";
 "updateAppSubtitle" = "Curățător de Sistem Universal și Auditor Reziduuri Bibliotecă";
 "updateMoleSubtitle" = "Motor Încorporat de Mentenanță și Analiză Disc";
-"updateCheckingApp" = "Se verifică actualizările Curatare…";
+"updateCheckingApp" = "Se verifică actualizările Curatare";
 "settingsReset" = "Resetează toate setările";
 "settingsResetConfirm" = "Resetezi toate setările la valorile implicite?";
 
 "logTitle" = "Jurnal Curatare";
 "logAllMessages" = "Toate Mesajele";
 "logProblems" = "Avertismente și Erori";
-"logSearchPrompt" = "Caută în jurnal…";
+"logSearchPrompt" = "Caută în jurnal";
 "logClear" = "Golește Jurnalul";
 "logOpenInConsole" = "Arată în Finder";
 "logEmptyTitle" = "Nicio Înregistrare în Jurnal";
@@ -926,9 +927,9 @@
 "welcomePillarStatusTitle" = "5. Stare Sistem (Status)";
 "welcomePillarStatusDesc" = "CPU, memorie, disc și scor de sănătate în timp real (100/100)";
 
-"statusScanning" = "Se scanează…";
-"statusMovingToTrash" = "Se mută în Coșul datat…";
-"statusRestoring" = "Se restaurează lotul din Coșul datat…";
+"statusScanning" = "Se scanează";
+"statusMovingToTrash" = "Se mută în Coșul datat";
+"statusRestoring" = "Se restaurează lotul din Coșul datat";
 "toastMovedToDatedTrash" = "%lld elemente (%@) au fost mutate în ~/.Trash/%@.";
 "toastRestoredBatch" = "%lld elemente au fost restaurate în locațiile originale.";
 "toastOptimizationDone" = "%lld sarcini de întreținere finalizate.";

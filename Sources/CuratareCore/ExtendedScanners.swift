@@ -877,7 +877,7 @@ public struct ExtendedScanners: Sendable {
                 guard fm.fileExists(atPath: entry.path, isDirectory: &isDir), isDir.boolValue else { continue }
                 let size = DiskSpace.size(of: entry, isCancelled: isCancelled)
                 if size > 0 {
-                    let shortName = entry.lastPathComponent.count > 12 ? "\(entry.lastPathComponent.prefix(12))…" : entry.lastPathComponent
+                    let shortName = entry.lastPathComponent
                     items.append(HeavyCacheItem(
                         category: .iosDeviceBackup,
                         title: strings.format(.scanIOSBackup, language: language, shortName),

@@ -629,7 +629,7 @@ private struct AdvancedSettingsView: View {
     private var updateStatus: some View {
         switch model.engineUpdateState {
         case .idle:
-            Label(model.LF(.updateUpToDate, model.engineInfo?.version ?? "1.82.0"), systemImage: "checkmark.circle.fill")
+            Label(model.LF(.updateUpToDate, model.engineVersionText), systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
         case .checking:
             Label { Text(model.L(.updateChecking)) } icon: { ProgressView().controlSize(.small) }
@@ -988,7 +988,7 @@ public struct AboutView: View {
 
             VStack(spacing: 8) {
                 Label(
-                    model.LF(.aboutPoweredBy, model.engineInfo?.version ?? "1.67.0"),
+                    model.LF(.aboutPoweredBy, model.engineVersionText),
                     systemImage: "cpu"
                 )
                 .font(.callout.weight(.medium))

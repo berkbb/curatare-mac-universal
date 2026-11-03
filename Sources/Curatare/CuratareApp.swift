@@ -138,7 +138,7 @@ private struct MenuBarQuickPanel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(model.L(.appName))
                         .font(.headline)
-                    Text("\(model.L(.statusHealthScore)): \(model.systemStatus.healthScore)/100 · Mole \(model.engineInfo?.version ?? "1.67.0")")
+                    Text("\(model.L(.statusHealthScore)): \(model.systemStatus.healthScore)/100 · Mole \(model.engineVersionText)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -209,6 +209,7 @@ public final class AppModel {
             list = list.filter {
                 $0.id.lowercased().contains(q) ||
                 $0.title.lowercased().contains(q) ||
+                displayTitle(for: $0).lowercased().contains(q) ||
                 $0.batchDirectoryPath.lowercased().contains(q) ||
                 $0.items.contains(where: { $0.trashedRelativePath.lowercased().contains(q) || $0.originalPath.lowercased().contains(q) })
             }
@@ -511,6 +512,28 @@ public final class AppModel {
     }
 
     public func L(_ key: LKey) -> String { settings.L(key) }
+
+    /// Mole motor sürümü; motor bulunamazsa koda gömülü bir sürüm yerine çevrilmiş "bilinmiyor" metni gösterilir.
+    public var engineVersionText: String { engineInfo?.version ?? L(.engineVersionUnknown) }
+
+    /// Çöp turu başlığı kullanıcının dilinde. Bu sürümden önce kaydedilen turların başlıkları İngilizce saklandı;
+    /// bilinen eski başlıklar çeviri anahtarlarına eşlenir. Yeni turlar zaten çevrilmiş başlıkla kaydedilir.
+    public func displayTitle(for batch: TrashBatchManifest) -> String {
+        let legacy: [String: LKey] = [
+            "Library Audit (Groups A–E)": .trashTitleLibraryAudit,
+            "Developer & AI Cleanup": .trashTitleDevAI,
+            "Browser & Heavy Caches Cleanup": .trashTitleBrowserCaches,
+            "Saved Application State Prune": .trashTitleSavedState,
+            "Diagnostic Reports Prune": .trashTitleDiagnosticReports,
+            "Apple Mail Envelope Index Reset": .trashTitleMailEnvelopeIndex
+        ]
+        if let key = legacy[batch.title] { return L(key) }
+        for (prefix, key) in [("Ecosystem Cleanup: ", LKey.trashTitleEcosystem), ("Uninstall ", LKey.trashTitleUninstall)]
+        where batch.title.hasPrefix(prefix) {
+            return LF(key, String(batch.title.dropFirst(prefix.count)))
+        }
+        return batch.title
+    }
     public func LF(_ key: LKey, _ args: CVarArg...) -> String {
         let format = L(key)
         return String(format: format, locale: Locale(identifier: settings.resolvedLanguageCode), arguments: args)

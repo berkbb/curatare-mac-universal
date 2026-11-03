@@ -1751,7 +1751,7 @@ public struct TrashHistoryView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(batch.title)
+                    Text(model.displayTitle(for: batch))
                         .font(.body.weight(.medium))
                     if batch.isRestored {
                         Text(model.L(.trashBatchRestoredBadge))
@@ -1891,7 +1891,7 @@ public struct TrashHistoryView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
-                        Text(batch.title)
+                        Text(model.displayTitle(for: batch))
                             .font(.title3.bold())
                         if batch.isRestored {
                             Text(model.L(.trashBatchRestoredBadge))

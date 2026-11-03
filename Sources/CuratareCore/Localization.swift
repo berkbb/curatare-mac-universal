@@ -274,6 +274,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case trashStatItemCount, trashStatTotalSize, trashStatDate, homebrewCaveats, trashFilterItemsPlaceholder
     case trashBatchCountFiltered, homebrewPackageCount, menuBarMetricCPU, menuBarMetricRAM, menuBarMetricDisk
     case sysBuildLabel, sysDarwinLabel, trashBatchIDLabel, logProcessLabel, logPIDLabel, bundleVersionLabel
+    case engineVersionUnknown
     case trashTitleEcosystem, trashTitleLibraryAudit, trashTitleDevAI, trashTitleBrowserCaches, trashTitleUninstall
     case trashTitleSavedState, trashTitleDiagnosticReports, trashTitleMailEnvelopeIndex
     case scanAppleMailDownloads, scanIOSBackup, scanQuickTimeAutosave, scanXcodeArchives, scanServiceWorkerCache

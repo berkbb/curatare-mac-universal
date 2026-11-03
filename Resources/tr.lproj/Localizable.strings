@@ -12,7 +12,7 @@
 "safetyBannerDatedTrash" = "Kalıcı Silme Yok (rm -rf Yasak) — Tüm Temizlik Turları ~/.Trash/Curatare-TARİH Altına Taşınır";
 "safetyBannerProtected" = "Apple sistem bileşenleri, paylaşılan çatı paketleri (Sparkle/Firebase/Google/Microsoft), geliştirici önbellekleri ve aktif süreçler otomatik korunur.";
 
-"searchPrompt" = "Ara…";
+"searchPrompt" = "Ara";
 "buttonScan" = "Şimdi Tara";
 "buttonRefresh" = "Yenile";
 "buttonMoveToDatedTrash" = "Tarihli Çöp'e Taşı";
@@ -28,8 +28,8 @@
 "buttonCancel" = "Vazgeç";
 "buttonOK" = "Tamam";
 "buttonClose" = "Kapat";
-"buttonChoose" = "Seç…";
-"buttonOpenSettings" = "Ayarlar…";
+"buttonChoose" = "Seç";
+"buttonOpenSettings" = "Ayarlar";
 
 "sidebarSectionStudio" = "Temizlik Stüdyosu";
 "sidebarSectionSystem" = "Analiz ve Geçmiş";
@@ -45,8 +45,8 @@
 
 "menuAbout" = "Curatare Hakkında";
 "menuScanNow" = "Kitaplık Taramasını Başlat";
-"menuUpdateMole" = "Mole Motorunu Güncelle…";
-"menuCheckAppUpdates" = "Curatare Güncellemelerini Denetle…";
+"menuUpdateMole" = "Mole Motorunu Güncelle";
+"menuCheckAppUpdates" = "Curatare Güncellemelerini Denetle";
 "menuShowLog" = "Günlük Penceresini Göster";
 "menuWebsite" = "Curatare GitHub Deposu";
 "menuEngineManual" = "Mole Belgeleri";
@@ -91,7 +91,7 @@
 "auditNoFindingsTitle" = "Temiz Görünüyor";
 "auditNoFindingsMessage" = "Kitaplık klasörlerini denetlemek için 'Şimdi Tara' düğmesine tıklayın veya seçili filtreyi değiştirin.";
 "auditSudoSectionTitle" = "Grup E (/Library - /Kitaplık ve pkgutil) İçin Kopyalanabilir Güvenli Terminal Komutu";
-"auditSudoSectionHint" = "Root izinli /Library (/Kitaplık) kalıntıları tarihli ~/.Trash/Curatare-.../system klasörüne taşınır ve işlem sonunda TAMAM yazar:";
+"auditSudoSectionHint" = "Root izinli /Library (/Kitaplık) kalıntıları tarihli ~/.Trash/Curatare-TARİH/system klasörüne taşınır ve işlem sonunda TAMAM yazar:";
 "auditRequiresSudoBadge" = "sudo komutu ile";
 
 "uninstallerTitle" = "Uygulama, Widget ve Sistem Eklentisi Kaldırıcı";
@@ -105,7 +105,7 @@
 "uninstallerWrapperBadge" = "iOS/iPadOS Sarmalayıcı";
 "uninstallerAssociatedTitle" = "İlişkili Paket ve Kitaplık Dosyaları";
 "uninstallerSelectAppHint" = "İlişkili dosyaları görmek için soldaki listeden bir uygulama, widget veya eklenti seçin.";
-"uninstallerScanningAssociated" = "İlişkili dosyalar taranıyor…";
+"uninstallerScanningAssociated" = "İlişkili dosyalar taranıyor";
 "smartDeleteBannerTitle" = "SmartDelete: %@ Çöp'e taşındı";
 "smartDeleteBannerDetail" = "Geride kalan %lld Kitaplık kalıntısı (%@) bulundu. Tarihli Çöp klasörüne taşınsın mı?";
 "smartDeleteCleanButton" = "Kalıntıları Tarihli Çöp'e Taşı";
@@ -222,7 +222,7 @@
 "ecosystemsMoveSelectedButton" = "Seçilenleri Çöpe Taşı (%d)";
 "ecosystemsMoveSingleButton" = "Bu Önbelleği Tarihli Çöpe Taşı";
 "ecosystemsProtectedNotice" = "Bu çalışma zamanı macOS işletim sistemine aittir. Curatare Anayasası gereği sistem ikililerine ve çatılara dokunulması veya yazılması kesinlikle engellenmiştir.";
-"ecosystemsCleanableNotice" = "Bu önbellek ~/.Trash/Curatare-... altına güvenle taşınır. İhtiyaç halinde tek tıkla geri yüklenebilir. Projeleriniz tekrar derlendiğinde yalnızca gerekli bağımlılıklar yeniden indirilir.";
+"ecosystemsCleanableNotice" = "Bu önbellek ~/.Trash/Curatare-TARİH altına güvenle taşınır. İhtiyaç halinde tek tıkla geri yüklenebilir. Projeleriniz tekrar derlendiğinde yalnızca gerekli bağımlılıklar yeniden indirilir.";
 "ecosystemsContentsTitle" = "Önbellek Alt Dizinleri ve Dosyaları";
 "ecosystemsConfirmMoveTitle" = "Ekosistem Önbelleklerini Tarihli Çöpe Taşı";
 "ecosystemsConfirmMoveMessage" = "Seçilen %d adet dil/sürüm yöneticisi önbelleğini (~%@) Tarihli Çöp Sepetine taşımak istediğinizden emin misiniz?";
@@ -261,7 +261,7 @@
 
 "diskTitle" = "Etkileşimli Disk Analizi (Mole analyze-go)";
 "diskSubtitle" = "Klasörlerin disk kullanım dağılımını inceleyin, alt dizinlere inin veya seçili öğeleri tarihli Çöp'e taşıyın.";
-"diskChooseFolder" = "Klasör Seç…";
+"diskChooseFolder" = "Klasör Seç";
 "diskNavigateUp" = "Üst Klasör";
 "diskTotalSize" = "Toplam: %@";
 "diskEmptyFolder" = "Analiz edilecek öğe bulunamadı.";
@@ -351,7 +351,7 @@
 "sysCenterProfileKind" = "Profil türü";
 "sysCenterFileFormat" = "Dosya biçimi";
 "sysCenterButtonShowProfile" = "Göster";
-"sysCenterButtonSaveProfile" = "Kaydet...";
+"sysCenterButtonSaveProfile" = "Kaydet";
 "sysCenterCoresBreakdown" = "%1$lld (%2$lld performans ve %3$lld verimlilik)";
 "sysCenterGPUBuiltIn" = "Yerleşik (%@)";
 "sysCenterBytesValue" = "%1$@ (%2$@ bayt)";
@@ -366,7 +366,7 @@
 "sysCenterProfileKindSoftware" = "Yazılım ve Uygulamalar";
 "sysCenterProfileFormatText" = "Düz Metin (.txt)";
 "sysCenterProfileFormatJSON" = "JSON (.json)";
-"sysCenterProfileLoading" = "Sistem profili alınıyor…";
+"sysCenterProfileLoading" = "Sistem profili alınıyor";
 "sysCenterProfileEmptyTitle" = "Sistem Profili Hazır";
 "sysCenterProfileEmptyMessage" = "Yukarıdaki seçeneklerle donanım ve yazılım profilinizi görüntüleyin veya kaydedin.";
 "sysCenterProfileFailed" = "Sistem profili alınamadı.";
@@ -409,8 +409,8 @@
 "checksumTitle" = "Dosya Sağlama Toplamı (Checksum / Hash) Hesaplayıcı";
 "checksumSubtitle" = "Herhangi bir dosyayı sürükleyip bırakarak anında MD5, SHA-1 ve SHA-256 özetlerini hesaplayın ve doğrulayın.";
 "checksumDropPrompt" = "Hesaplamak için bir dosyayı buraya sürükleyin veya dosya seçin";
-"checksumChooseFile" = "Dosya Seç…";
-"checksumComparePlaceholder" = "Doğrulamak için beklenen özeti (hash) buraya yapıştırın…";
+"checksumChooseFile" = "Dosya Seç";
+"checksumComparePlaceholder" = "Doğrulamak için beklenen özeti (hash) buraya yapıştırın";
 "checksumMatch" = "✓ Özet Eşleşti! (%@)";
 "checksumMismatch" = "✕ Özet Eşleşmedi";
 
@@ -534,14 +534,14 @@
 "tweakPowerButtonSleepTitle" = "Güç Düğmesiyle Uyut";
 "tweakPowerButtonSleepDesc" = "Güç düğmesine kısa basınca Mac'in uyuyup uyumayacağını belirler; Kapalı seçilirse kısa basış Mac'i uyutmaz. macOS varsayılanı seçiliyken anahtar silinir ve macOS kendi davranışına döner.";
 "tweakScreenshotLocationDefault" = "Masaüstü (macOS varsayılanı)";
-"tweakScreenshotLocationChoose" = "Klasör Seç…";
+"tweakScreenshotLocationChoose" = "Klasör Seç";
 "tweakScreenshotLocationReset" = "Varsayılana Dön";
 "tweakSafariOpenButton" = "Safari'yi Aç";
 "trashStatItemCount" = "Öğe Sayısı";
 "trashStatTotalSize" = "Toplam Boyut";
 "trashStatDate" = "Tarih";
 "homebrewCaveats" = "Uyarılar";
-"trashFilterItemsPlaceholder" = "Dosyalar içinde filtrele…";
+"trashFilterItemsPlaceholder" = "Dosyalar içinde filtrele";
 "trashBatchCountFiltered" = "Tur: %1$lld / %2$lld";
 "homebrewPackageCount" = "Paket: %lld";
 "menuBarMetricCPU" = "CPU";
@@ -553,6 +553,7 @@
 "logProcessLabel" = "%1$@ (%2$lld)";
 "logPIDLabel" = "PID %lld";
 "bundleVersionLabel" = "v%@";
+"engineVersionUnknown" = "bilinmiyor";
 "trashTitleEcosystem" = "Ekosistem Temizliği: %@";
 "trashTitleLibraryAudit" = "Kitaplık Denetimi (A–E Grupları)";
 "trashTitleDevAI" = "Geliştirici ve Yapay Zekâ Temizliği";
@@ -767,7 +768,7 @@
 "settingsFullDiskAccessGranted" = "Tam Disk Erişimi Etkin";
 "settingsFullDiskAccessMissing" = "Tam Disk Erişimi Gerekli";
 "settingsFullDiskAccessDesc" = "Uygulama artıklarını ve korumalı kitaplık dosyalarını eksiksiz tarayabilmek ve kaldırabilmek için macOS Sistem Ayarları'ndan Tam Disk Erişimi izni verilmesi önerilir.";
-"settingsOpenSystemSettings" = "Sistem Ayarları'nı Aç…";
+"settingsOpenSystemSettings" = "Sistem Ayarları'nı Aç";
 "uninstallerSystemImmutableNotice" = "macOS Sistem Uygulaması (SIP Korumalı · Salt Okunur)";
 "uninstallerSystemImmutableDesc" = "Bu uygulama macOS İmzalı Sistem Bölüntüsü (SSV) ve SIP tarafından korunmaktadır. Diskin salt okunur bölümünde yer aldığı için kaldırılamaz.";
 "uninstallerProtectedUnlockNotice" = "Korunan Uygulama (Ayarlar → Temizlik ve Koruma bölümünden kilit açılabilir)";
@@ -780,7 +781,7 @@
 "settingsTabSmartDelete" = "SmartDelete";
 "settingsTabUpdates" = "Güncellemeler";
 "settingsConfirmation" = "Tarihli Çöp'e taşımadan önce onay iste";
-"settingsConfirmationNote" = "Seçili dosyalar ~/.Trash/Curatare-... klasörüne taşınmadan önce özet onay kutusu gösterir.";
+"settingsConfirmationNote" = "Seçili dosyalar ~/.Trash/Curatare-TARİH klasörüne taşınmadan önce özet onay kutusu gösterir.";
 "settingsPlaySoundEffects" = "Ses efektlerini çal";
 "settingsPlaySoundEffectsDesc" = "Uygulama silme ve geri yükleme işlemlerinde macOS yerel çöp seslerini oynatır.";
 "uninstallerMountedVolumeNotice" = "Bu uygulama takılı bir disk görüntüsü (DMG) üzerinde bulunuyor.";
@@ -797,11 +798,11 @@
 "settingsProtectedRuleAIAndVMs" = "Aktif sanallaştırma ve AI durumları: VMware/Parallels, Claude vm_bundles, ~/.codex, ~/.gemini, .antigravity-ide";
 "settingsWhitelistTitle" = "Özel Koruma Listesi (Whitelist)";
 "settingsWhitelistNote" = "Bu listedeki klasörler veya paket kimlikleri hiçbir taramada temizlik adayı olarak işaretlenmez.";
-"settingsWhitelistAdd" = "Klasör Ekle…";
+"settingsWhitelistAdd" = "Klasör Ekle";
 "settingsWhitelistRemove" = "Seçileni Kaldır";
 "settingsWhitelistEmpty" = "Henüz özel koruma yolu eklenmedi.";
 "settingsShortcutsDesc" = "Her işlem için klavye kısayoluna tıklayıp yeni tuş kombinasyonuna basın. Çakışan kısayollar otomatik olarak engellenir.";
-"shortcutPressKeys" = "Tuşlara basın…";
+"shortcutPressKeys" = "Tuşlara basın";
 "shortcutReset" = "Varsayılana sıfırla";
 "shortcutResetAll" = "Tüm Kısayolları Varsayılana Sıfırla";
 "shortcutConflict" = "Bu kısayol '%@' tarafından kullanılıyor.";
@@ -832,8 +833,8 @@
 "updateSource" = "github.com/tw93/mole adresinden indirilir ve SHA-256 ile doğrulanır.";
 "updateCheck" = "Güncellemeleri Denetle";
 "updateInstall" = "GitHub'dan Mole Güncelle";
-"updateChecking" = "Mole güncellemeleri denetleniyor…";
-"updateInstalling" = "Mole motoru güncelleniyor…";
+"updateChecking" = "Mole güncellemeleri denetleniyor";
+"updateInstalling" = "Mole motoru güncelleniyor";
 "updateAvailable" = "Yeni Mole sürümü mevcut: %@";
 "updateUpToDate" = "Mole güncel (%@).";
 "updateInstalled" = "Mole %@ sürümüne güncellendi";
@@ -865,14 +866,14 @@
 "updateMoleTitle" = "Mole CLI & Go Yardımcıları";
 "updateAppSubtitle" = "Evrensel Sistem Temizleyici ve Kitaplık Denetçisi";
 "updateMoleSubtitle" = "Gömülü Sistem Bakım ve Analiz Motoru";
-"updateCheckingApp" = "Curatare güncellemeleri denetleniyor…";
+"updateCheckingApp" = "Curatare güncellemeleri denetleniyor";
 "settingsReset" = "Tüm Ayarları Sıfırla";
 "settingsResetConfirm" = "Tüm ayarlar varsayılana döndürülsün mü?";
 
 "logTitle" = "Curatare Günlüğü";
 "logAllMessages" = "Tüm İletiler";
 "logProblems" = "Uyarı ve Hatalar";
-"logSearchPrompt" = "Günlükte ara…";
+"logSearchPrompt" = "Günlükte ara";
 "logClear" = "Günlüğü Temizle";
 "logOpenInConsole" = "Finder'da Göster";
 "logEmptyTitle" = "Günlük Kaydı Yok";
@@ -926,9 +927,9 @@
 "welcomePillarStatusTitle" = "5. Sistem Durumu (Status)";
 "welcomePillarStatusDesc" = "Canlı CPU, bellek, disk ve sağlık puanı (100/100)";
 
-"statusScanning" = "Taranıyor…";
-"statusMovingToTrash" = "Tarihli Çöp klasörüne taşınıyor…";
-"statusRestoring" = "Tarihli Çöp turu geri yükleniyor…";
+"statusScanning" = "Taranıyor";
+"statusMovingToTrash" = "Tarihli Çöp klasörüne taşınıyor";
+"statusRestoring" = "Tarihli Çöp turu geri yükleniyor";
 "toastMovedToDatedTrash" = "%lld öğe (%@) ~/.Trash/%@ klasörüne taşındı.";
 "toastRestoredBatch" = "%lld öğe orijinal konumuna geri yüklendi.";
 "toastOptimizationDone" = "%lld bakım görevi tamamlandı.";

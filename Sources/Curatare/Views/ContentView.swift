@@ -109,7 +109,7 @@ public struct ContentView: View {
     }
 
     private var windowSubtitle: String {
-        "Mole \(model.engineInfo?.version ?? "1.67.0") · \(model.L(.statusHealthScore)) \(model.systemStatus.healthScore)/100"
+        "Mole \(model.engineVersionText) · \(model.L(.statusHealthScore)) \(model.systemStatus.healthScore)/100"
     }
 
     @ToolbarContentBuilder
@@ -634,7 +634,7 @@ private struct UpdateBanner: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(model.LF(.updateBannerTitle, latest))
                             .font(.callout.weight(.semibold))
-                        Text(model.LF(.updateBannerMessage, model.engineInfo?.version ?? "1.67.0"))
+                        Text(model.LF(.updateBannerMessage, model.engineVersionText))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

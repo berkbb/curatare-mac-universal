@@ -12,7 +12,7 @@
 "safetyBannerDatedTrash" = "No Permanent Deletion (rm -rf Forbidden) — Every Cleanup Moves Items to ~/.Trash/Curatare-DATE";
 "safetyBannerProtected" = "Apple system components, shared frameworks (Sparkle/Firebase/Google/Microsoft), developer caches, and running apps are automatically protected.";
 
-"searchPrompt" = "Search…";
+"searchPrompt" = "Search";
 "buttonScan" = "Scan Now";
 "buttonRefresh" = "Refresh";
 "buttonMoveToDatedTrash" = "Move to Dated Trash";
@@ -28,8 +28,8 @@
 "buttonCancel" = "Cancel";
 "buttonOK" = "OK";
 "buttonClose" = "Close";
-"buttonChoose" = "Choose…";
-"buttonOpenSettings" = "Settings…";
+"buttonChoose" = "Choose";
+"buttonOpenSettings" = "Settings";
 
 "sidebarSectionStudio" = "Cleaning Studio";
 "sidebarSectionSystem" = "Analysis & History";
@@ -45,8 +45,8 @@
 
 "menuAbout" = "About Curatare";
 "menuScanNow" = "Run Library Scan";
-"menuUpdateMole" = "Update Mole Engine…";
-"menuCheckAppUpdates" = "Check for Curatare Updates…";
+"menuUpdateMole" = "Update Mole Engine";
+"menuCheckAppUpdates" = "Check for Curatare Updates";
 "menuShowLog" = "Show Log Window";
 "menuWebsite" = "Curatare GitHub Repository";
 "menuEngineManual" = "Mole Documentation";
@@ -91,7 +91,7 @@
 "auditNoFindingsTitle" = "All Clean";
 "auditNoFindingsMessage" = "Click 'Scan Now' to audit your Library folders or adjust the active group filter.";
 "auditSudoSectionTitle" = "Copyable Safe Terminal Command for Group E (/Library & pkgutil)";
-"auditSudoSectionHint" = "Moves root-owned /Library leftovers into ~/.Trash/Curatare-.../system and prints TAMAM when finished:";
+"auditSudoSectionHint" = "Moves root-owned /Library leftovers into ~/.Trash/Curatare-DATE/system and prints TAMAM when finished:";
 "auditRequiresSudoBadge" = "via sudo command";
 
 "uninstallerTitle" = "Application, Widget & System Plugin Uninstaller";
@@ -105,7 +105,7 @@
 "uninstallerWrapperBadge" = "iOS/iPadOS Wrapper";
 "uninstallerAssociatedTitle" = "Associated Bundle & Library Files";
 "uninstallerSelectAppHint" = "Select an application, widget, or plugin from the list to inspect its related files.";
-"uninstallerScanningAssociated" = "Scanning associated files…";
+"uninstallerScanningAssociated" = "Scanning associated files";
 "smartDeleteBannerTitle" = "SmartDelete: %@ was moved to Trash";
 "smartDeleteBannerDetail" = "Found %lld leftover Library items (%@). Move them to a dated Trash batch?";
 "smartDeleteCleanButton" = "Move Leftovers to Dated Trash";
@@ -222,7 +222,7 @@
 "ecosystemsMoveSelectedButton" = "Move Selected to Trash (%d)";
 "ecosystemsMoveSingleButton" = "Move This Cache to Dated Trash";
 "ecosystemsProtectedNotice" = "This runtime belongs to the macOS operating system. Curatare's Constitution strictly prohibits modifying or writing to system binaries and frameworks.";
-"ecosystemsCleanableNotice" = "This cache is safely moved to ~/.Trash/Curatare-... and can be restored with one click. When your projects build again, only necessary dependencies will be redownloaded.";
+"ecosystemsCleanableNotice" = "This cache is safely moved to ~/.Trash/Curatare-DATE and can be restored with one click. When your projects build again, only necessary dependencies will be redownloaded.";
 "ecosystemsContentsTitle" = "Cache Subdirectories & Files";
 "ecosystemsConfirmMoveTitle" = "Move Ecosystem Caches to Dated Trash";
 "ecosystemsConfirmMoveMessage" = "Are you sure you want to move the selected %d language/version manager cache(s) (~%@) to Dated Trash?";
@@ -261,7 +261,7 @@
 
 "diskTitle" = "Interactive Disk Analyzer (Mole analyze-go)";
 "diskSubtitle" = "Inspect directory disk usage breakdown, drill down into subfolders, or reveal items in Finder.";
-"diskChooseFolder" = "Choose Folder…";
+"diskChooseFolder" = "Choose Folder";
 "diskNavigateUp" = "Parent Folder";
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "No items to analyze.";
@@ -351,7 +351,7 @@
 "sysCenterProfileKind" = "Profile Type";
 "sysCenterFileFormat" = "File Format";
 "sysCenterButtonShowProfile" = "Show";
-"sysCenterButtonSaveProfile" = "Save...";
+"sysCenterButtonSaveProfile" = "Save";
 "sysCenterCoresBreakdown" = "%1$lld (%2$lld performance and %3$lld efficiency)";
 "sysCenterGPUBuiltIn" = "Built-in (%@)";
 "sysCenterBytesValue" = "%1$@ (%2$@ bytes)";
@@ -366,7 +366,7 @@
 "sysCenterProfileKindSoftware" = "Software and Applications";
 "sysCenterProfileFormatText" = "Plain Text (.txt)";
 "sysCenterProfileFormatJSON" = "JSON (.json)";
-"sysCenterProfileLoading" = "Loading system profile…";
+"sysCenterProfileLoading" = "Loading system profile";
 "sysCenterProfileEmptyTitle" = "System Profile Ready";
 "sysCenterProfileEmptyMessage" = "Use the options above to view or save your hardware and software profile.";
 "sysCenterProfileFailed" = "Could not read the system profile.";
@@ -409,8 +409,8 @@
 "checksumTitle" = "File Checksum (Hash) Calculator";
 "checksumSubtitle" = "Drag and drop any file to calculate and verify MD5, SHA-1, and SHA-256 digests instantly.";
 "checksumDropPrompt" = "Drag a file here or choose a file to calculate";
-"checksumChooseFile" = "Choose File…";
-"checksumComparePlaceholder" = "Paste expected hash to verify…";
+"checksumChooseFile" = "Choose File";
+"checksumComparePlaceholder" = "Paste expected hash to verify";
 "checksumMatch" = "✓ Digest Matches! (%@)";
 "checksumMismatch" = "✕ Digest Mismatch";
 
@@ -534,14 +534,14 @@
 "tweakPowerButtonSleepTitle" = "Power Button Puts Mac to Sleep";
 "tweakPowerButtonSleepDesc" = "Sets whether a short press of the power button puts the Mac to sleep; with Off, a short press does not. With macOS default selected, the key is removed and macOS uses its own behavior.";
 "tweakScreenshotLocationDefault" = "Desktop (macOS default)";
-"tweakScreenshotLocationChoose" = "Choose Folder…";
+"tweakScreenshotLocationChoose" = "Choose Folder";
 "tweakScreenshotLocationReset" = "Use Default";
 "tweakSafariOpenButton" = "Open Safari";
 "trashStatItemCount" = "Item Count";
 "trashStatTotalSize" = "Total Size";
 "trashStatDate" = "Date";
 "homebrewCaveats" = "Caveats";
-"trashFilterItemsPlaceholder" = "Filter files…";
+"trashFilterItemsPlaceholder" = "Filter files";
 "trashBatchCountFiltered" = "Batches: %1$lld / %2$lld";
 "homebrewPackageCount" = "Packages: %lld";
 "menuBarMetricCPU" = "CPU";
@@ -553,6 +553,7 @@
 "logProcessLabel" = "%1$@ (%2$lld)";
 "logPIDLabel" = "PID %lld";
 "bundleVersionLabel" = "v%@";
+"engineVersionUnknown" = "unknown";
 "trashTitleEcosystem" = "Ecosystem Cleanup: %@";
 "trashTitleLibraryAudit" = "Library Audit (Groups A–E)";
 "trashTitleDevAI" = "Developer & AI Cleanup";
@@ -767,7 +768,7 @@
 "settingsFullDiskAccessGranted" = "Full Disk Access Enabled";
 "settingsFullDiskAccessMissing" = "Full Disk Access Required";
 "settingsFullDiskAccessDesc" = "Full Disk Access is recommended in macOS System Settings to thoroughly scan and remove app leftovers across all protected Library containers.";
-"settingsOpenSystemSettings" = "Open System Settings…";
+"settingsOpenSystemSettings" = "Open System Settings";
 "uninstallerSystemImmutableNotice" = "macOS System Application (SIP Protected · Read-Only)";
 "uninstallerSystemImmutableDesc" = "This application is protected by macOS Signed System Volume (SSV) and SIP. It cannot be uninstalled because it resides on a read-only volume.";
 "uninstallerProtectedUnlockNotice" = "Protected Application (Can be unlocked in Settings → Cleaning & Protection)";
@@ -780,7 +781,7 @@
 "settingsTabSmartDelete" = "SmartDelete";
 "settingsTabUpdates" = "Updates";
 "settingsConfirmation" = "Ask for confirmation before moving to Dated Trash";
-"settingsConfirmationNote" = "Displays a summary confirmation dialog before moving selected items into ~/.Trash/Curatare-....";
+"settingsConfirmationNote" = "Displays a summary confirmation dialog before moving selected items into ~/.Trash/Curatare-.";
 "settingsPlaySoundEffects" = "Play sound effects";
 "settingsPlaySoundEffectsDesc" = "Plays native macOS trash and restore audio effects during cleanup.";
 "uninstallerMountedVolumeNotice" = "This application resides on a mounted disk image (DMG).";
@@ -797,11 +798,11 @@
 "settingsProtectedRuleAIAndVMs" = "Active virtualization & AI state: VMware/Parallels, Claude vm_bundles, ~/.codex, ~/.gemini, .antigravity-ide";
 "settingsWhitelistTitle" = "Custom Whitelist";
 "settingsWhitelistNote" = "Paths or bundle identifiers in this list are never flagged during any scan.";
-"settingsWhitelistAdd" = "Add Folder…";
+"settingsWhitelistAdd" = "Add Folder";
 "settingsWhitelistRemove" = "Remove Selected";
 "settingsWhitelistEmpty" = "No custom whitelist paths added yet.";
 "settingsShortcutsDesc" = "Click any shortcut field and press a new key combination. Conflicting shortcuts are automatically prevented.";
-"shortcutPressKeys" = "Press keys…";
+"shortcutPressKeys" = "Press keys";
 "shortcutReset" = "Reset to default";
 "shortcutResetAll" = "Reset All Shortcuts to Defaults";
 "shortcutConflict" = "This shortcut is already used by '%@'.";
@@ -832,8 +833,8 @@
 "updateSource" = "Downloaded from github.com/tw93/mole and verified with SHA-256.";
 "updateCheck" = "Check for Updates";
 "updateInstall" = "Update Mole from GitHub";
-"updateChecking" = "Checking for Mole updates…";
-"updateInstalling" = "Updating Mole engine…";
+"updateChecking" = "Checking for Mole updates";
+"updateInstalling" = "Updating Mole engine";
 "updateAvailable" = "New Mole version available: %@";
 "updateUpToDate" = "Mole is up to date (%@).";
 "updateInstalled" = "Updated Mole to %@";
@@ -865,14 +866,14 @@
 "updateMoleTitle" = "Mole CLI & Go Helpers";
 "updateAppSubtitle" = "Universal System Cleaner & Library Leftovers Auditor";
 "updateMoleSubtitle" = "Embedded Maintenance & Disk Analysis Engine";
-"updateCheckingApp" = "Checking for Curatare updates…";
+"updateCheckingApp" = "Checking for Curatare updates";
 "settingsReset" = "Reset All Settings";
 "settingsResetConfirm" = "Reset all settings to their defaults?";
 
 "logTitle" = "Curatare Log";
 "logAllMessages" = "All Messages";
 "logProblems" = "Warnings & Errors";
-"logSearchPrompt" = "Search log…";
+"logSearchPrompt" = "Search log";
 "logClear" = "Clear Log";
 "logOpenInConsole" = "Show in Finder";
 "logEmptyTitle" = "No Log Entries";
@@ -926,9 +927,9 @@
 "welcomePillarStatusTitle" = "5. Status";
 "welcomePillarStatusDesc" = "Real-time CPU, memory, disk & health score (100/100)";
 
-"statusScanning" = "Scanning…";
-"statusMovingToTrash" = "Moving to dated Trash…";
-"statusRestoring" = "Restoring dated Trash batch…";
+"statusScanning" = "Scanning";
+"statusMovingToTrash" = "Moving to dated Trash";
+"statusRestoring" = "Restoring dated Trash batch";
 "toastMovedToDatedTrash" = "Moved %lld items (%@) to ~/.Trash/%@.";
 "toastRestoredBatch" = "Restored %lld items to their original locations.";
 "toastOptimizationDone" = "Completed %lld maintenance tasks.";

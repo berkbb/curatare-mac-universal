@@ -38,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **No more launch freeze from an Apple Music permission prompt:**
   - **Cause:** The Apple Music half-stars toggle read `com.apple.Music` at launch, so macOS asked for Media & Apple Music access and the app waited without showing a window.
   - **Removed:** That toggle and the TextEdit blank-document toggle. Both apps keep their preferences in protected containers, and these toggles could not reliably read or change them.
+- **Small localization fixes:**
+  - An unknown Mole version now shows a translated "unknown" instead of a hardcoded version number.
+  - Trailing "…" was removed from interface texts.
+  - Trash batches saved before this release show their titles in the user's language.
+  - iOS backup names are no longer cut to 12 characters.
 - **Every user-facing text comes from `Localizable.strings`:** Text that was hardcoded in Turkish or English now comes from each language's table:
   - 128 scan explanations, protection reasons and audit findings produced by the core.
   - Trash batch titles.
