@@ -238,6 +238,14 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakSafariDevelopMenuTitle, tweakSafariDevelopMenuDesc
     case tweakHideDesktopIconsTitle, tweakHideDesktopIconsDesc
     case tweakDisableWindowAnimationsTitle, tweakDisableWindowAnimationsDesc
+    case tweakPathBarFromHomeTitle, tweakPathBarFromHomeDesc
+    case tweakDockLockContentsTitle, tweakDockLockContentsDesc
+    case tweakDockLockSizeTitle, tweakDockLockSizeDesc
+    case tweakDockStackHighlightTitle, tweakDockStackHighlightDesc
+    case tweakScreenshotThumbnailTitle, tweakScreenshotThumbnailDesc
+    case tweakScreenshotCursorTitle, tweakScreenshotCursorDesc
+    case tweakExpandedSaveDialogTitle, tweakExpandedSaveDialogDesc
+    case tweakDisableAppNapTitle, tweakDisableAppNapDesc
     case toastTweakApplied, toastTweaksReset
 
     // 7. Tarihli Çöp Turları ve Geçmiş (`~/.Trash/Curatare-...`)

@@ -453,6 +453,22 @@
 "tweakHideDesktopIconsDesc" = "Ascunde toate fișierele, folderele și discurile de pe desktop pentru un ecran curat.";
 "tweakDisableWindowAnimationsTitle" = "Dezactivează animațiile de deschidere/închidere a ferestrelor";
 "tweakDisableWindowAnimationsDesc" = "Dezactivează animațiile de zoom ale ferestrelor la deschidere și închidere pentru o interfață mai rapidă.";
+"tweakPathBarFromHomeTitle" = "Bara de cale pornește din dosarul personal";
+"tweakPathBarFromHomeDesc" = "Bara de cale din Finder pornește din dosarul personal (Home) în loc de discul de pornire.";
+"tweakDockLockContentsTitle" = "Blochează pictogramele din Dock";
+"tweakDockLockContentsDesc" = "Împiedică adăugarea, eliminarea sau reordonarea pictogramelor din Dock prin glisare.";
+"tweakDockLockSizeTitle" = "Blochează dimensiunea Dock-ului";
+"tweakDockLockSizeDesc" = "Împiedică redimensionarea Dock-ului prin glisarea separatorului.";
+"tweakDockStackHighlightTitle" = "Evidențiază elementele în vizualizarea grilă a stivei";
+"tweakDockStackHighlightDesc" = "Evidențiază elementul aflat sub cursor când o stivă din Dock se deschide în vizualizarea grilă.";
+"tweakScreenshotThumbnailTitle" = "Afișează miniatura flotantă după captură";
+"tweakScreenshotThumbnailDesc" = "Afișează miniatura de previzualizare în colțul ecranului după o captură. Când este dezactivată, fișierul se salvează imediat, fără a aștepta miniatura.";
+"tweakScreenshotCursorTitle" = "Afișează cursorul mouse-ului în capturile de ecran";
+"tweakScreenshotCursorDesc" = "Include cursorul mouse-ului în imaginea capturii de ecran.";
+"tweakExpandedSaveDialogTitle" = "Deschide mereu extins dialogul Salvare";
+"tweakExpandedSaveDialogDesc" = "Deschide dialogurile Salvare în vizualizarea extinsă, cu navigatorul de dosare. Se aplică aplicațiilor deschise ulterior.";
+"tweakDisableAppNapTitle" = "Dezactivează App Nap";
+"tweakDisableAppNapDesc" = "Împiedică App Nap să încetinească aplicațiile din fundal. Consumă mai multă energie; se aplică aplicațiilor deschise ulterior.";
 
 "toastTweakApplied" = "Setare aplicată: %@";
 "toastTweaksReset" = "Toate ajustările de sistem au fost resetate la valorile implicite.";

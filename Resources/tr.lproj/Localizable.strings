@@ -453,6 +453,22 @@
 "tweakHideDesktopIconsDesc" = "Masaüstündeki tüm dosya, klasör ve disk simgelerini gizleyerek temiz bir masaüstü sunar.";
 "tweakDisableWindowAnimationsTitle" = "Pencere Açılış/Kapanış Animasyonlarını Kapat";
 "tweakDisableWindowAnimationsDesc" = "Pencerelerin açılma ve kapanmasındaki yakınlaştırma animasyonlarını kapatarak arayüzü hızlandırır.";
+"tweakPathBarFromHomeTitle" = "Yol Çubuğunu Ev Klasöründen Başlat";
+"tweakPathBarFromHomeDesc" = "Finder yol çubuğunu başlangıç diski yerine ev klasörünüzden başlatır.";
+"tweakDockLockContentsTitle" = "Dock Simgelerini Kilitle";
+"tweakDockLockContentsDesc" = "Dock'a sürükleyerek simge eklenmesini, kaldırılmasını ve sırasının değiştirilmesini engeller.";
+"tweakDockLockSizeTitle" = "Dock Boyutunu Kilitle";
+"tweakDockLockSizeDesc" = "Dock'un ayırıcı çizgisi sürüklenerek yeniden boyutlandırılmasını engeller.";
+"tweakDockStackHighlightTitle" = "Yığın Izgara Görünümünde Öğeleri Vurgula";
+"tweakDockStackHighlightDesc" = "Dock'taki bir yığın ızgara görünümünde açıldığında imlecin altındaki öğeyi vurgular.";
+"tweakScreenshotThumbnailTitle" = "Çekimden Sonra Köşede Önizleme Göster";
+"tweakScreenshotThumbnailDesc" = "Ekran resmi alındıktan sonra köşede beliren önizlemeyi gösterir. Kapatıldığında dosya, önizlemeyi beklemeden hemen kaydedilir.";
+"tweakScreenshotCursorTitle" = "Ekran Resimlerinde Fare İmlecini Göster";
+"tweakScreenshotCursorDesc" = "Fare imlecini ekran resminin görüntüsüne ekler.";
+"tweakExpandedSaveDialogTitle" = "Kaydet Penceresini Hep Genişletilmiş Aç";
+"tweakExpandedSaveDialogDesc" = "Kaydet pencerelerini klasör tarayıcısıyla birlikte genişletilmiş görünümde açar. Bundan sonra açılan uygulamalarda geçerli olur.";
+"tweakDisableAppNapTitle" = "App Nap'i Kapat";
+"tweakDisableAppNapDesc" = "Arka plandaki uygulamaların App Nap ile yavaşlatılmasını engeller. Daha fazla enerji harcar; bundan sonra açılan uygulamalarda geçerli olur.";
 
 "toastTweakApplied" = "Ayar uygulandı: %@";
 "toastTweaksReset" = "Tüm sistem ayarları varsayılanlara sıfırlandı.";

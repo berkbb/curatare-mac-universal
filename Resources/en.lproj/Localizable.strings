@@ -453,6 +453,22 @@
 "tweakHideDesktopIconsDesc" = "Hides all files, folders, and disk icons on the desktop for a clutter-free display.";
 "tweakDisableWindowAnimationsTitle" = "Disable Window Opening/Closing Animations";
 "tweakDisableWindowAnimationsDesc" = "Disables window zoom animations on open and close for a snappier interface.";
+"tweakPathBarFromHomeTitle" = "Start the Path Bar at the Home Folder";
+"tweakPathBarFromHomeDesc" = "Starts the Finder path bar at your home folder instead of the startup disk.";
+"tweakDockLockContentsTitle" = "Lock Dock Icons";
+"tweakDockLockContentsDesc" = "Prevents adding, removing or reordering Dock icons by dragging.";
+"tweakDockLockSizeTitle" = "Lock Dock Size";
+"tweakDockLockSizeDesc" = "Prevents resizing the Dock by dragging its divider.";
+"tweakDockStackHighlightTitle" = "Highlight Items in Stack Grid View";
+"tweakDockStackHighlightDesc" = "Highlights the item under the pointer when a Dock stack opens in grid view.";
+"tweakScreenshotThumbnailTitle" = "Show Floating Thumbnail After a Capture";
+"tweakScreenshotThumbnailDesc" = "Shows the preview thumbnail in the screen corner after a capture. When off, the file is saved immediately without waiting for the thumbnail.";
+"tweakScreenshotCursorTitle" = "Show the Mouse Pointer in Screenshots";
+"tweakScreenshotCursorDesc" = "Includes the mouse pointer in the screenshot image.";
+"tweakExpandedSaveDialogTitle" = "Always Open Save Dialogs Expanded";
+"tweakExpandedSaveDialogDesc" = "Opens Save dialogs in their expanded view with the folder browser. Applies to apps opened afterwards.";
+"tweakDisableAppNapTitle" = "Turn Off App Nap";
+"tweakDisableAppNapDesc" = "Keeps App Nap from slowing down apps in the background. Uses more energy; applies to apps opened afterwards.";
 
 "toastTweakApplied" = "Setting applied: %@";
 "toastTweaksReset" = "All system tweaks have been reset to defaults.";

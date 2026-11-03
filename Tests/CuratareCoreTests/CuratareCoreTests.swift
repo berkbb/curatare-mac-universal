@@ -1616,7 +1616,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
         let tweaks = manager.loadAllTweaks()
 
-        #expect(tweaks.count == 20)
+        #expect(tweaks.count == 28)
         #expect(tweaks.contains(where: { $0.id == "finder.showHiddenFiles" }))
         #expect(tweaks.contains(where: { $0.id == "finder.showFullPathInTitle" }))
         #expect(tweaks.contains(where: { $0.id == "finder.hideDesktopIcons" }))
@@ -1681,6 +1681,42 @@ struct SystemTweaksTests {
     func globalDomainMapping() {
         #expect(SystemPreferenceStore.preferencesDomain(for: "NSGlobalDomain") == kCFPreferencesAnyApplication)
         #expect(SystemPreferenceStore.preferencesDomain(for: "com.apple.dock") as String == "com.apple.dock")
+    }
+
+    @Test("SystemTweakManager: Finder, Dock, screenshot and system additions write their keys and reset")
+    func extendedTweaksRoundTrip() {
+        let mockStore = MockPreferenceStore()
+        let manager = SystemTweakManager(store: mockStore)
+
+        // Anahtar yokken macOS varsayılanı okunur: önizleme açık, diğerleri kapalı.
+        let initial = Dictionary(uniqueKeysWithValues: manager.loadAllTweaks().map { ($0.id, $0.isEnabled) })
+        #expect(initial["screenshot.showThumbnail"] == true)
+        #expect(initial["screenshot.showCursor"] == false)
+        #expect(initial["dock.lockContents"] == false)
+        #expect(initial["system.disableAppNap"] == false)
+
+        let cases: [(id: String, domain: String, key: String, enabled: Bool, service: SystemTweakItem.RestartService)] = [
+            ("finder.pathBarFromHome", "com.apple.finder", "PathBarRootAtHome", true, .finder),
+            ("dock.lockContents", "com.apple.dock", "contents-immutable", true, .dock),
+            ("dock.lockSize", "com.apple.dock", "size-immutable", true, .dock),
+            ("dock.stackHoverHighlight", "com.apple.dock", "mouse-over-hilite-stack", true, .dock),
+            ("screenshot.showThumbnail", "com.apple.screencapture", "show-thumbnail", false, .systemUIServer),
+            ("screenshot.showCursor", "com.apple.screencapture", "showsCursor", true, .systemUIServer),
+            ("system.expandedSaveDialog", "NSGlobalDomain", "NSNavPanelExpandedStateForSaveMode", true, .none),
+            ("system.disableAppNap", "NSGlobalDomain", "NSAppSleepDisabled", true, .none)
+        ]
+        for c in cases {
+            let updated = manager.applyTweak(id: c.id, enabled: c.enabled)
+            #expect(updated?.isEnabled == c.enabled, "\(c.id)")
+            #expect(updated?.restartService == c.service, "\(c.id)")
+            #expect(mockStore.readBool(domain: c.domain, key: c.key, defaultValue: !c.enabled) == c.enabled, "\(c.id)")
+        }
+
+        let reset = Dictionary(uniqueKeysWithValues: manager.restoreAllToDefaults().map { ($0.id, $0.isEnabled) })
+        #expect(reset["screenshot.showThumbnail"] == true)
+        #expect(reset["dock.lockContents"] == false)
+        #expect(mockStore.readBool(domain: "com.apple.screencapture", key: "show-thumbnail", defaultValue: false) == true)
+        #expect(mockStore.readBool(domain: "NSGlobalDomain", key: "NSAppSleepDisabled", defaultValue: true) == false)
     }
 
     @Test("MoleOptimizationTask: includes extended maintenance tasks")

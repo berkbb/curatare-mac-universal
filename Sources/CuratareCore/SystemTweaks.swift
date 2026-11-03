@@ -428,6 +428,17 @@ public struct SystemTweakManager: Sendable {
             isEnabled: false,
             restartService: .finder
         ),
+        SystemTweakItem(
+            id: "finder.pathBarFromHome",
+            category: .finder,
+            titleKey: .tweakPathBarFromHomeTitle,
+            descriptionKey: .tweakPathBarFromHomeDesc,
+            domain: "com.apple.finder",
+            key: "PathBarRootAtHome",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .finder
+        ),
 
         // MARK: - Dock
         SystemTweakItem(
@@ -459,6 +470,39 @@ public struct SystemTweakManager: Sendable {
             descriptionKey: .tweakDockInstantAutohideDesc,
             domain: "com.apple.dock",
             key: "autohide-delay",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .dock
+        ),
+        SystemTweakItem(
+            id: "dock.lockContents",
+            category: .dock,
+            titleKey: .tweakDockLockContentsTitle,
+            descriptionKey: .tweakDockLockContentsDesc,
+            domain: "com.apple.dock",
+            key: "contents-immutable",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .dock
+        ),
+        SystemTweakItem(
+            id: "dock.lockSize",
+            category: .dock,
+            titleKey: .tweakDockLockSizeTitle,
+            descriptionKey: .tweakDockLockSizeDesc,
+            domain: "com.apple.dock",
+            key: "size-immutable",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .dock
+        ),
+        SystemTweakItem(
+            id: "dock.stackHoverHighlight",
+            category: .dock,
+            titleKey: .tweakDockStackHighlightTitle,
+            descriptionKey: .tweakDockStackHighlightDesc,
+            domain: "com.apple.dock",
+            key: "mouse-over-hilite-stack",
             defaultValue: false,
             isEnabled: false,
             restartService: .dock
@@ -518,6 +562,28 @@ public struct SystemTweakManager: Sendable {
             descriptionKey: .tweakScreenshotLocationDesc,
             domain: "com.apple.screencapture",
             key: "location",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .systemUIServer
+        ),
+        SystemTweakItem(
+            id: "screenshot.showThumbnail",
+            category: .screenshot,
+            titleKey: .tweakScreenshotThumbnailTitle,
+            descriptionKey: .tweakScreenshotThumbnailDesc,
+            domain: "com.apple.screencapture",
+            key: "show-thumbnail",
+            defaultValue: true,
+            isEnabled: true,
+            restartService: .systemUIServer
+        ),
+        SystemTweakItem(
+            id: "screenshot.showCursor",
+            category: .screenshot,
+            titleKey: .tweakScreenshotCursorTitle,
+            descriptionKey: .tweakScreenshotCursorDesc,
+            domain: "com.apple.screencapture",
+            key: "showsCursor",
             defaultValue: false,
             isEnabled: false,
             restartService: .systemUIServer
@@ -597,6 +663,28 @@ public struct SystemTweakManager: Sendable {
             descriptionKey: .tweakDisableWindowAnimationsDesc,
             domain: "NSGlobalDomain",
             key: "NSAutomaticWindowAnimationsEnabled",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .none
+        ),
+        SystemTweakItem(
+            id: "system.expandedSaveDialog",
+            category: .system,
+            titleKey: .tweakExpandedSaveDialogTitle,
+            descriptionKey: .tweakExpandedSaveDialogDesc,
+            domain: "NSGlobalDomain",
+            key: "NSNavPanelExpandedStateForSaveMode",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .none
+        ),
+        SystemTweakItem(
+            id: "system.disableAppNap",
+            category: .system,
+            titleKey: .tweakDisableAppNapTitle,
+            descriptionKey: .tweakDisableAppNapDesc,
+            domain: "NSGlobalDomain",
+            key: "NSAppSleepDisabled",
             defaultValue: false,
             isEnabled: false,
             restartService: .none
