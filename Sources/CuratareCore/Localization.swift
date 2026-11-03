@@ -210,6 +210,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case statusHardwareIdentity, statusSwapUsed
     case buttonPurgeMemory, toastMemoryPurged
     case buttonAddDockSpacer, buttonRemoveDockSpacers, toastDockSpacerAdded, toastDockSpacersRemoved
+    case toastDockSpacerFailed, toastNoDockSpacers
     case optimizeSectionTitle, optimizeSectionSubtitle, optimizeRunButton
     case optimizeQuickLook, optimizeSavedState, optimizeDNS, optimizeIconServices, optimizeFontCache, optimizeLaunchServices
     case optimizeSpotlightIndex, optimizeDiagnosticReports, optimizeLocalSnapshots

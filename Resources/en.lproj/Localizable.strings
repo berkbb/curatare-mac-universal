@@ -405,6 +405,8 @@
 "buttonRemoveDockSpacers" = "Clear Spacers";
 "toastDockSpacerAdded" = "Spacer tile added to Dock.";
 "toastDockSpacersRemoved" = "All spacer tiles removed from Dock.";
+"toastDockSpacerFailed" = "Dock preferences could not be read; no spacer was added.";
+"toastNoDockSpacers" = "There are no spacer tiles in the Dock to remove.";
 
 "checksumTitle" = "File Checksum (Hash) Calculator";
 "checksumSubtitle" = "Drag and drop any file to calculate and verify MD5, SHA-1, and SHA-256 digests instantly.";

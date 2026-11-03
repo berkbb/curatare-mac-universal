@@ -2149,4 +2149,39 @@ struct DiskHealthAndScreenshotFormatTests {
         _ = manager.restoreAllToDefaults(restartServices: false)
         #expect(manager.screenshotFormat() == .png)
     }
+
+    @Test("Dock spacers are added and removed through preferences, other tiles stay, nothing is written when unreadable")
+    func dockSpacersThroughPreferences() {
+        let store = MockPreferenceStore()
+        let manager = SystemTweakManager(store: store)
+
+        // Dock dizisi okunamıyorsa ekleme hiçbir şey yazmaz ve Dock yeniden başlatılmaz.
+        #expect(manager.addDockSpacer() == false)
+        #expect(store.readDictionaryArray(domain: "com.apple.dock", key: "persistent-apps") == nil)
+        #expect(manager.removeDockSpacers() == false)
+        #expect(store.restartedServices.isEmpty)
+
+        let appTile: [String: Any] = ["tile-type": "file-tile", "tile-data": ["file-label": "Safari"]]
+        let folderTile: [String: Any] = ["tile-type": "directory-tile", "tile-data": ["file-label": "Downloads"]]
+        store.writeDictionaryArray(domain: "com.apple.dock", key: "persistent-apps", value: [appTile])
+        store.writeDictionaryArray(domain: "com.apple.dock", key: "persistent-others", value: [folderTile, ["tile-type": "flex-spacer-tile"]])
+
+        #expect(manager.addDockSpacer())
+        #expect(manager.addDockSpacer(small: true))
+        let added = store.readDictionaryArray(domain: "com.apple.dock", key: "persistent-apps") ?? []
+        #expect(added.compactMap { $0["tile-type"] as? String } == ["file-tile", "spacer-tile", "small-spacer-tile"])
+        #expect(store.restartedServices == [.dock, .dock])
+
+        #expect(manager.removeDockSpacers())
+        let apps = store.readDictionaryArray(domain: "com.apple.dock", key: "persistent-apps") ?? []
+        let others = store.readDictionaryArray(domain: "com.apple.dock", key: "persistent-others") ?? []
+        #expect(apps.compactMap { $0["tile-type"] as? String } == ["file-tile"])
+        #expect(others.compactMap { $0["tile-type"] as? String } == ["directory-tile"])
+        #expect((apps.first?["tile-data"] as? [String: Any])?["file-label"] as? String == "Safari")
+        #expect(store.restartedServices == [.dock, .dock, .dock])
+
+        // Boşluk kalmadıysa Dock yeniden başlatılmaz.
+        #expect(manager.removeDockSpacers() == false)
+        #expect(store.restartedServices.count == 3)
+    }
 }

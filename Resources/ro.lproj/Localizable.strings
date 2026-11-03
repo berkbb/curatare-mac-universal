@@ -405,6 +405,8 @@
 "buttonRemoveDockSpacers" = "Curăță Spațiatorii";
 "toastDockSpacerAdded" = "Spațiator adăugat în Dock.";
 "toastDockSpacersRemoved" = "Toți spațiatorii au fost eliminați din Dock.";
+"toastDockSpacerFailed" = "Preferințele Dock nu au putut fi citite; nu a fost adăugat niciun spațiator.";
+"toastNoDockSpacers" = "Nu există spațiatori de eliminat din Dock.";
 
 "checksumTitle" = "Calculator Sumă de Control (Hash)";
 "checksumSubtitle" = "Trageți și plasați orice fișier pentru a calcula și verifica instantaneu sumele de control MD5, SHA-1 și SHA-256.";

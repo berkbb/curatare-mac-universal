@@ -405,6 +405,8 @@
 "buttonRemoveDockSpacers" = "Boşlukları Temizle";
 "toastDockSpacerAdded" = "Dock'a ayırıcı boşluk eklendi.";
 "toastDockSpacersRemoved" = "Dock'taki ayırıcı boşluklar temizlendi.";
+"toastDockSpacerFailed" = "Dock tercihleri okunamadı; boşluk eklenmedi.";
+"toastNoDockSpacers" = "Dock'ta kaldırılacak ayırıcı boşluk yok.";
 
 "checksumTitle" = "Dosya Sağlama Toplamı (Checksum / Hash) Hesaplayıcı";
 "checksumSubtitle" = "Herhangi bir dosyayı sürükleyip bırakarak anında MD5, SHA-1 ve SHA-256 özetlerini hesaplayın ve doğrulayın.";

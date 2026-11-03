@@ -1776,13 +1776,20 @@ public final class AppModel {
     }
 
     public func addDockSpacer(small: Bool = false) {
-        tweakManager.addDockSpacer(small: small)
+        guard tweakManager.addDockSpacer(small: small) else {
+            showToast(L(.toastDockSpacerFailed))
+            log.warning(.engine, "Dock preferences could not be read; spacer not added")
+            return
+        }
         showToast(L(.toastDockSpacerAdded))
         log.info(.engine, "Added spacer to Dock (small: \(small))")
     }
 
     public func removeDockSpacers() {
-        tweakManager.removeDockSpacers()
+        guard tweakManager.removeDockSpacers() else {
+            showToast(L(.toastNoDockSpacers))
+            return
+        }
         showToast(L(.toastDockSpacersRemoved))
         log.info(.engine, "Removed all spacers from Dock")
     }

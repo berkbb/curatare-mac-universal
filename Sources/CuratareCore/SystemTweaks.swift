@@ -249,6 +249,9 @@ public protocol PreferenceStoreProtocol: Sendable {
     func readValue(domain: String, key: String) -> PreferenceValue?
     func writeValue(domain: String, key: String, value: PreferenceValue)
     func removeValue(domain: String, key: String)
+    /// Dock'un `persistent-apps` gibi sözlük dizisi tutan anahtarları; dizi okunamazsa `nil`.
+    func readDictionaryArray(domain: String, key: String) -> [[String: Any]]?
+    func writeDictionaryArray(domain: String, key: String, value: [[String: Any]])
     func restartService(_ service: SystemTweakItem.RestartService)
 }
 
@@ -322,6 +325,16 @@ public struct SystemPreferenceStore: PreferenceStoreProtocol {
         CFPreferencesAppSynchronize(cfDomain)
     }
 
+    public func readDictionaryArray(domain: String, key: String) -> [[String: Any]]? {
+        CFPreferencesCopyAppValue(key as CFString, Self.preferencesDomain(for: domain)) as? [[String: Any]]
+    }
+
+    public func writeDictionaryArray(domain: String, key: String, value: [[String: Any]]) {
+        let cfDomain = Self.preferencesDomain(for: domain)
+        CFPreferencesSetAppValue(key as CFString, value as NSArray, cfDomain)
+        CFPreferencesAppSynchronize(cfDomain)
+    }
+
     public func restartService(_ service: SystemTweakItem.RestartService) {
         guard service != .none else { return }
         let name: String
@@ -343,6 +356,7 @@ public final class MockPreferenceStore: PreferenceStoreProtocol, @unchecked Send
     private var boolValues: [String: Bool] = [:]
     private var stringValues: [String: String] = [:]
     private var numberValues: [String: PreferenceValue] = [:]
+    private var arrayValues: [String: [[String: Any]]] = [:]
     public private(set) var restartedServices: [SystemTweakItem.RestartService] = []
 
     public init(initialBools: [String: Bool] = [:], initialStrings: [String: String] = [:]) {
@@ -408,6 +422,19 @@ public final class MockPreferenceStore: PreferenceStoreProtocol, @unchecked Send
         boolValues.removeValue(forKey: compositeKey(domain, key))
         stringValues.removeValue(forKey: compositeKey(domain, key))
         numberValues.removeValue(forKey: compositeKey(domain, key))
+        arrayValues.removeValue(forKey: compositeKey(domain, key))
+    }
+
+    public func readDictionaryArray(domain: String, key: String) -> [[String: Any]]? {
+        lock.lock()
+        defer { lock.unlock() }
+        return arrayValues[compositeKey(domain, key)]
+    }
+
+    public func writeDictionaryArray(domain: String, key: String, value: [[String: Any]]) {
+        lock.lock()
+        defer { lock.unlock() }
+        arrayValues[compositeKey(domain, key)] = value
     }
 
     public func restartService(_ service: SystemTweakItem.RestartService) {
@@ -502,30 +529,40 @@ public struct SystemTweakManager: Sendable {
         return result
     }
 
-    /// Dock'a ayırıcı boşluk (spacer) ekler.
-    @discardableResult
-    public func addDockSpacer(small: Bool = false) -> Bool {
-        let tileType = small ? "small-spacer-tile" : "spacer-tile"
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
-        p.arguments = ["write", "com.apple.dock", "persistent-apps", "-array-add", "{\"tile-type\"=\"\(tileType)\";}"]
-        try? p.run()
-        p.waitUntilExit()
-        store.restartService(.dock)
-        return p.terminationStatus == 0
+    static let dockDomain = "com.apple.dock"
+    /// Boşluklar uygulama bölümüne eklenir; kullanıcı sağ bölüme de taşımış olabilir.
+    static let dockTileKeys = ["persistent-apps", "persistent-others"]
+
+    /// `spacer-tile`, `small-spacer-tile` ve `flex-spacer-tile`.
+    static func isDockSpacer(_ tile: [String: Any]) -> Bool {
+        (tile["tile-type"] as? String)?.hasSuffix("spacer-tile") == true
     }
 
-    /// Dock'taki tüm ayırıcı boşlukları temizler.
+    /// Dock'a ayırıcı boşluk (spacer) ekler. Tercih doğrudan yazılır; komut, betik ya da izin gerekmez.
+    /// Dock dizisi okunamazsa hiçbir şey yazılmaz: boş diziyle üzerine yazmak Dock'taki uygulamaları silerdi.
     @discardableResult
-    public func removeDockSpacers() -> Bool {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        let script = "tell application \"System Events\" to do shell script \"python3 -c 'import plistlib, os; p=os.path.expanduser(\\\"~/Library/Preferences/com.apple.dock.plist\\\"); d=plistlib.load(open(p, \\\"rb\\\")); d[\\\"persistent-apps\\\"] = [x for x in d.get(\\\"persistent-apps\\\", []) if \\\"spacer\\\" not in x.get(\\\"tile-type\\\", \\\"\\\")]; plistlib.dump(d, open(p, \\\"wb\\\"))' 2>/dev/null || true\""
-        p.arguments = ["-e", script]
-        try? p.run()
-        p.waitUntilExit()
+    public func addDockSpacer(small: Bool = false) -> Bool {
+        guard var tiles = store.readDictionaryArray(domain: Self.dockDomain, key: "persistent-apps") else { return false }
+        tiles.append(["tile-type": small ? "small-spacer-tile" : "spacer-tile", "tile-data": [String: Any]()])
+        store.writeDictionaryArray(domain: Self.dockDomain, key: "persistent-apps", value: tiles)
         store.restartService(.dock)
         return true
+    }
+
+    /// Dock'taki tüm ayırıcı boşlukları kaldırır; diğer kutucuklara dokunmaz. Kaldırılacak boşluk yoksa `false`
+    /// döner ve Dock yeniden başlatılmaz.
+    @discardableResult
+    public func removeDockSpacers() -> Bool {
+        var removedAny = false
+        for key in Self.dockTileKeys {
+            guard let tiles = store.readDictionaryArray(domain: Self.dockDomain, key: key) else { continue }
+            let kept = tiles.filter { !Self.isDockSpacer($0) }
+            guard kept.count != tiles.count else { continue }
+            store.writeDictionaryArray(domain: Self.dockDomain, key: key, value: kept)
+            removedAny = true
+        }
+        if removedAny { store.restartService(.dock) }
+        return removedAny
     }
 
     /// Geçerli ekran resmi biçimi; anahtar yoksa macOS varsayılanı PNG. Terminal ile listede olmayan bir biçim
