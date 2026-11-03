@@ -551,6 +551,12 @@
 "menuBarMetricCPU" = "CPU";
 "menuBarMetricRAM" = "RAM";
 "menuBarMetricDisk" = "Disc";
+"sysBuildLabel" = "Compilare %@";
+"sysDarwinLabel" = "Darwin %@";
+"trashBatchIDLabel" = "ID: %@";
+"logProcessLabel" = "%1$@ (%2$lld)";
+"logPIDLabel" = "PID %lld";
+"bundleVersionLabel" = "v%@";
 "trashTitleEcosystem" = "Curățare ecosistem: %@";
 "trashTitleLibraryAudit" = "Audit bibliotecă (grupurile A–E)";
 "trashTitleDevAI" = "Curățare dezvoltare și IA";

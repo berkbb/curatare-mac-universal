@@ -551,6 +551,12 @@
 "menuBarMetricCPU" = "CPU";
 "menuBarMetricRAM" = "RAM";
 "menuBarMetricDisk" = "Disk";
+"sysBuildLabel" = "Build %@";
+"sysDarwinLabel" = "Darwin %@";
+"trashBatchIDLabel" = "ID: %@";
+"logProcessLabel" = "%1$@ (%2$lld)";
+"logPIDLabel" = "PID %lld";
+"bundleVersionLabel" = "v%@";
 "trashTitleEcosystem" = "Ecosystem Cleanup: %@";
 "trashTitleLibraryAudit" = "Library Audit (Groups A–E)";
 "trashTitleDevAI" = "Developer & AI Cleanup";

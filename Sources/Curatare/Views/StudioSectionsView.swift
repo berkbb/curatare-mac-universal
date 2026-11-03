@@ -916,7 +916,7 @@ public struct UninstallerView: View {
                     HStack(spacing: 8) {
                         Text(bundle.name)
                             .font(.title3.bold())
-                        Text("v\(bundle.version)")
+                        Text(model.LF(.bundleVersionLabel, bundle.version))
                             .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                         if bundle.isRunning {

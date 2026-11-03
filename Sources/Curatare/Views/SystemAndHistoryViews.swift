@@ -890,12 +890,12 @@ public struct SystemStatusView: View {
                 .foregroundStyle(.secondary)
             Divider().frame(height: 12)
             if !model.systemStatus.buildID.isEmpty {
-                Text("Build \(model.systemStatus.buildID)")
+                Text(model.LF(.sysBuildLabel, model.systemStatus.buildID))
                     .font(.caption2.monospaced())
                     .foregroundStyle(.secondary)
             }
             if !model.systemStatus.darwinKernel.isEmpty {
-                Text("Darwin \(model.systemStatus.darwinKernel)")
+                Text(model.LF(.sysDarwinLabel, model.systemStatus.darwinKernel))
                     .font(.caption2.monospaced())
                     .foregroundStyle(.secondary)
             }
@@ -1903,7 +1903,7 @@ public struct TrashHistoryView: View {
                         }
                     }
 
-                    Text("ID: \(batch.id)")
+                    Text(model.LF(.trashBatchIDLabel, batch.id))
                         .font(.caption.monospaced())
                         .foregroundStyle(.secondary)
 

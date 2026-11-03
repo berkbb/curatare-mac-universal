@@ -793,7 +793,7 @@ public struct LogView: View {
                 .width(min: 95, ideal: 115, max: 140)
 
                 TableColumn(model.L(.logColumnProcess)) { entry in
-                    Text("Curatare (\(entry.process))")
+                    Text(model.LF(.logProcessLabel, model.L(.appName), Int64(entry.process)))
                         .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
@@ -827,7 +827,7 @@ public struct LogView: View {
                             Text(categoryTitle(entry.category))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                            Text("PID \(entry.process)")
+                            Text(model.LF(.logPIDLabel, Int64(entry.process)))
                                 .font(.system(.caption, design: .monospaced))
                                 .foregroundStyle(.secondary)
                             Spacer()

@@ -551,6 +551,12 @@
 "menuBarMetricCPU" = "CPU";
 "menuBarMetricRAM" = "RAM";
 "menuBarMetricDisk" = "Disk";
+"sysBuildLabel" = "Yapı %@";
+"sysDarwinLabel" = "Darwin %@";
+"trashBatchIDLabel" = "Kimlik: %@";
+"logProcessLabel" = "%1$@ (%2$lld)";
+"logPIDLabel" = "PID %lld";
+"bundleVersionLabel" = "v%@";
 "trashTitleEcosystem" = "Ekosistem Temizliği: %@";
 "trashTitleLibraryAudit" = "Kitaplık Denetimi (A–E Grupları)";
 "trashTitleDevAI" = "Geliştirici ve Yapay Zekâ Temizliği";

@@ -275,6 +275,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakSafariOpenButton
     case trashStatItemCount, trashStatTotalSize, trashStatDate, homebrewCaveats, trashFilterItemsPlaceholder
     case trashBatchCountFiltered, homebrewPackageCount, menuBarMetricCPU, menuBarMetricRAM, menuBarMetricDisk
+    case sysBuildLabel, sysDarwinLabel, trashBatchIDLabel, logProcessLabel, logPIDLabel, bundleVersionLabel
     case trashTitleEcosystem, trashTitleLibraryAudit, trashTitleDevAI, trashTitleBrowserCaches, trashTitleUninstall
     case trashTitleSavedState, trashTitleDiagnosticReports, trashTitleMailEnvelopeIndex
     case scanAppleMailDownloads, scanIOSBackup, scanQuickTimeAutosave, scanXcodeArchives, scanServiceWorkerCache
