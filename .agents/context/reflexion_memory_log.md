@@ -864,3 +864,16 @@
 - **Verification:**
   - Before the fix: Safari menu bar read through AX after each launch; Dock and Finder PIDs changed (699→48794, 44492→48789) while `iconservicesagent` stayed 736.
   - Restored afterwards: the clipboard (all four pasteboard types), Safari closed with the Develop menu on, and Curatare's remembered tab.
+
+### Episode 55 — `.graphifyrc` Was Written for Options graphifyy Does Not Have
+
+- **Date:** 2026-11-03
+- **Task:** Install Graphify, build the code graph offline, and regenerate `code_graph_wiki.md`.
+- **Findings:**
+  - `.graphifyrc` was a JSON object with `cloud`, `no_tips`, `query_log_disable`, and `languages`. graphifyy 0.9.101 (`rcfile.py`) parses only `key=value` lines (`viz_node_limit`, `language.<ext>`) and raises on line 1 (`{`), so every run would have stopped.
+  - Privacy is controlled by the environment: `GRAPHIFY_NO_TIPS`, `GRAPHIFY_QUERY_LOG_DISABLE`, and `GRAPHIFY_BACKEND=off`. Without the last one graphify auto-selects a cloud LLM backend from ambient API keys.
+  - `graphify-out/` was not git-ignored, and `.graphifyignore` excluded only the two Mole binaries, not the vendored Mole scripts.
+  - The old wiki named methods that do not exist (`DatedTrashService.createBatch`, `SandboxProfile.forReadOnlyScan`).
+- **Fix:** `.graphifyrc` rewritten in the real format, `Vendor/` and `graphify-out/` excluded, `graphify-out/` added to `.gitignore`, and the wiki regenerated from `GRAPH_REPORT.md` (build run under `sandbox-exec` with outbound IP denied).
+- **Lesson:** A config file for a tool is checked against that tool's parser before it is committed. A memory asset written by hand drifts; regenerate it from the source and record the commit it was built at.
+- **Verification:** `graphify extract . --code-only` → 44 files, 2,437 nodes, 5,533 edges; `graphify cluster-only . --no-label` wrote `GRAPH_REPORT.md`; `swift test` passed (52 + 13 tests).
