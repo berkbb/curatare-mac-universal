@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
 - **System Status loads once:** The tab no longer re-runs `status-go`, `system_profiler` and `diskutil` on every visit; data is cached until **Refresh**. Live CPU, memory and disk metrics refresh every 15 seconds while the Live Status dashboard is visible. App launch now fetches only the light `status-go` metrics.
 
+- **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
+
 ### Fixed
 - **Uninstaller app list ~300× faster:** The list no longer walks every bundle to compute sizes it never displays (32 s → 0.1 s for 92 apps); the selected app is still sized during inspection.
 - **System Status header:** The four-tab picker no longer overlaps the subtitle or hides behind the Refresh button; the safety banner wraps instead of truncating.
