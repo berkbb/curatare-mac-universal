@@ -1616,7 +1616,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
         let tweaks = manager.loadAllTweaks()
 
-        #expect(tweaks.count == 28)
+        #expect(tweaks.count == 31)
         #expect(tweaks.contains(where: { $0.id == "finder.showHiddenFiles" }))
         #expect(tweaks.contains(where: { $0.id == "finder.showFullPathInTitle" }))
         #expect(tweaks.contains(where: { $0.id == "finder.hideDesktopIcons" }))
@@ -1647,7 +1647,7 @@ struct SystemTweaksTests {
         #expect(mockStore.restartedServices.contains(.dock))
 
         _ = manager.applyTweak(id: "dock.instantAutohide", enabled: true)
-        #expect(mockStore.readString(domain: "com.apple.dock", key: "autohide-delay", defaultValue: "") == "0")
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "autohide-delay") == .double(0))
         #expect(mockStore.restartedServices.contains(.dock))
 
         _ = manager.applyTweak(id: "system.suppressCrashDialog", enabled: true)
@@ -1717,6 +1717,103 @@ struct SystemTweaksTests {
         #expect(reset["dock.lockContents"] == false)
         #expect(mockStore.readBool(domain: "com.apple.screencapture", key: "show-thumbnail", defaultValue: false) == true)
         #expect(mockStore.readBool(domain: "NSGlobalDomain", key: "NSAppSleepDisabled", defaultValue: true) == false)
+    }
+
+    @Test("PreferenceValue: equivalents written with a different defaults type still match")
+    func preferenceValueMatching() {
+        #expect(PreferenceValue.double(0).matches(.string("0")))
+        #expect(PreferenceValue.double(0).matches(.int(0)))
+        #expect(PreferenceValue.int(5).matches(.double(5)))
+        #expect(PreferenceValue.bool(true).matches(.int(1)))
+        #expect(PreferenceValue.bool(false).matches(.string("NO")))
+        #expect(PreferenceValue.string("genie").matches(.string("Genie")))
+        #expect(!PreferenceValue.string("genie").matches(.int(0)))
+        #expect(!PreferenceValue.double(0).matches(.double(0.5)))
+    }
+
+    @Test("SystemTweakManager: value toggles write numbers, read legacy strings and Safari uses its broker domain")
+    func valueToggles() {
+        let mockStore = MockPreferenceStore(initialStrings: ["com.apple.dock:autohide-delay": "0"])
+        let manager = SystemTweakManager(store: mockStore)
+
+        // Eski sürümün `-string 0` olarak yazdığı gecikme açık görünmeye devam eder.
+        let initial = Dictionary(uniqueKeysWithValues: manager.loadAllTweaks().map { ($0.id, $0.isEnabled) })
+        #expect(initial["dock.instantAutohide"] == true)
+        #expect(initial["dock.instantAnimation"] == false)
+        #expect(initial["dock.showRecents"] == true)
+        #expect(initial["finder.quickLookNoAnimation"] == false)
+
+        _ = manager.applyTweak(id: "dock.instantAnimation", enabled: true)
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "autohide-time-modifier") == .double(0))
+        _ = manager.applyTweak(id: "finder.quickLookNoAnimation", enabled: true)
+        #expect(mockStore.readValue(domain: "NSGlobalDomain", key: "QLPanelAnimationDuration") == .double(0))
+        _ = manager.applyTweak(id: "dock.instantAnimation", enabled: false)
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "autohide-time-modifier") == nil)
+
+        _ = manager.applyTweak(id: "dock.showRecents", enabled: false)
+        #expect(mockStore.readBool(domain: "com.apple.dock", key: "show-recents", defaultValue: true) == false)
+
+        let safari = manager.applyTweak(id: "system.safariDevelopMenu", enabled: true)
+        #expect(safari?.domain == "com.apple.Safari.SandboxBroker")
+        #expect(mockStore.readBool(domain: "com.apple.Safari.SandboxBroker", key: "ShowDevelopMenu", defaultValue: false) == true)
+    }
+
+    @Test("SystemTweakManager: choice tweaks select defaults, write typed values and reset")
+    func choiceTweaks() {
+        let mockStore = MockPreferenceStore(initialStrings: [
+            "com.apple.dock:mineffect": "scale",
+            "NSGlobalDomain:NSRecentDocumentsLimit": "5"
+        ])
+        let manager = SystemTweakManager(store: mockStore)
+
+        let initial = Dictionary(uniqueKeysWithValues: manager.loadChoiceTweaks().map { ($0.id, $0.selectedOptionID) })
+        #expect(initial.count == 6)
+        #expect(initial["dock.minimizeEffect"] == "scale")
+        #expect(initial["system.recentDocumentsLimit"] == "5")
+        #expect(initial["dock.recentAppsCount"] == "default")
+        #expect(initial["finder.columnAutoSizing"] == "default")
+
+        let suck = manager.applyChoiceTweak(id: "dock.minimizeEffect", optionID: "suck")
+        #expect(suck?.selectedOptionID == "suck")
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "mineffect") == .string("suck"))
+        #expect(mockStore.restartedServices.contains(.dock))
+
+        // Varsayılan seçenek (Cin) anahtarı siler.
+        _ = manager.applyChoiceTweak(id: "dock.minimizeEffect", optionID: "genie")
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "mineffect") == nil)
+
+        _ = manager.applyChoiceTweak(id: "dock.recentAppsCount", optionID: "10")
+        #expect(mockStore.readValue(domain: "com.apple.dock", key: "show-recent-count") == .int(10))
+        _ = manager.applyChoiceTweak(id: "finder.columnAutoSizing", optionID: "off")
+        #expect(mockStore.readValue(domain: "com.apple.finder", key: "_FXEnableColumnAutoSizing") == .bool(false))
+        #expect(manager.applyChoiceTweak(id: "dock.recentAppsCount", optionID: "7") == nil)
+
+        // Listede olmayan bir değer hiçbir seçeneği işaretlemez.
+        mockStore.writeValue(domain: "com.apple.dock", key: "show-recent-count", value: .int(7))
+        #expect(manager.loadChoiceTweaks().first(where: { $0.id == "dock.recentAppsCount" })?.selectedOptionID == nil)
+
+        _ = manager.restoreAllToDefaults()
+        #expect(manager.loadChoiceTweaks().allSatisfy { $0.selectedOptionID == $0.defaultOptionID })
+        #expect(mockStore.readValue(domain: "NSGlobalDomain", key: "NSRecentDocumentsLimit") == nil)
+    }
+
+    @Test("SystemTweakManager: screenshot name prefix is sanitized, written and removed when empty")
+    func screenshotNamePrefixRoundTrip() {
+        let mockStore = MockPreferenceStore()
+        let manager = SystemTweakManager(store: mockStore)
+
+        #expect(manager.screenshotNamePrefix() == "")
+        #expect(manager.setScreenshotNamePrefix("  Ekran/Resmi:  ") == "EkranResmi")
+        #expect(mockStore.readString(domain: "com.apple.screencapture", key: "name", defaultValue: "") == "EkranResmi")
+        #expect(mockStore.restartedServices.contains(.systemUIServer))
+        #expect(ScreenshotNamePrefix.sanitized(String(repeating: "a", count: 80)).count == ScreenshotNamePrefix.maxLength)
+
+        #expect(manager.setScreenshotNamePrefix(" / ") == "")
+        #expect(mockStore.readValue(domain: "com.apple.screencapture", key: "name") == nil)
+
+        manager.setScreenshotNamePrefix("Shot")
+        _ = manager.restoreAllToDefaults()
+        #expect(manager.screenshotNamePrefix() == "")
     }
 
     @Test("MoleOptimizationTask: includes extended maintenance tasks")

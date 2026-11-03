@@ -155,6 +155,7 @@ public struct DiskAnalyzerView: View {
 public struct SystemStatusView: View {
     @Bindable public var model: AppModel
     @State private var selectedTweakCategory: SystemTweakCategory? = nil
+    @State private var screenshotNameDraft = ""
     @Environment(\.controlActiveState) private var controlActiveState
 
     /// `status-go` bir turda ~3 sn sürer (~1,9 sn CPU); daha sık yoklama panoyu açık tutan kullanıcıda bir çekirdeği sürekli meşgul eder.
@@ -1096,11 +1097,16 @@ public struct SystemStatusView: View {
 
             ScrollView {
                 LazyVStack(spacing: 10) {
-                    let lastScreenshotTweakID = filteredTweaks.last(where: { $0.category == .screenshot })?.id
-                    ForEach(filteredTweaks) { tweak in
-                        tweakCard(tweak)
-                        if tweak.id == lastScreenshotTweakID {
+                    ForEach(visibleTweakCategories) { cat in
+                        ForEach(model.systemTweaks.filter { $0.category == cat }) { tweak in
+                            tweakCard(tweak)
+                        }
+                        ForEach(model.systemChoiceTweaks.filter { $0.category == cat }) { tweak in
+                            choiceTweakCard(tweak)
+                        }
+                        if cat == .screenshot {
                             screenshotFormatCard
+                            screenshotNameCard
                         }
                     }
                 }
@@ -1142,24 +1148,112 @@ public struct SystemStatusView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                HStack(spacing: 4) {
-                    Image(systemName: "info.circle")
-                    Text(model.L(.tweaksRestartNoticeSystemUI))
-                }
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
-                .padding(.top, 2)
+                restartNoticeRow(.tweaksRestartNoticeSystemUI)
             }
         }
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 12))
     }
 
-    private var filteredTweaks: [SystemTweakItem] {
-        if let cat = selectedTweakCategory {
-            return model.systemTweaks.filter { $0.category == cat }
+    /// Ekran resmi dosya adı öneki; boş bırakılıp uygulanırsa anahtar silinir ve macOS varsayılanı geri gelir.
+    private var screenshotNameCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "character.cursor.ibeam")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28, height: 28)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(model.L(.tweakScreenshotNameTitle))
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    TextField(model.L(.tweakOptionSystemDefault), text: $screenshotNameDraft)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 200)
+                        .onSubmit(applyScreenshotNameDraft)
+                    Button(model.L(.tweakScreenshotNameApply), action: applyScreenshotNameDraft)
+                        .buttonStyle(.glass)
+                        .disabled(!screenshotNameDraftChanged)
+                }
+
+                Text(model.L(.tweakScreenshotNameDesc))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                restartNoticeRow(.tweaksRestartNoticeSystemUI)
+            }
         }
-        return model.systemTweaks
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+        .onAppear { screenshotNameDraft = model.screenshotNamePrefix }
+        .onChange(of: model.screenshotNamePrefix) { _, prefix in screenshotNameDraft = prefix }
+    }
+
+    private var screenshotNameDraftChanged: Bool {
+        ScreenshotNamePrefix.sanitized(screenshotNameDraft) != model.screenshotNamePrefix
+    }
+
+    private func applyScreenshotNameDraft() {
+        guard screenshotNameDraftChanged else { return }
+        model.setScreenshotNamePrefix(screenshotNameDraft)
+    }
+
+    private var visibleTweakCategories: [SystemTweakCategory] {
+        selectedTweakCategory.map { [$0] } ?? SystemTweakCategory.allCases
+    }
+
+    /// Birkaç değerden birini seçtiren ince ayar; sayı seçenekleri her dilde aynı yazılır.
+    private func choiceTweakCard(_ tweak: SystemChoiceTweak) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: tweak.category.iconSystemName)
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28, height: 28)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(model.L(tweak.titleKey))
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    Picker("", selection: Binding(
+                        get: { tweak.selectedOptionID },
+                        set: { if let optionID = $0 { model.applyChoiceTweak(id: tweak.id, optionID: optionID) } }
+                    )) {
+                        ForEach(tweak.options) { option in
+                            Text(option.titleKey.map { model.L($0) } ?? option.id).tag(Optional(option.id))
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+
+                Text(model.L(tweak.descriptionKey))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                if let notice = tweak.restartService.noticeKey {
+                    restartNoticeRow(notice)
+                }
+            }
+        }
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+    }
+
+    private func restartNoticeRow(_ notice: LKey) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: "info.circle")
+            Text(model.L(notice))
+        }
+        .font(.caption2)
+        .foregroundStyle(.tertiary)
+        .padding(.top, 2)
     }
 
     private func tweakCard(_ tweak: SystemTweakItem) -> some View {
@@ -1188,13 +1282,7 @@ public struct SystemStatusView: View {
                     .fixedSize(horizontal: false, vertical: true)
 
                 if let notice = tweak.restartService.noticeKey {
-                    HStack(spacing: 4) {
-                        Image(systemName: "info.circle")
-                        Text(model.L(notice))
-                    }
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 2)
+                    restartNoticeRow(notice)
                 }
             }
         }

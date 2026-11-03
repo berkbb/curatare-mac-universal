@@ -669,7 +669,8 @@ struct CuratareAppTests {
             startBackgroundWatchers: false
         )
 
-        #expect(model.systemTweaks.count == 28)
+        #expect(model.systemTweaks.count == 31)
+        #expect(model.systemChoiceTweaks.count == 6)
         #expect(model.systemStatusSubTab == .systemCenter)
         #expect(model.systemCenterTab == .hardware)
         #expect(model.hiddenUtilities.count >= 7)
@@ -691,9 +692,16 @@ struct CuratareAppTests {
         #expect(model.systemTweaks.first(where: { $0.id == "finder.showHiddenFiles" })?.isEnabled == true)
         #expect(mockStore.readBool(domain: "com.apple.finder", key: "AppleShowAllFiles", defaultValue: false) == true)
 
+        model.applyChoiceTweak(id: "dock.minimizeEffect", optionID: "scale")
+        #expect(model.systemChoiceTweaks.first(where: { $0.id == "dock.minimizeEffect" })?.selectedOptionID == "scale")
+        model.setScreenshotNamePrefix("Shot:")
+        #expect(model.screenshotNamePrefix == "Shot")
+
         model.resetAllSystemTweaks()
         #expect(model.systemTweaks.first(where: { $0.id == "finder.showHiddenFiles" })?.isEnabled == false)
         #expect(mockStore.readBool(domain: "com.apple.finder", key: "AppleShowAllFiles", defaultValue: true) == false)
+        #expect(model.systemChoiceTweaks.first(where: { $0.id == "dock.minimizeEffect" })?.selectedOptionID == "genie")
+        #expect(model.screenshotNamePrefix == "")
     }
 }
 

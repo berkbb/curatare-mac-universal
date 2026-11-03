@@ -41,6 +41,9 @@ public struct SystemTweakItem: Identifiable, Sendable, Equatable {
     public let defaultValue: Bool
     public var isEnabled: Bool
     public let restartService: RestartService
+    /// Doluysa açıkken anahtara bu değer yazılır, kapanınca anahtar silinir (macOS varsayılanı);
+    /// açık sayılması için saklanan değerin buna karşılık gelmesi gerekir (ör. `autohide-delay` = 0).
+    public let enabledValue: PreferenceValue?
 
     public enum RestartService: String, Sendable, Equatable {
         case none
@@ -67,7 +70,8 @@ public struct SystemTweakItem: Identifiable, Sendable, Equatable {
         key: String,
         defaultValue: Bool,
         isEnabled: Bool,
-        restartService: RestartService
+        restartService: RestartService,
+        enabledValue: PreferenceValue? = nil
     ) {
         self.id = id
         self.category = category
@@ -77,6 +81,111 @@ public struct SystemTweakItem: Identifiable, Sendable, Equatable {
         self.key = key
         self.defaultValue = defaultValue
         self.isEnabled = isEnabled
+        self.restartService = restartService
+        self.enabledValue = enabledValue
+    }
+}
+
+/// Bir tercih anahtarının ham değeri; `defaults write` türleriyle (-bool, -int, -float, -string) birebir.
+public enum PreferenceValue: Sendable, Equatable {
+    case bool(Bool)
+    case int(Int)
+    case double(Double)
+    case string(String)
+
+    var numericValue: Double? {
+        switch self {
+        case .bool(let b): b ? 1 : 0
+        case .int(let i): Double(i)
+        case .double(let d): d
+        case .string(let s): Double(s.trimmingCharacters(in: .whitespaces))
+        }
+    }
+
+    var boolValue: Bool? {
+        switch self {
+        case .bool(let b): b
+        case .int, .double: numericValue.map { $0 != 0 }
+        case .string(let s):
+            switch s.lowercased() {
+            case "true", "yes", "1": true
+            case "false", "no", "0": false
+            default: nil
+            }
+        }
+    }
+
+    /// Saklanan değer bu değere karşılık geliyor mu? Terminal'den farklı türle yazılmış eşdeğerleri de
+    /// (ör. `-string 0` ile `-float 0`, `-int 1` ile `-bool true`) eşit sayar.
+    public func matches(_ stored: PreferenceValue) -> Bool {
+        if case .string(let a) = self, case .string(let b) = stored {
+            return a.caseInsensitiveCompare(b) == .orderedSame
+        }
+        if case .bool(let a) = self {
+            return stored.boolValue == a
+        }
+        guard let a = numericValue, let b = stored.numericValue else { return false }
+        return a == b
+    }
+}
+
+/// Açık/kapalı yerine birkaç değerden birini seçtiren ayar (ör. küçültme efekti, son öğe sayısı).
+/// Varsayılan seçenek anahtarı siler; anahtar yoksa varsayılan seçenek işaretlenir. Listede olmayan bir değer
+/// Terminal ile yazılmışsa `selectedOptionID` `nil` olur ve hiçbir seçenek işaretlenmez.
+public struct SystemChoiceTweak: Identifiable, Sendable, Equatable {
+    public struct Option: Identifiable, Sendable, Equatable {
+        public let id: String
+        /// Yerelleştirilmiş ad; sayı seçeneklerinde `nil` olur ve `id` her dilde olduğu gibi gösterilir.
+        public let titleKey: LKey?
+        /// Yazılacak değer; macOS'un kendi değerini bilmediğimiz varsayılan seçenekte `nil` olur.
+        public let value: PreferenceValue?
+
+        public init(id: String, titleKey: LKey? = nil, value: PreferenceValue?) {
+            self.id = id
+            self.titleKey = titleKey
+            self.value = value
+        }
+
+        public static let systemDefault = Option(id: "default", titleKey: .tweakOptionSystemDefault, value: nil)
+        public static let on = Option(id: "on", titleKey: .tweakOptionOn, value: .bool(true))
+        public static let off = Option(id: "off", titleKey: .tweakOptionOff, value: .bool(false))
+
+        public static func count(_ n: Int) -> Option {
+            Option(id: String(n), value: .int(n))
+        }
+    }
+
+    public let id: String
+    public let category: SystemTweakCategory
+    public let titleKey: LKey
+    public let descriptionKey: LKey
+    public let domain: String
+    public let key: String
+    public let options: [Option]
+    public let defaultOptionID: String
+    public var selectedOptionID: String?
+    public let restartService: SystemTweakItem.RestartService
+
+    public init(
+        id: String,
+        category: SystemTweakCategory,
+        titleKey: LKey,
+        descriptionKey: LKey,
+        domain: String,
+        key: String,
+        options: [Option],
+        defaultOptionID: String = Option.systemDefault.id,
+        restartService: SystemTweakItem.RestartService
+    ) {
+        self.id = id
+        self.category = category
+        self.titleKey = titleKey
+        self.descriptionKey = descriptionKey
+        self.domain = domain
+        self.key = key
+        self.options = options
+        self.defaultOptionID = defaultOptionID
+        self.selectedOptionID = defaultOptionID
         self.restartService = restartService
     }
 }
@@ -97,11 +206,27 @@ public enum ScreenshotFormat: String, Sendable, CaseIterable, Identifiable {
     public static let key = "type"
 }
 
+/// Yeni ekran resimlerinin dosya adı öneki (`com.apple.screencapture` → `name`). Anahtar yoksa macOS
+/// sistem dilindeki kendi adını kullanır.
+public enum ScreenshotNamePrefix {
+    public static let domain = "com.apple.screencapture"
+    public static let key = "name"
+    public static let maxLength = 60
+
+    /// Dosya adında klasör ayırıcısı olan `/` ve `:` çıkarılır, baş ve sondaki boşluklar kırpılır.
+    public static func sanitized(_ raw: String) -> String {
+        let cleaned = raw.filter { $0 != "/" && $0 != ":" }.trimmingCharacters(in: .whitespacesAndNewlines)
+        return String(cleaned.prefix(maxLength)).trimmingCharacters(in: .whitespaces)
+    }
+}
+
 public protocol PreferenceStoreProtocol: Sendable {
     func readBool(domain: String, key: String, defaultValue: Bool) -> Bool
     func writeBool(domain: String, key: String, value: Bool)
     func readString(domain: String, key: String, defaultValue: String) -> String
     func writeString(domain: String, key: String, value: String)
+    func readValue(domain: String, key: String) -> PreferenceValue?
+    func writeValue(domain: String, key: String, value: PreferenceValue)
     func removeValue(domain: String, key: String)
     func restartService(_ service: SystemTweakItem.RestartService)
 }
@@ -147,6 +272,29 @@ public struct SystemPreferenceStore: PreferenceStoreProtocol {
         CFPreferencesAppSynchronize(cfDomain)
     }
 
+    public func readValue(domain: String, key: String) -> PreferenceValue? {
+        guard let val = CFPreferencesCopyAppValue(key as CFString, Self.preferencesDomain(for: domain)) else { return nil }
+        // NSNumber Swift'te Bool'a da köprülenir; gerçek CFBoolean önce ayrılmazsa `-int 1` bool sanılır.
+        if CFGetTypeID(val) == CFBooleanGetTypeID(), let num = val as? NSNumber { return .bool(num.boolValue) }
+        if let num = val as? NSNumber {
+            return CFNumberIsFloatType(num as CFNumber) ? .double(num.doubleValue) : .int(num.intValue)
+        }
+        if let s = val as? String { return .string(s) }
+        return nil
+    }
+
+    public func writeValue(domain: String, key: String, value: PreferenceValue) {
+        let cfDomain = Self.preferencesDomain(for: domain)
+        let cfValue: CFPropertyList = switch value {
+        case .bool(let b): (b ? kCFBooleanTrue : kCFBooleanFalse) as CFPropertyList
+        case .int(let i): NSNumber(value: i)
+        case .double(let d): NSNumber(value: d)
+        case .string(let s): s as CFString
+        }
+        CFPreferencesSetAppValue(key as CFString, cfValue, cfDomain)
+        CFPreferencesAppSynchronize(cfDomain)
+    }
+
     public func removeValue(domain: String, key: String) {
         let cfDomain = Self.preferencesDomain(for: domain)
         CFPreferencesSetAppValue(key as CFString, nil, cfDomain)
@@ -173,6 +321,7 @@ public final class MockPreferenceStore: PreferenceStoreProtocol, @unchecked Send
     private let lock = NSLock()
     private var boolValues: [String: Bool] = [:]
     private var stringValues: [String: String] = [:]
+    private var numberValues: [String: PreferenceValue] = [:]
     public private(set) var restartedServices: [SystemTweakItem.RestartService] = []
 
     public init(initialBools: [String: Bool] = [:], initialStrings: [String: String] = [:]) {
@@ -208,11 +357,36 @@ public final class MockPreferenceStore: PreferenceStoreProtocol, @unchecked Send
         stringValues[compositeKey(domain, key)] = value
     }
 
+    public func readValue(domain: String, key: String) -> PreferenceValue? {
+        lock.lock()
+        defer { lock.unlock() }
+        let k = compositeKey(domain, key)
+        if let number = numberValues[k] { return number }
+        if let b = boolValues[k] { return .bool(b) }
+        if let s = stringValues[k] { return .string(s) }
+        return nil
+    }
+
+    public func writeValue(domain: String, key: String, value: PreferenceValue) {
+        lock.lock()
+        defer { lock.unlock() }
+        let k = compositeKey(domain, key)
+        boolValues.removeValue(forKey: k)
+        stringValues.removeValue(forKey: k)
+        numberValues.removeValue(forKey: k)
+        switch value {
+        case .bool(let b): boolValues[k] = b
+        case .string(let s): stringValues[k] = s
+        case .int, .double: numberValues[k] = value
+        }
+    }
+
     public func removeValue(domain: String, key: String) {
         lock.lock()
         defer { lock.unlock() }
         boolValues.removeValue(forKey: compositeKey(domain, key))
         stringValues.removeValue(forKey: compositeKey(domain, key))
+        numberValues.removeValue(forKey: compositeKey(domain, key))
     }
 
     public func restartService(_ service: SystemTweakItem.RestartService) {
@@ -251,6 +425,32 @@ public struct SystemTweakManager: Sendable {
         return updated
     }
 
+    /// Çok seçenekli ayarları geçerli değerleriyle listeler.
+    public func loadChoiceTweaks() -> [SystemChoiceTweak] {
+        choiceDefinitions.map { def in
+            var item = def
+            item.selectedOptionID = selectedOptionID(for: def)
+            return item
+        }
+    }
+
+    /// Seçeneği yazar; varsayılan seçenek anahtarı silerek macOS'un kendi değerine döndürür.
+    public func applyChoiceTweak(id: String, optionID: String, restartService: Bool = true) -> SystemChoiceTweak? {
+        guard let def = choiceDefinitions.first(where: { $0.id == id }),
+              let option = def.options.first(where: { $0.id == optionID }) else { return nil }
+        if let value = option.value, option.id != def.defaultOptionID {
+            store.writeValue(domain: def.domain, key: def.key, value: value)
+        } else {
+            store.removeValue(domain: def.domain, key: def.key)
+        }
+        if restartService {
+            store.restartService(def.restartService)
+        }
+        var updated = def
+        updated.selectedOptionID = option.id
+        return updated
+    }
+
     /// Tüm ayarları sistem varsayılanlarına sıfırlar.
     public func restoreAllToDefaults(restartServices: Bool = true) -> [SystemTweakItem] {
         var servicesToRestart: Set<SystemTweakItem.RestartService> = []
@@ -263,7 +463,14 @@ public struct SystemTweakManager: Sendable {
             item.isEnabled = def.defaultValue
             return item
         }
+        for def in choiceDefinitions {
+            store.removeValue(domain: def.domain, key: def.key)
+            if def.restartService != .none {
+                servicesToRestart.insert(def.restartService)
+            }
+        }
         setScreenshotFormat(.png, restartService: false)
+        setScreenshotNamePrefix("", restartService: false)
         servicesToRestart.insert(.systemUIServer)
         if restartServices {
             for service in servicesToRestart {
@@ -318,14 +525,38 @@ public struct SystemTweakManager: Sendable {
         }
     }
 
+    /// Geçerli dosya adı öneki; anahtar yoksa boş döner (macOS varsayılanı).
+    public func screenshotNamePrefix() -> String {
+        store.readString(domain: ScreenshotNamePrefix.domain, key: ScreenshotNamePrefix.key, defaultValue: "")
+    }
+
+    /// Öneki temizleyip yazar ve yazılan değeri döndürür; temizlenince boş kalırsa anahtar silinir.
+    @discardableResult
+    public func setScreenshotNamePrefix(_ raw: String, restartService: Bool = true) -> String {
+        let prefix = ScreenshotNamePrefix.sanitized(raw)
+        if prefix.isEmpty {
+            store.removeValue(domain: ScreenshotNamePrefix.domain, key: ScreenshotNamePrefix.key)
+        } else {
+            store.writeString(domain: ScreenshotNamePrefix.domain, key: ScreenshotNamePrefix.key, value: prefix)
+        }
+        if restartService {
+            store.restartService(.systemUIServer)
+        }
+        return prefix
+    }
+
+    private func selectedOptionID(for def: SystemChoiceTweak) -> String? {
+        guard let stored = store.readValue(domain: def.domain, key: def.key) else { return def.defaultOptionID }
+        return def.options.first(where: { $0.value?.matches(stored) == true })?.id
+    }
+
     private func readValue(for item: SystemTweakItem) -> Bool {
+        if let enabledValue = item.enabledValue {
+            return store.readValue(domain: item.domain, key: item.key).map(enabledValue.matches) ?? false
+        }
         if item.id == "system.suppressCrashDialog" {
             let str = store.readString(domain: item.domain, key: item.key, defaultValue: "prompt")
             return str.lowercased() == "none"
-        }
-        if item.id == "dock.instantAutohide" {
-            let str = store.readString(domain: item.domain, key: item.key, defaultValue: "default")
-            return str == "0"
         }
         if item.id == "screenshot.saveToDownloads" {
             let loc = store.readString(domain: item.domain, key: item.key, defaultValue: "")
@@ -339,17 +570,17 @@ public struct SystemTweakManager: Sendable {
     }
 
     private func writeValue(for item: SystemTweakItem, value: Bool) {
-        if item.id == "system.suppressCrashDialog" {
+        if let enabledValue = item.enabledValue {
             if value {
-                store.writeString(domain: item.domain, key: item.key, value: "none")
+                store.writeValue(domain: item.domain, key: item.key, value: enabledValue)
             } else {
                 store.removeValue(domain: item.domain, key: item.key)
             }
             return
         }
-        if item.id == "dock.instantAutohide" {
+        if item.id == "system.suppressCrashDialog" {
             if value {
-                store.writeString(domain: item.domain, key: item.key, value: "0")
+                store.writeString(domain: item.domain, key: item.key, value: "none")
             } else {
                 store.removeValue(domain: item.domain, key: item.key)
             }
@@ -439,6 +670,18 @@ public struct SystemTweakManager: Sendable {
             isEnabled: false,
             restartService: .finder
         ),
+        SystemTweakItem(
+            id: "finder.quickLookNoAnimation",
+            category: .finder,
+            titleKey: .tweakQuickLookNoAnimationTitle,
+            descriptionKey: .tweakQuickLookNoAnimationDesc,
+            domain: "NSGlobalDomain",
+            key: "QLPanelAnimationDuration",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .finder,
+            enabledValue: .double(0)
+        ),
 
         // MARK: - Dock
         SystemTweakItem(
@@ -472,7 +715,8 @@ public struct SystemTweakManager: Sendable {
             key: "autohide-delay",
             defaultValue: false,
             isEnabled: false,
-            restartService: .dock
+            restartService: .dock,
+            enabledValue: .double(0)
         ),
         SystemTweakItem(
             id: "dock.lockContents",
@@ -505,6 +749,29 @@ public struct SystemTweakManager: Sendable {
             key: "mouse-over-hilite-stack",
             defaultValue: false,
             isEnabled: false,
+            restartService: .dock
+        ),
+        SystemTweakItem(
+            id: "dock.instantAnimation",
+            category: .dock,
+            titleKey: .tweakDockNoAnimationTitle,
+            descriptionKey: .tweakDockNoAnimationDesc,
+            domain: "com.apple.dock",
+            key: "autohide-time-modifier",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .dock,
+            enabledValue: .double(0)
+        ),
+        SystemTweakItem(
+            id: "dock.showRecents",
+            category: .dock,
+            titleKey: .tweakDockShowRecentsTitle,
+            descriptionKey: .tweakDockShowRecentsDesc,
+            domain: "com.apple.dock",
+            key: "show-recents",
+            defaultValue: true,
+            isEnabled: true,
             restartService: .dock
         ),
 
@@ -689,6 +956,75 @@ public struct SystemTweakManager: Sendable {
             key: "NSAppSleepDisabled",
             defaultValue: false,
             isEnabled: false,
+            restartService: .none
+        )
+    ]
+
+    /// macOS varsayılanı kesin bilinmeyen ya da sayı/metin isteyen ayarlar; varsayılan seçenek anahtarı siler.
+    public let choiceDefinitions: [SystemChoiceTweak] = [
+        SystemChoiceTweak(
+            id: "finder.columnAutoSizing",
+            category: .finder,
+            titleKey: .tweakColumnAutoSizingTitle,
+            descriptionKey: .tweakColumnAutoSizingDesc,
+            domain: "com.apple.finder",
+            key: "_FXEnableColumnAutoSizing",
+            options: [.systemDefault, .on, .off],
+            restartService: .finder
+        ),
+        SystemChoiceTweak(
+            id: "finder.quickLookHideOnDeactivate",
+            category: .finder,
+            titleKey: .tweakQuickLookHideOnDeactivateTitle,
+            descriptionKey: .tweakQuickLookHideOnDeactivateDesc,
+            domain: "com.apple.finder",
+            key: "QLHidePanelOnDeactivate",
+            options: [.systemDefault, .on, .off],
+            restartService: .finder
+        ),
+        SystemChoiceTweak(
+            id: "dock.minimizeEffect",
+            category: .dock,
+            titleKey: .tweakMinimizeEffectTitle,
+            descriptionKey: .tweakMinimizeEffectDesc,
+            domain: "com.apple.dock",
+            key: "mineffect",
+            options: [
+                .init(id: "genie", titleKey: .tweakMinimizeEffectGenie, value: .string("genie")),
+                .init(id: "scale", titleKey: .tweakMinimizeEffectScale, value: .string("scale")),
+                .init(id: "suck", titleKey: .tweakMinimizeEffectSuck, value: .string("suck"))
+            ],
+            defaultOptionID: "genie",
+            restartService: .dock
+        ),
+        SystemChoiceTweak(
+            id: "dock.recentAppsCount",
+            category: .dock,
+            titleKey: .tweakDockRecentCountTitle,
+            descriptionKey: .tweakDockRecentCountDesc,
+            domain: "com.apple.dock",
+            key: "show-recent-count",
+            options: [.systemDefault, .count(1), .count(5), .count(10)],
+            restartService: .dock
+        ),
+        SystemChoiceTweak(
+            id: "system.recentDocumentsLimit",
+            category: .system,
+            titleKey: .tweakRecentDocumentsLimitTitle,
+            descriptionKey: .tweakRecentDocumentsLimitDesc,
+            domain: "NSGlobalDomain",
+            key: "NSRecentDocumentsLimit",
+            options: [.systemDefault, .count(0), .count(5), .count(20), .count(50)],
+            restartService: .none
+        ),
+        SystemChoiceTweak(
+            id: "system.recentPlacesLimit",
+            category: .system,
+            titleKey: .tweakRecentPlacesLimitTitle,
+            descriptionKey: .tweakRecentPlacesLimitDesc,
+            domain: "NSGlobalDomain",
+            key: "NSNavRecentPlacesLimit",
+            options: [.systemDefault, .count(0), .count(10), .count(20)],
             restartService: .none
         )
     ]

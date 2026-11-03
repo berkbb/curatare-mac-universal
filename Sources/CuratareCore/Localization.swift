@@ -253,6 +253,18 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakScreenshotCursorTitle, tweakScreenshotCursorDesc
     case tweakExpandedSaveDialogTitle, tweakExpandedSaveDialogDesc
     case tweakDisableAppNapTitle, tweakDisableAppNapDesc
+    case tweakQuickLookNoAnimationTitle, tweakQuickLookNoAnimationDesc
+    case tweakDockNoAnimationTitle, tweakDockNoAnimationDesc
+    case tweakDockShowRecentsTitle, tweakDockShowRecentsDesc
+    case tweakColumnAutoSizingTitle, tweakColumnAutoSizingDesc
+    case tweakQuickLookHideOnDeactivateTitle, tweakQuickLookHideOnDeactivateDesc
+    case tweakMinimizeEffectTitle, tweakMinimizeEffectDesc
+    case tweakMinimizeEffectGenie, tweakMinimizeEffectScale, tweakMinimizeEffectSuck
+    case tweakDockRecentCountTitle, tweakDockRecentCountDesc
+    case tweakRecentDocumentsLimitTitle, tweakRecentDocumentsLimitDesc
+    case tweakRecentPlacesLimitTitle, tweakRecentPlacesLimitDesc
+    case tweakOptionSystemDefault, tweakOptionOn, tweakOptionOff
+    case tweakScreenshotNameTitle, tweakScreenshotNameDesc, tweakScreenshotNameApply
     case toastTweakApplied, toastTweaksReset
 
     // 7. Tarihli Çöp Turları ve Geçmiş (`~/.Trash/Curatare-...`)

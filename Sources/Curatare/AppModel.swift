@@ -422,7 +422,9 @@ public final class AppModel {
     public var hasLoadedSystemStatus: Bool = false
     public var isLoadingSystemStatus: Bool = false
     public var systemTweaks: [SystemTweakItem] = []
+    public var systemChoiceTweaks: [SystemChoiceTweak] = []
     public var screenshotFormat: ScreenshotFormat?
+    public var screenshotNamePrefix: String = ""
     public let tweakManager: SystemTweakManager
     public var checksumResult: FileChecksumResult?
     public var checksumExpectedHash: String = ""
@@ -472,7 +474,9 @@ public final class AppModel {
         self.systemStatusSubTab = resolvedSettings.lastSystemStatusSubTab
         self.systemCenterTab = resolvedSettings.lastSystemCenterTab
         self.systemTweaks = resolvedTweakManager.loadAllTweaks()
+        self.systemChoiceTweaks = resolvedTweakManager.loadChoiceTweaks()
         self.screenshotFormat = resolvedTweakManager.screenshotFormat()
+        self.screenshotNamePrefix = resolvedTweakManager.screenshotNamePrefix()
         self.currentAnalyzedURL = homeDirectoryURL
         self.trashBatches = resolvedTrash.listBatches()
         self.selectedSection = resolvedSettings.lastSelectedSection
@@ -1726,7 +1730,24 @@ public final class AppModel {
 
     public func refreshSystemTweaks() {
         systemTweaks = tweakManager.loadAllTweaks()
+        systemChoiceTweaks = tweakManager.loadChoiceTweaks()
         screenshotFormat = tweakManager.screenshotFormat()
+        screenshotNamePrefix = tweakManager.screenshotNamePrefix()
+    }
+
+    public func applyChoiceTweak(id: String, optionID: String) {
+        guard let updated = tweakManager.applyChoiceTweak(id: id, optionID: optionID) else { return }
+        if let idx = systemChoiceTweaks.firstIndex(where: { $0.id == id }) {
+            systemChoiceTweaks[idx] = updated
+        }
+        showToast(LF(.toastTweakApplied, L(updated.titleKey)))
+        log.info(.engine, "System tweak applied: \(id) = \(optionID)")
+    }
+
+    public func setScreenshotNamePrefix(_ raw: String) {
+        screenshotNamePrefix = tweakManager.setScreenshotNamePrefix(raw)
+        showToast(LF(.toastTweakApplied, L(.tweakScreenshotNameTitle)))
+        log.info(.engine, "Screenshot name prefix updated")
     }
 
     public func setScreenshotFormat(_ format: ScreenshotFormat) {
@@ -1759,7 +1780,9 @@ public final class AppModel {
 
     public func resetAllSystemTweaks() {
         systemTweaks = tweakManager.restoreAllToDefaults()
+        systemChoiceTweaks = tweakManager.loadChoiceTweaks()
         screenshotFormat = tweakManager.screenshotFormat()
+        screenshotNamePrefix = tweakManager.screenshotNamePrefix()
         showToast(L(.toastTweaksReset))
         log.info(.engine, "All system tweaks reset to defaults")
     }
