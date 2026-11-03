@@ -2185,3 +2185,225 @@ struct DiskHealthAndScreenshotFormatTests {
         #expect(store.restartedServices.count == 3)
     }
 }
+
+@Suite("Portable Rules Export & Import Tests (roadmap 2c)")
+struct PortableRulesTests {
+    private let aliceHome = URL(fileURLWithPath: "/Users/curatare-alice", isDirectory: true)
+    private let bobHome = URL(fileURLWithPath: "/Users/curatare-bob", isDirectory: true)
+
+    @Test("Round trip keeps entries, writes home paths as ~/ and opens them in the new Mac's home folder")
+    func roundTripAcrossHomes() throws {
+        let exportedAt = Date(timeIntervalSince1970: 1_800_000_000)
+        let document = PortableRules.makeDocument(
+            whitelist: ["/Users/curatare-alice/Applications/Keep.app", "/Users/curatare-alice/Documents/Keep/*", "/Volumes/Work/Shared", " ", "# yorum"],
+            purgePaths: ["~/Projects", "/Users/curatare-alice/Code", "/Users/curatare-alice/Code/", "/Volumes/Work/Repos"],
+            homeDirectory: aliceHome,
+            exportedAt: exportedAt
+        )
+        #expect(document.version == PortableRulesDocument.currentVersion)
+        #expect(document.whitelist == ["~/Applications/Keep.app", "~/Documents/Keep/*", "/Volumes/Work/Shared"])
+        #expect(document.purgePaths == ["~/Projects", "~/Code", "/Volumes/Work/Repos"])
+
+        let data = try PortableRules.encode(document)
+        let json = try #require(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        #expect(json["format"] as? String == PortableRulesDocument.formatIdentifier)
+        #expect(json["version"] as? Int == PortableRulesDocument.currentVersion)
+
+        let decoded = try PortableRules.decode(data)
+        #expect(decoded == document)
+
+        let validation = PortableRules.validate(decoded, homeDirectory: bobHome)
+        #expect(validation.rejected.isEmpty)
+        #expect(validation.whitelist == ["/Users/curatare-bob/Applications/Keep.app", "/Users/curatare-bob/Documents/Keep/*", "/Volumes/Work/Shared"])
+        #expect(validation.purgePaths == ["~/Projects", "~/Code", "/Volumes/Work/Repos"])
+    }
+
+    @Test("Missing fields get defaults, unknown future fields and non-text entries are tolerated")
+    func backwardAndForwardCompatibility() throws {
+        let legacy = try PortableRules.decode(Data(#"{"whitelist": ["~/Keep"]}"#.utf8))
+        #expect(legacy.version == 1)
+        #expect(legacy.whitelist == ["~/Keep"])
+        #expect(legacy.purgePaths.isEmpty)
+        #expect(legacy.hasWhitelistSection)
+        #expect(!legacy.hasPurgePathsSection)
+
+        let future = try PortableRules.decode(Data("""
+        {
+          "format": "\(PortableRulesDocument.formatIdentifier)",
+          "version": 7,
+          "exportedAt": "not a date",
+          "futureRules": {"nested": [1, 2, {"deep": true}]},
+          "whitelist": ["~/Keep", 42, null, {"path": "~/x"}, ["~/y"]],
+          "purgePaths": "~/NotAList"
+        }
+        """.utf8))
+        #expect(future.version == 7)
+        #expect(future.isNewerThanSupported)
+        #expect(future.exportedAt == nil)
+        #expect(future.whitelist == ["~/Keep"])
+        #expect(future.nonTextWhitelistEntries == 4)
+        #expect(future.hasPurgePathsSection)
+        #expect(future.purgePaths.isEmpty)
+        #expect(future.nonTextPurgePathEntries == 1)
+
+        let validation = PortableRules.validate(future, homeDirectory: bobHome)
+        #expect(validation.isNewerThanSupported)
+        #expect(validation.whitelist == ["/Users/curatare-bob/Keep"])
+        #expect(validation.rejected.filter { $0.reason == .notText }.count == 5)
+
+        #expect(throws: PortableRulesError.unrecognizedFormat("com.example.other")) {
+            try PortableRules.decode(Data(#"{"format": "com.example.other", "whitelist": []}"#.utf8))
+        }
+        #expect(throws: PortableRulesError.unreadable) { try PortableRules.decode(Data("not json".utf8)) }
+        #expect(throws: PortableRulesError.unreadable) { try PortableRules.decode(Data(#"["~/Keep"]"#.utf8)) }
+        let oversized = Data(repeating: 0x20, count: PortableRules.maximumFileSize + 1)
+        #expect(throws: PortableRulesError.fileTooLarge(maximumBytes: PortableRules.maximumFileSize)) {
+            try PortableRules.decode(oversized)
+        }
+    }
+
+    @Test("Rejects do-not-touch entries, unsafe purge locations and malformed paths with a reason")
+    func validationRejectsUnsafeEntries() {
+        let document = PortableRulesDocument(
+            whitelist: [
+                "~/Documents/Keep",
+                "/Applications/Keep.app",
+                "~/Library/Caches/com.apple.Safari",
+                "~/Library/Application Support/com.babadogantech.arhivar",
+                "~/Library/Caches/org.sparkle-project.Sparkle",
+                "~/.ssh",
+                "relative/path",
+                "~curatare-alice/Keep",
+            ],
+            purgePaths: [
+                "~/Projects",
+                "~/projects/",
+                "/Volumes/Work/Repos",
+                "~/Library/CloudStorage/Dropbox/Code",
+                "~/Code/com.apple.sample",
+                "~/.codex/worktrees",
+                "/",
+                "~",
+                "/Users",
+                "/Applications/Xcode.app",
+                "/System/Library/Frameworks",
+                "/opt/homebrew",
+                "~/Library/Caches/Build",
+                "~/.Trash/Curatare-2026-01-01-000000",
+                "~/Projects/*",
+                "~/Pro\njects",
+            ]
+        )
+        // Kullanıcı beyaz listesi ve "izin ver" seçenekleri yok sayılır; yalnızca yerleşik liste uygulanır.
+        let rules = ProtectionRules(userWhitelistPatterns: ["/Users/curatare-bob/Documents/Keep"], allowUserCacheCleaning: true)
+        let validation = PortableRules.validate(document, homeDirectory: bobHome, rules: rules)
+
+        #expect(validation.whitelist == ["/Users/curatare-bob/Documents/Keep", "/Applications/Keep.app"])
+        #expect(validation.purgePaths == ["~/Projects", "/Volumes/Work/Repos", "~/Library/CloudStorage/Dropbox/Code"])
+
+        func reason(_ section: PortableRuleRejection.Section, _ entry: String) -> PortableRuleRejection.Reason? {
+            validation.rejected.first { $0.section == section && $0.entry == entry }?.reason
+        }
+        func isProtected(_ section: PortableRuleRejection.Section, _ entry: String) -> Bool {
+            if case .protected(let detail) = reason(section, entry) { return !detail.isEmpty }
+            return false
+        }
+
+        #expect(isProtected(.whitelist, "~/Library/Caches/com.apple.Safari"))
+        #expect(isProtected(.whitelist, "~/Library/Application Support/com.babadogantech.arhivar"))
+        #expect(isProtected(.whitelist, "~/Library/Caches/org.sparkle-project.Sparkle"))
+        #expect(isProtected(.whitelist, "~/.ssh"))
+        #expect(reason(.whitelist, "relative/path") == .notAbsolute)
+        #expect(reason(.whitelist, "~curatare-alice/Keep") == .notAbsolute)
+
+        #expect(isProtected(.purgePaths, "~/Code/com.apple.sample"))
+        #expect(isProtected(.purgePaths, "~/.codex/worktrees"))
+        for broad in ["/", "~", "/Users", "/Applications/Xcode.app", "/System/Library/Frameworks", "/opt/homebrew",
+                      "~/Library/Caches/Build", "~/.Trash/Curatare-2026-01-01-000000"] {
+            #expect(reason(.purgePaths, broad) == .tooBroad, "Expected \(broad) to be too broad")
+        }
+        #expect(reason(.purgePaths, "~/Projects/*") == .wildcardNotAllowed)
+        #expect(reason(.purgePaths, "~/Pro\njects") == .invalidCharacters)
+        // "~/projects/" aynı klasörün kopyasıdır; reddedilmez, yalnızca bir kez eklenir.
+        #expect(reason(.purgePaths, "~/projects/") == nil)
+        #expect(validation.rejected.count == 18)
+        #expect(Set(validation.rejected.map(\.id)).count == validation.rejected.count)
+
+        // Her reddetme gerekçesi ve bölüm adı çevrilmiş bir metne bağlıdır.
+        let table = StringTable()
+        for rejection in validation.rejected {
+            for code in AppLanguage.supportedCodes {
+                #expect(table.string(rejection.reason.titleKey, language: code) != rejection.reason.titleKey.rawValue)
+                #expect(table.string(rejection.section.titleKey, language: code) != rejection.section.titleKey.rawValue)
+            }
+        }
+    }
+
+    @Test("Merge only adds new entries; replace drops entries missing from the file and keeps absent sections")
+    func mergeAndReplacePlans() throws {
+        let validation = PortableRules.validate(
+            PortableRulesDocument(whitelist: ["~/B", "~/C"], purgePaths: ["~/Projects", "~/New"]),
+            homeDirectory: bobHome
+        )
+        let currentWhitelist = ["/Users/curatare-bob/A", "/Users/curatare-bob/B"]
+        let currentPurge = ["~/Old", "/Users/curatare-bob/Projects"]
+
+        let merge = PortableRulesImportPlan(validation: validation, currentWhitelist: currentWhitelist, currentPurgePaths: currentPurge, mode: .merge, homeDirectory: bobHome)
+        #expect(merge.whitelistToAdd == ["/Users/curatare-bob/C"])
+        #expect(merge.whitelistToRemove.isEmpty)
+        #expect(merge.resultingWhitelist == ["/Users/curatare-bob/A", "/Users/curatare-bob/B", "/Users/curatare-bob/C"])
+        #expect(merge.purgePathsToAdd == ["~/New"])
+        #expect(merge.purgePathsToRemove.isEmpty)
+        #expect(merge.resultingPurgePaths == ["~/Old", "/Users/curatare-bob/Projects", "~/New"])
+        #expect(merge.hasChanges)
+
+        let replace = PortableRulesImportPlan(validation: validation, currentWhitelist: currentWhitelist, currentPurgePaths: currentPurge, mode: .replace, homeDirectory: bobHome)
+        #expect(replace.whitelistToAdd == ["/Users/curatare-bob/C"])
+        #expect(replace.whitelistToRemove == ["/Users/curatare-bob/A"])
+        #expect(replace.resultingWhitelist == ["/Users/curatare-bob/B", "/Users/curatare-bob/C"])
+        #expect(replace.purgePathsToRemove == ["~/Old"])
+        #expect(replace.resultingPurgePaths == ["/Users/curatare-bob/Projects", "~/New"])
+
+        // Dosyada purge bölümü yoksa "Değiştir" mevcut purge yollarına dokunmaz.
+        let whitelistOnly = PortableRules.validate(try PortableRules.decode(Data(#"{"whitelist": ["~/B"]}"#.utf8)), homeDirectory: bobHome)
+        let partial = PortableRulesImportPlan(validation: whitelistOnly, currentWhitelist: currentWhitelist, currentPurgePaths: currentPurge, mode: .replace, homeDirectory: bobHome)
+        #expect(partial.whitelistToRemove == ["/Users/curatare-bob/A"])
+        #expect(!partial.changesPurgePaths)
+        #expect(partial.resultingPurgePaths == currentPurge)
+
+        let unchanged = PortableRulesImportPlan(validation: validation, currentWhitelist: merge.resultingWhitelist, currentPurgePaths: merge.resultingPurgePaths, mode: .merge, homeDirectory: bobHome)
+        #expect(!unchanged.hasChanges)
+    }
+
+    @Test("Mole purge_paths file keeps comments, follows a symlink and is not created for an empty list")
+    func molePurgePathsFile() throws {
+        let fm = FileManager.default
+        let home = fm.temporaryDirectory.appendingPathComponent("curatare-portable-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: home) }
+        try fm.createDirectory(at: home, withIntermediateDirectories: true)
+
+        let file = MolePurgePathsFile(homeDirectory: home)
+        #expect(file.load().isEmpty)
+        try file.save([])
+        #expect(!fm.fileExists(atPath: file.url.path))
+
+        try fm.createDirectory(at: file.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "# Mole purge paths\n~/Old\n\n  # keep this note\n/Volumes/Work\n".write(to: file.url, atomically: true, encoding: .utf8)
+        #expect(file.load() == ["~/Old", "/Volumes/Work"])
+
+        try file.save(["~/Projects", "~/New"])
+        #expect(file.load() == ["~/Projects", "~/New"])
+        let content = try String(contentsOf: file.url, encoding: .utf8)
+        #expect(content == "# Mole purge paths\n  # keep this note\n~/Projects\n~/New\n")
+
+        // Dotfiles deposundaki dosyaya bağlantı korunur; yazılan, bağlantının gösterdiği dosyadır.
+        let dotfiles = home.appendingPathComponent("dotfiles/purge_paths")
+        try fm.createDirectory(at: dotfiles.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try fm.moveItem(at: file.url, to: dotfiles)
+        try fm.createSymbolicLink(at: file.url, withDestinationURL: dotfiles)
+        try file.save(["~/Linked"])
+        #expect(try fm.destinationOfSymbolicLink(atPath: file.url.path) == dotfiles.path)
+        #expect(file.load() == ["~/Linked"])
+        #expect(try String(contentsOf: dotfiles, encoding: .utf8).hasSuffix("~/Linked\n"))
+    }
+}

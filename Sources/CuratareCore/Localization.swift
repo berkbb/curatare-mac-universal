@@ -344,6 +344,15 @@ public enum LKey: String, CaseIterable, Sendable {
     case settingsProtectedRulesTitle, settingsProtectedRulesDesc
     case settingsProtectedRuleSystem, settingsProtectedRuleFrameworks, settingsProtectedRuleDevCaches, settingsProtectedRuleAIAndVMs
     case settingsWhitelistTitle, settingsWhitelistNote, settingsWhitelistAdd, settingsWhitelistRemove, settingsWhitelistEmpty
+    case rulesPortableHeader, rulesPortableDesc, rulesPortableCounts, rulesExportButton, rulesImportButton
+    case rulesExportFileName, rulesExportDone, rulesExportFailed
+    case rulesImportTitle, rulesImportSource, rulesImportSafetyNote, rulesImportModeLabel
+    case rulesImportModeMerge, rulesImportModeReplace, rulesImportModeMergeNote, rulesImportModeReplaceNote, rulesImportNewerVersion
+    case rulesPreviewWhitelistAdd, rulesPreviewWhitelistRemove, rulesPreviewPurgeAdd, rulesPreviewPurgeRemove, rulesPreviewRejected, rulesPreviewNothing
+    case rulesImportDoneTitle, rulesImportDoneMessage, rulesImportFailed
+    case rulesSectionWhitelist, rulesSectionPurgePaths
+    case rulesRejectNotText, rulesRejectInvalidCharacters, rulesRejectNotAbsolute, rulesRejectWildcard, rulesRejectTooBroad, rulesRejectProtected
+    case rulesErrorTooLarge, rulesErrorUnreadable, rulesErrorUnrecognizedFormat
     case settingsShortcutsDesc, shortcutPressKeys, shortcutReset, shortcutResetAll, shortcutConflict
     case shortcutScanAudit, shortcutUninstaller, shortcutDevAI, shortcutBrowserCaches, shortcutDiskAnalyzer, shortcutSystemStatus, shortcutTrashHistory, shortcutShowLog
     case settingsShortcutRefTitle, shortcutRefCut, shortcutRefCopy, shortcutRefPaste, shortcutRefSelectAll
