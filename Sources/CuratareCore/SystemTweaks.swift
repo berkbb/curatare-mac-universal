@@ -650,8 +650,10 @@ public struct SystemTweakManager: Sendable {
             category: .system,
             titleKey: .tweakSafariDevelopMenuTitle,
             descriptionKey: .tweakSafariDevelopMenuDesc,
-            domain: "com.apple.Safari",
-            key: "IncludeDevelopMenu",
+            // `com.apple.Safari` alanı korumalı Safari kapsayıcısına yönlenir ve Tam Disk Erişimi olmadan okunamaz;
+            // Safari Ayarları'ndaki "Web geliştiricileri için özellikleri göster" seçeneği bu anahtara yazar.
+            domain: "com.apple.Safari.SandboxBroker",
+            key: "ShowDevelopMenu",
             defaultValue: false,
             isEnabled: false,
             restartService: .none
