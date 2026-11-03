@@ -347,6 +347,8 @@
 "sysCenterSmartVerified" = "Verificat";
 "sysCenterSmartFailing" = "Se defectează — faceți imediat o copie de rezervă a datelor";
 "sysCenterSmartNotSupported" = "Nu este acceptat de acest disc";
+"tweakScreenshotFormatTitle" = "Formatul capturii de ecran";
+"tweakScreenshotFormatDesc" = "Stabilește formatul fișierelor pentru capturile de ecran noi. PNG este fără pierderi și implicit în macOS; JPG și HEIC produc fișiere mai mici; PDF le salvează ca documente.";
 "statusSecurityOverviewTitle" = "Stare Securitate Sistem";
 "statusSIPProtected" = "Integritate Sistem (SIP): Protejat";
 "statusGatekeeperEnabled" = "Gatekeeper și XProtect: Activat";

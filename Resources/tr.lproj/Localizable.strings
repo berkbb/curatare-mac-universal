@@ -347,6 +347,8 @@
 "sysCenterSmartVerified" = "Doğrulandı";
 "sysCenterSmartFailing" = "Arızalanıyor — verilerinizi hemen yedekleyin";
 "sysCenterSmartNotSupported" = "Bu disk desteklemiyor";
+"tweakScreenshotFormatTitle" = "Ekran resmi biçimi";
+"tweakScreenshotFormatDesc" = "Yeni ekran resimlerinin dosya biçimini seçer. PNG kayıpsızdır ve macOS varsayılanıdır; JPG ve HEIC daha küçük dosyalar üretir; PDF belge olarak kaydeder.";
 "statusSecurityOverviewTitle" = "Sistem Güvenlik Durumu";
 "statusSIPProtected" = "Sistem Bütünlüğü (SIP): Korumalı";
 "statusGatekeeperEnabled" = "Gatekeeper ve XProtect: Etkin";

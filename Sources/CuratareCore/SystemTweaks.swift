@@ -81,6 +81,22 @@ public struct SystemTweakItem: Identifiable, Sendable, Equatable {
     }
 }
 
+/// Yeni ekran resimlerinin dosya biçimi (`com.apple.screencapture` → `type`). macOS varsayılanı PNG'dir.
+public enum ScreenshotFormat: String, Sendable, CaseIterable, Identifiable {
+    case png
+    case jpg
+    case heic
+    case pdf
+
+    public var id: String { rawValue }
+
+    /// Biçim adı her dilde aynıdır (PNG, JPG, HEIC, PDF).
+    public var displayName: String { rawValue.uppercased() }
+
+    public static let domain = "com.apple.screencapture"
+    public static let key = "type"
+}
+
 public protocol PreferenceStoreProtocol: Sendable {
     func readBool(domain: String, key: String, defaultValue: Bool) -> Bool
     func writeBool(domain: String, key: String, value: Bool)
@@ -238,6 +254,8 @@ public struct SystemTweakManager: Sendable {
             item.isEnabled = def.defaultValue
             return item
         }
+        setScreenshotFormat(.png, restartService: false)
+        servicesToRestart.insert(.systemUIServer)
         if restartServices {
             for service in servicesToRestart {
                 store.restartService(service)
@@ -270,6 +288,25 @@ public struct SystemTweakManager: Sendable {
         p.waitUntilExit()
         store.restartService(.dock)
         return true
+    }
+
+    /// Geçerli ekran resmi biçimi; anahtar yoksa macOS varsayılanı PNG. Terminal ile listede olmayan bir biçim
+    /// (ör. `tiff`) ayarlanmışsa `nil` döner ve seçici hiçbir biçimi işaretlemez.
+    public func screenshotFormat() -> ScreenshotFormat? {
+        let raw = store.readString(domain: ScreenshotFormat.domain, key: ScreenshotFormat.key, defaultValue: "png").lowercased()
+        return ScreenshotFormat(rawValue: raw == "jpeg" ? "jpg" : raw)
+    }
+
+    /// Ekran resmi biçimini yazar; PNG seçilince anahtar silinir (sistem varsayılanına döner).
+    public func setScreenshotFormat(_ format: ScreenshotFormat, restartService: Bool = true) {
+        if format == .png {
+            store.removeValue(domain: ScreenshotFormat.domain, key: ScreenshotFormat.key)
+        } else {
+            store.writeString(domain: ScreenshotFormat.domain, key: ScreenshotFormat.key, value: format.rawValue)
+        }
+        if restartService {
+            store.restartService(.systemUIServer)
+        }
     }
 
     private func readValue(for item: SystemTweakItem) -> Bool {

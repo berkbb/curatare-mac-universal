@@ -1096,14 +1096,63 @@ public struct SystemStatusView: View {
 
             ScrollView {
                 LazyVStack(spacing: 10) {
+                    let lastScreenshotTweakID = filteredTweaks.last(where: { $0.category == .screenshot })?.id
                     ForEach(filteredTweaks) { tweak in
                         tweakCard(tweak)
+                        if tweak.id == lastScreenshotTweakID {
+                            screenshotFormatCard
+                        }
                     }
                 }
                 .padding(.vertical, 2)
             }
             .scrollContentBackground(.hidden)
         }
+    }
+
+    /// Çok seçenekli tek ince ayar: ekran resmi biçimi (açık/kapalı ayarlardan farklı olarak dört değerli).
+    private var screenshotFormatCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "photo.badge.arrow.down")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28, height: 28)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(model.L(.tweakScreenshotFormatTitle))
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    Picker("", selection: Binding(
+                        get: { model.screenshotFormat },
+                        set: { if let format = $0 { model.setScreenshotFormat(format) } }
+                    )) {
+                        ForEach(ScreenshotFormat.allCases) { format in
+                            Text(format.displayName).tag(Optional(format))
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+
+                Text(model.L(.tweakScreenshotFormatDesc))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 4) {
+                    Image(systemName: "info.circle")
+                    Text(model.L(.tweaksRestartNoticeSystemUI))
+                }
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .padding(.top, 2)
+            }
+        }
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
     }
 
     private var filteredTweaks: [SystemTweakItem] {

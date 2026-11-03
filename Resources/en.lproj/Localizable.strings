@@ -347,6 +347,8 @@
 "sysCenterSmartVerified" = "Verified";
 "sysCenterSmartFailing" = "Failing — back up your data now";
 "sysCenterSmartNotSupported" = "Not supported by this disk";
+"tweakScreenshotFormatTitle" = "Screenshot format";
+"tweakScreenshotFormatDesc" = "Sets the file format for new screenshots. PNG is lossless and the macOS default; JPG and HEIC produce smaller files; PDF saves them as documents.";
 "statusSecurityOverviewTitle" = "System Security Status";
 "statusSIPProtected" = "System Integrity (SIP): Protected";
 "statusGatekeeperEnabled" = "Gatekeeper & XProtect: Enabled";

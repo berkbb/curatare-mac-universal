@@ -422,6 +422,7 @@ public final class AppModel {
     public var hasLoadedSystemStatus: Bool = false
     public var isLoadingSystemStatus: Bool = false
     public var systemTweaks: [SystemTweakItem] = []
+    public var screenshotFormat: ScreenshotFormat?
     public let tweakManager: SystemTweakManager
     public var checksumResult: FileChecksumResult?
     public var checksumExpectedHash: String = ""
@@ -471,6 +472,7 @@ public final class AppModel {
         self.systemStatusSubTab = resolvedSettings.lastSystemStatusSubTab
         self.systemCenterTab = resolvedSettings.lastSystemCenterTab
         self.systemTweaks = resolvedTweakManager.loadAllTweaks()
+        self.screenshotFormat = resolvedTweakManager.screenshotFormat()
         self.currentAnalyzedURL = homeDirectoryURL
         self.trashBatches = resolvedTrash.listBatches()
         self.selectedSection = resolvedSettings.lastSelectedSection
@@ -1724,6 +1726,14 @@ public final class AppModel {
 
     public func refreshSystemTweaks() {
         systemTweaks = tweakManager.loadAllTweaks()
+        screenshotFormat = tweakManager.screenshotFormat()
+    }
+
+    public func setScreenshotFormat(_ format: ScreenshotFormat) {
+        tweakManager.setScreenshotFormat(format)
+        screenshotFormat = format
+        showToast(LF(.toastTweakApplied, "\(L(.tweakScreenshotFormatTitle)) (\(format.displayName))"))
+        log.info(.engine, "Screenshot format set to \(format.rawValue)")
     }
 
     public func applySystemTweak(id: String, enabled: Bool) {
@@ -1749,6 +1759,7 @@ public final class AppModel {
 
     public func resetAllSystemTweaks() {
         systemTweaks = tweakManager.restoreAllToDefaults()
+        screenshotFormat = tweakManager.screenshotFormat()
         showToast(L(.toastTweaksReset))
         log.info(.engine, "All system tweaks reset to defaults")
     }

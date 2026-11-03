@@ -194,6 +194,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case sysCenterProfileFailed, sysCenterProfileSaved, sysCenterProfileSaveFailed, sysCenterProfileFileName
     case statusCoresCount
     case sysCenterSmartStatus, sysCenterSmartVerified, sysCenterSmartFailing, sysCenterSmartNotSupported
+    case tweakScreenshotFormatTitle, tweakScreenshotFormatDesc
     case statusSecurityOverviewTitle, statusSIPProtected, statusGatekeeperEnabled
     case statusFileVaultProtected, statusXProtectVersion, statusXProtectRemediator, statusLockdownMode
     case statusSecuritySIP, statusSecurityFileVault, statusSecurityGatekeeper, statusSecurityXProtect

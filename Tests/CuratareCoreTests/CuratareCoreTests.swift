@@ -1840,4 +1840,30 @@ struct DiskHealthAndScreenshotFormatTests {
         // Satır yoksa durum bilinmiyor; uydurma "Doğrulandı" gösterilmez.
         #expect(DiskSmartStatus(diskutilValue: SystemCenterCollector.diskInfoValue(for: "SMART Status", in: "Protocol: USB")) == .unavailable)
     }
+
+    @Test("Screenshot format is read, written, reset to PNG and restarts SystemUIServer")
+    func screenshotFormatRoundTrip() {
+        let store = MockPreferenceStore()
+        let manager = SystemTweakManager(store: store)
+        #expect(manager.screenshotFormat() == .png)
+
+        manager.setScreenshotFormat(.heic)
+        #expect(store.readString(domain: "com.apple.screencapture", key: "type", defaultValue: "") == "heic")
+        #expect(manager.screenshotFormat() == .heic)
+        #expect(store.restartedServices.last == .systemUIServer)
+
+        // PNG seçilince anahtar silinir (macOS varsayılanı).
+        manager.setScreenshotFormat(.png)
+        #expect(store.readString(domain: "com.apple.screencapture", key: "type", defaultValue: "missing") == "missing")
+
+        // Terminal ile yazılmış değerler: "jpeg" JPG sayılır, listede olmayan biçim seçici dışında kalır.
+        store.writeString(domain: "com.apple.screencapture", key: "type", value: "jpeg")
+        #expect(manager.screenshotFormat() == .jpg)
+        store.writeString(domain: "com.apple.screencapture", key: "type", value: "tiff")
+        #expect(manager.screenshotFormat() == nil)
+
+        manager.setScreenshotFormat(.pdf)
+        _ = manager.restoreAllToDefaults(restartServices: false)
+        #expect(manager.screenshotFormat() == .png)
+    }
 }
