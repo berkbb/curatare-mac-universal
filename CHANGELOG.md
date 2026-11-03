@@ -24,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Remaining user-level tweaks from the reference system maintenance tool:**
   - **Toggles:** Finder windows and Get Info sections without animation; title bar document icon without the hover delay.
   - **Choices:** tooltip delay (macOS default, 100, 500 or 2000 ms) and whether the power button puts the Mac to sleep.
+- **Duplicate Downloads** in Disk Analyzer: a new sub-tab finds files of 1 MB or more with identical content in `~/Downloads`.
+  - **Read-only scan:** Files are grouped by size first, and only same-size files are read and confirmed with SHA-256. Hidden files, unfinished downloads, files still in iCloud and package contents are skipped.
+  - **APFS clones and hard links:** Paths that share the same APFS clone ID (`getattrlist` `ATTR_CMNEXT_CLONEID`) or the same inode count as one copy, because trashing one of them frees no space.
+  - **One action:** Selected extra copies move to the dated `~/.Trash/Curatare-YYYY-MM-DD-HHmmss` folder and can be restored from Trash History. At least one copy of each file always stays, and files that changed after the scan are left in place.
+  - **Permission on demand:** The Downloads folder is read only when you open the sub-tab or press **Scan Now**, never at launch, so the macOS Downloads prompt appears only then.
 
 ### Changed
 - **Screenshot save folder:**

@@ -14,32 +14,85 @@ public struct DiskAnalyzerView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            headerBar
+
+            switch model.diskAnalyzerSubTab {
+            case .usage:
+                usageContent
+                    .loadOnFirstVisit(isLoaded: model.diskAnalysis != nil, isBusy: model.isBusy) {
+                        await model.analyzeFolder()
+                    }
+            case .duplicateDownloads:
+                DuplicateDownloadsView(model: model)
+            }
+        }
+        .padding(16)
+    }
+
+    // Başlık ve düğmeler üst satırda, alt sekme seçici kendi satırında (Sistem Durumu ile aynı düzen).
+    private var headerBar: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(model.L(.diskTitle))
-                        .font(.title2.bold())
-                    Text(model.L(.diskSubtitle))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    switch model.diskAnalyzerSubTab {
+                    case .usage:
+                        Text(model.L(.diskTitle))
+                            .font(.title2.bold())
+                        Text(model.L(.diskSubtitle))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    case .duplicateDownloads:
+                        Text(model.L(.duplicatesTitle))
+                            .font(.title2.bold())
+                        Text(model.LF(.duplicatesSubtitle, DiskSpace.formatBytes(model.duplicateFinder.minimumFileSize)))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
-                Spacer()
-                Button(model.L(.diskNavigateUp)) {
-                    Task { await model.navigateUpDiskAnalyzer() }
+                Spacer(minLength: 16)
+                switch model.diskAnalyzerSubTab {
+                case .usage:
+                    Button(model.L(.diskNavigateUp)) {
+                        Task { await model.navigateUpDiskAnalyzer() }
+                    }
+                    .buttonStyle(.glass)
+                    .fixedSize()
+                    .disabled(model.currentAnalyzedURL.path == "/")
+                    Button(model.L(.diskChooseFolder)) {
+                        chooseFolder()
+                    }
+                    .buttonStyle(.glass)
+                    .fixedSize()
+                    Button {
+                        Task { await model.analyzeFolder() }
+                    } label: {
+                        Label(model.L(.buttonScan), systemImage: "chart.pie")
+                    }
+                    .buttonStyle(.glassProminent)
+                    .fixedSize()
+                case .duplicateDownloads:
+                    Button {
+                        Task { await model.scanDuplicateDownloads() }
+                    } label: {
+                        Label(model.L(.buttonScan), systemImage: "doc.on.doc")
+                    }
+                    .buttonStyle(.glassProminent)
+                    .fixedSize()
                 }
-                .buttonStyle(.glass)
-                .disabled(model.currentAnalyzedURL.path == "/")
-                Button(model.L(.diskChooseFolder)) {
-                    chooseFolder()
-                }
-                .buttonStyle(.glass)
-                Button {
-                    Task { await model.analyzeFolder() }
-                } label: {
-                    Label(model.L(.buttonScan), systemImage: "chart.pie")
-                }
-                .buttonStyle(.glassProminent)
             }
 
+            Picker("", selection: $model.diskAnalyzerSubTab) {
+                Text(model.L(.diskTabUsage)).tag(DiskAnalyzerSubTab.usage)
+                Text(model.L(.diskTabDuplicateDownloads)).tag(DiskAnalyzerSubTab.duplicateDownloads)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+        }
+    }
+
+    private var usageContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "folder.fill")
                     .foregroundStyle(.secondary)
@@ -132,10 +185,6 @@ public struct DiskAnalyzerView: View {
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        }
-        .padding(16)
-        .loadOnFirstVisit(isLoaded: model.diskAnalysis != nil, isBusy: model.isBusy) {
-            await model.analyzeFolder()
         }
     }
 
