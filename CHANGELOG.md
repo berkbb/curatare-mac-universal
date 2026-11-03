@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Disk health (S.M.A.R.T.) status** in System Center → Hardware, read from the same `diskutil info disk0` call already used for the disk name: green when verified, red with a back-up warning when failing.
 - **Screenshot format tweak** (PNG, JPG, HEIC, PDF) in System Tweaks → Screenshot; choosing PNG restores the macOS default, and **Reset All** returns it to PNG.
+- **Eight more system tweaks:** Finder path bar from the home folder; Dock icon and size locks and stack grid highlight; screenshot floating thumbnail and mouse pointer; always-expanded Save dialogs; App Nap off. All are user-level, reversible and restored by **Reset All**.
 
 ### Changed
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
@@ -18,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
+- **Global tweaks had no effect:** Tweaks in the global domain (show all extensions, Ctrl+⌘ window drag, key repeat, window animations) were written to a separate `NSGlobalDomain.plist` instead of the real global preferences, so the switch moved but macOS ignored it. They now write to the global domain.
+- **Uninstaller leftover labels** (Caches, Preferences, Launch Agent and the rest) moved from code into each language's own `Localizable.strings`.
 - **Uninstaller app list ~300× faster:** The list no longer walks every bundle to compute sizes it never displays (32 s → 0.1 s for 92 apps); the selected app is still sized during inspection.
 - **System Status header:** The four-tab picker no longer overlaps the subtitle or hides behind the Refresh button; the safety banner wraps instead of truncating.
 - **Homebrew tab** no longer shows "Homebrew is not installed" while its first scan is running.
