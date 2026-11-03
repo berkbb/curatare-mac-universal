@@ -742,6 +742,45 @@ struct CuratareAppTests {
         #expect(model.systemChoiceTweaks.first(where: { $0.id == "dock.minimizeEffect" })?.selectedOptionID == "genie")
         #expect(model.screenshotNamePrefix == "")
     }
+
+    @Test("Launch reads wait for the window, and missing Full Disk Access shows a dismissible banner")
+    func permissionsAfterWindowAppears() throws {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+
+        let fm = FileManager.default
+        let fakeHome = fm.temporaryDirectory.appendingPathComponent("curatare-permissions-\(UUID().uuidString)", isDirectory: true)
+        try fm.createDirectory(at: fakeHome, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: fakeHome) }
+
+        // `true` ile init hiçbir tercih, çöp ya da izin okuması yapmaz; hepsi `windowDidAppear` ile başlar.
+        let model = AppModel(
+            settings: AppSettings(defaults: defaults),
+            log: AppLog(directory: nil),
+            homeDirectoryURL: fakeHome,
+            tweakManager: SystemTweakManager(store: MockPreferenceStore()),
+            startBackgroundWatchers: true
+        )
+        #expect(model.systemTweaks.isEmpty)
+        #expect(model.trashBatches.isEmpty)
+        #expect(model.fullDiskAccessGranted == nil)
+        #expect(model.showsPermissionBanner == false)
+
+        model.refreshPermissionStatus()
+        #expect(model.fullDiskAccessGranted == false)
+        #expect(model.showsPermissionBanner)
+
+        model.permissionBannerDismissed = true
+        #expect(model.showsPermissionBanner == false)
+
+        let bookmarks = fakeHome.appendingPathComponent("Library/Safari/Bookmarks.plist")
+        try fm.createDirectory(at: bookmarks.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("bookmarks".utf8).write(to: bookmarks)
+        model.permissionBannerDismissed = false
+        model.refreshPermissionStatus()
+        #expect(model.fullDiskAccessGranted == true)
+        #expect(model.showsPermissionBanner == false)
+    }
 }
 
 final class MockURLProtocol: URLProtocol, @unchecked Sendable {

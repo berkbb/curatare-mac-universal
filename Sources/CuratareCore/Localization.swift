@@ -332,6 +332,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case settingsStartupView, settingsProtectRunningApps, settingsProtectRunningAppsNote, settingsProtectRunningAppsFooter, settingsShowProtectedApps, settingsShowProtectedAppsNote
     case settingsAllowUninstallingProtectedApps, settingsAllowUninstallingProtectedAppsNote
     case settingsFullDiskAccessHeader, settingsFullDiskAccessGranted, settingsFullDiskAccessMissing, settingsFullDiskAccessDesc, settingsOpenSystemSettings
+    case permissionBannerTitle, permissionBannerDetail, permissionBannerLater
     case uninstallerSystemImmutableNotice, uninstallerSystemImmutableDesc, uninstallerProtectedUnlockNotice, uninstallerProtectedUnlockedBanner
     case uninstallerRunningAppWarningTitle, uninstallerRunningAppWarningMessage, uninstallerQuitAppButton, toastAppTerminated
     case settingsAddAppsToKeepSafe, settingsTabSmartDelete, settingsTabUpdates

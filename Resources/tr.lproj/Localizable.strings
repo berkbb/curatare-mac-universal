@@ -769,6 +769,9 @@
 "settingsFullDiskAccessMissing" = "Tam Disk Erişimi Gerekli";
 "settingsFullDiskAccessDesc" = "Uygulama artıklarını ve korumalı kitaplık dosyalarını eksiksiz tarayabilmek ve kaldırabilmek için macOS Sistem Ayarları'ndan Tam Disk Erişimi izni verilmesi önerilir.";
 "settingsOpenSystemSettings" = "Sistem Ayarları'nı Aç";
+"permissionBannerTitle" = "Tam Disk Erişimi verilmedi";
+"permissionBannerDetail" = "Kitaplık denetimi, kaldırıcı ve Tarihli Çöp korumalı klasörlere ulaşamıyor. Sistem Ayarları > Gizlilik ve Güvenlik > Tam Disk Erişimi bölümünde Curatare'yi açın.";
+"permissionBannerLater" = "Sonra";
 "uninstallerSystemImmutableNotice" = "macOS Sistem Uygulaması (SIP Korumalı · Salt Okunur)";
 "uninstallerSystemImmutableDesc" = "Bu uygulama macOS İmzalı Sistem Bölüntüsü (SSV) ve SIP tarafından korunmaktadır. Diskin salt okunur bölümünde yer aldığı için kaldırılamaz.";
 "uninstallerProtectedUnlockNotice" = "Korunan Uygulama (Ayarlar → Temizlik ve Koruma bölümünden kilit açılabilir)";

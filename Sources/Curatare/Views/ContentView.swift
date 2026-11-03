@@ -20,6 +20,9 @@ public struct ContentView: View {
         } detail: {
             ZStack {
                 VStack(spacing: 0) {
+                    if model.showsPermissionBanner {
+                        permissionBanner
+                    }
                     if model.selectedSection != .home {
                         UpdateBanner(model: model)
                             .padding(.top, 8)
@@ -57,6 +60,11 @@ public struct ContentView: View {
             }
             .animation(.smooth(duration: 0.2), value: model.isBusy)
             .animation(.smooth(duration: 0.25), value: model.toastMessage)
+            .animation(.smooth(duration: 0.2), value: model.showsPermissionBanner)
+        }
+        // Kullanıcı Sistem Ayarları'ndan dönünce izin şeridi kendiliğinden güncellenir.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            model.refreshPermissionStatus()
         }
         .confirmationDialog(
             model.L(.confirmTrashTitle),
@@ -231,6 +239,40 @@ public struct ContentView: View {
         protected.font = .caption2
         protected.foregroundColor = .secondary
         return datedTrash + separator + protected
+    }
+
+    /// Tam Disk Erişimi yoksa her sekmenin üstünde görünür. İzni macOS sorar; burada yalnızca yol gösterilir.
+    private var permissionBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.shield")
+                .foregroundStyle(.orange)
+                .font(.title3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(model.L(.permissionBannerTitle))
+                    .font(.subheadline.weight(.semibold))
+                Text(model.L(.permissionBannerDetail))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .layoutPriority(1)
+            Spacer(minLength: 8)
+            Button(model.L(.settingsOpenSystemSettings)) {
+                FullDiskAccess.openSystemSettings()
+            }
+            .buttonStyle(.glassProminent)
+            .controlSize(.small)
+            .fixedSize()
+            Button(model.L(.permissionBannerLater)) {
+                model.permissionBannerDismissed = true
+            }
+            .buttonStyle(.glass)
+            .controlSize(.small)
+            .fixedSize()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color.orange.opacity(0.12))
+        .transition(.move(edge: .top).combined(with: .opacity))
     }
 
     private func smartDeleteBanner(_ event: TrashedAppEvent) -> some View {

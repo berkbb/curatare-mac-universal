@@ -769,6 +769,9 @@
 "settingsFullDiskAccessMissing" = "Full Disk Access Required";
 "settingsFullDiskAccessDesc" = "Full Disk Access is recommended in macOS System Settings to thoroughly scan and remove app leftovers across all protected Library containers.";
 "settingsOpenSystemSettings" = "Open System Settings";
+"permissionBannerTitle" = "Full Disk Access is not granted";
+"permissionBannerDetail" = "Library Audit, the uninstaller and Dated Trash cannot reach protected folders. Turn on Curatare in System Settings > Privacy & Security > Full Disk Access.";
+"permissionBannerLater" = "Later";
 "uninstallerSystemImmutableNotice" = "macOS System Application (SIP Protected · Read-Only)";
 "uninstallerSystemImmutableDesc" = "This application is protected by macOS Signed System Volume (SSV) and SIP. It cannot be uninstalled because it resides on a read-only volume.";
 "uninstallerProtectedUnlockNotice" = "Protected Application (Can be unlocked in Settings → Cleaning & Protection)";

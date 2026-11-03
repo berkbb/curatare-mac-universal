@@ -769,6 +769,9 @@
 "settingsFullDiskAccessMissing" = "Acces complet la disc necesar";
 "settingsFullDiskAccessDesc" = "Accesul complet la disc este recomandat în Configurări de sistem macOS pentru a scana și șterge complet resturile de aplicații din toate containerele protejate.";
 "settingsOpenSystemSettings" = "Deschide Configurări de sistem";
+"permissionBannerTitle" = "Accesul complet la disc nu este acordat";
+"permissionBannerDetail" = "Auditul bibliotecii, dezinstalatorul și Coșul datat nu pot ajunge la dosarele protejate. Activați Curatare în Configurări de sistem > Confidențialitate și securitate > Acces complet la disc.";
+"permissionBannerLater" = "Mai târziu";
 "uninstallerSystemImmutableNotice" = "Aplicație de sistem macOS (Protejată de SIP · Doar citire)";
 "uninstallerSystemImmutableDesc" = "Această aplicație este protejată de Volumul de Sistem Semnat (SSV) și SIP din macOS. Nu poate fi dezinstalată deoarece se află pe un volum doar-citire.";
 "uninstallerProtectedUnlockNotice" = "Aplicație protejată (Poate fi deblocată în Setări → Curățare și protecție)";

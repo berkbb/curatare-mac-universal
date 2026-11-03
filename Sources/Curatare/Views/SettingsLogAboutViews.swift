@@ -135,6 +135,9 @@ private struct ProtectionSettingsView: View {
     @Bindable var model: AppModel
     @State private var selectedWhitelistPath: String?
 
+    /// Henüz denetlenmediyse eksik sayılmaz; bölüm göründüğünde denetlenir.
+    private var fullDiskAccessGranted: Bool { model.fullDiskAccessGranted ?? true }
+
     var body: some View {
         Form {
             // 1. Akıllı Silme (SmartDelete)
@@ -158,12 +161,12 @@ private struct ProtectionSettingsView: View {
             // 1.5. Tam Disk Erişimi Tanılaması (Full Disk Access Diagnostics)
             Section {
                 HStack(spacing: 12) {
-                    Image(systemName: FullDiskAccess.isGranted ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
+                    Image(systemName: fullDiskAccessGranted ? "checkmark.shield.fill" : "exclamationmark.shield.fill")
                         .font(.title2)
-                        .foregroundStyle(FullDiskAccess.isGranted ? Color.green : Color.orange)
+                        .foregroundStyle(fullDiskAccessGranted ? Color.green : Color.orange)
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(FullDiskAccess.isGranted ? model.L(.settingsFullDiskAccessGranted) : model.L(.settingsFullDiskAccessMissing))
+                        Text(fullDiskAccessGranted ? model.L(.settingsFullDiskAccessGranted) : model.L(.settingsFullDiskAccessMissing))
                             .font(.callout.weight(.medium))
                         Text(model.L(.settingsFullDiskAccessDesc))
                             .font(.caption)
@@ -172,7 +175,7 @@ private struct ProtectionSettingsView: View {
 
                     Spacer()
 
-                    if !FullDiskAccess.isGranted {
+                    if !fullDiskAccessGranted {
                         Button(model.L(.settingsOpenSystemSettings)) {
                             FullDiskAccess.openSystemSettings()
                         }
@@ -183,6 +186,7 @@ private struct ProtectionSettingsView: View {
             } header: {
                 Text(model.L(.settingsFullDiskAccessHeader))
             }
+            .onAppear { model.refreshPermissionStatus() }
 
             // 2. Uygulama Koruma Seçenekleri
             Section {
