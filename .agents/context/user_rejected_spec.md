@@ -19,3 +19,6 @@
 
 ## 5. Explicit Mentions of Third-Party Proprietary Maintenance Utilities are Strictly Prohibited
 - **Rule:** Never mention third-party proprietary maintenance utilities or benchmark tool names anywhere in the application interface, localization strings, user-facing notices, codebase comments, tests, transcripts, or documentation. Refer to such tools generically as "benchmark utility", "reference system maintenance tool", or "industry maintenance baseline".
+
+## 6. Cleanup Reminders and Unsolicited Notifications are Rejected
+- **Rule:** Never add scheduled cleanup reminders, nudges or other notifications that the user did not trigger, even optional, off by default or notification-only (rejected roadmap item 2a, 03.11.2026: "rahatsız etmeyelim", "let's not disturb the user"). Curatare speaks only while the user is using it: in-window banners, toasts and alerts that follow a user action or explain a missing permission are fine.
