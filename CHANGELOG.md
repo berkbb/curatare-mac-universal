@@ -39,6 +39,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Safari Develop menu tweak showed the wrong state:**
   - **Cause:** The `com.apple.Safari` domain resolves to Safari's protected container. Without Full Disk Access it reads as empty, so the switch showed off even when the menu was on.
   - **Fix:** The tweak now uses the `com.apple.Safari.SandboxBroker` `ShowDevelopMenu` key, which Safari's own setting writes.
+- **Maintenance tasks report their real outcome:** The completion toast counts only completed tasks. Failed tasks, and steps that need administrator rights, appear together in one alert.
+  - **DNS flush:**
+    - **Before:** It only ran `dscacheutil -flushcache` as the user and reported success.
+    - **Now:** It hands over a transparent one-line command, `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder && echo TAMAM`, with a **Copy Command** button. The task is no longer selected by default.
+  - **Icon services:**
+    - **Before:** The task did nothing but log "marked for refresh".
+    - **Now:** It restarts the user's icon service, Dock and Finder. The root-owned system icon cache is left alone.
+  - **APFS verification:** It succeeds only when `diskutil verifyVolume /` reports the volume as OK. A failure, or a check that could not run, is now reported instead of "verified".
+  - **Apple Mail envelope index reset:** When Mail is running or the reset fails, it is reported as not completed.
+  - **Saved window states:**
+    - **Before:** The task did nothing but log "verified".
+    - **Now:** It moves saved states not written for 30 days to the Dated Trash. Apple apps on the do-not-touch list and open apps are skipped. The task is no longer selected by default.
 - **Dock auto-hide delay** is now written as a number (`-float 0`) instead of the string `"0"`. Values written by earlier versions are still read as on.
 - **Uninstaller leftover labels** (Caches, Preferences, Launch Agent and the rest) moved from code into each language's own `Localizable.strings`.
 - **Uninstaller app list ~300× faster:** The list no longer walks every bundle to compute sizes it never displays (32 s → 0.1 s for 92 apps); the selected app is still sized during inspection.
