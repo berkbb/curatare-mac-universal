@@ -21,8 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Dock show and hide without animation.
   - Suggested and recent apps in the Dock.
   - Quick Look without animation.
+- **Remaining user-level tweaks from the reference system maintenance tool:**
+  - **Toggles:** Finder windows and Get Info sections without animation; title bar document icon without the hover delay.
+  - **Choices:** tooltip delay (macOS default, 100, 500 or 2000 ms) and whether the power button puts the Mac to sleep.
 
 ### Changed
+- **Screenshot save folder:**
+  - A folder picker replaces the "Save Screenshots to Downloads" toggle. **Use Default** returns new screenshots to the Desktop, and so does **Reset All**.
+  - A folder set by the old toggle is kept and shown.
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
 - **System Status loads once:** The tab no longer re-runs `status-go`, `system_profiler` and `diskutil` on every visit; data is cached until **Refresh**. Live CPU, memory and disk metrics refresh every 15 seconds while the Live Status dashboard is visible. App launch now fetches only the light `status-go` metrics.
 
