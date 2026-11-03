@@ -159,6 +159,8 @@ public final class AppModel {
     public var languageEcosystemItems: [LanguageEcosystemItem] = []
     public var selectedEcosystemFilter: LanguageEcosystemItem.Ecosystem? = nil
     public var homebrewStatus: HomebrewStatus = .notInstalled
+    /// `brew` yürütülebilir dosyası var mı (iki dosya varlık denetimi; tarama gerektirmez).
+    public var isHomebrewAvailable: Bool { homebrewStatus.isInstalled || HomebrewScanner.locateBrew() != nil }
     public var devAISubTab: DevAISubTab = .overview {
         didSet { settings.lastDevAISubTab = devAISubTab }
     }
@@ -1142,21 +1144,21 @@ public final class AppModel {
         let currentWorkspace = Bundle.main.bundleURL.deletingLastPathComponent().path
         await performCancellableOperation(
             inline: true,
+            // Homebrew durumu (`brew cleanup --dry-run`, ~7 sn) burada taranmaz: bu sekme onu göstermez ve
+            // Homebrew sekmesi ilk açılışta kendi taramasını yapar. Taranması sekmeyi ~11 sn'den ~3,5 sn'ye uzatıyordu.
             operation: { token in
                 async let repos = scanners.scanGitHubBuildArtifacts(excludeRepoPath: currentWorkspace, isCancelled: { token.isCancelled })
                 async let ai = scanners.scanAIFootprint(isCancelled: { token.isCancelled })
-                async let brew = HomebrewScanner().scan(isCancelled: { token.isCancelled })
                 async let ecosystems = scanners.scanLanguageEcosystemItems(isCancelled: { token.isCancelled })
-                return await (repos, ai, brew, ecosystems)
+                return await (repos, ai, ecosystems)
             },
-            onComplete: { (r, a, b, e) in
+            onComplete: { (r, a, e) in
                 self.repoArtifacts = r
                 self.aiFootprintItems = a
-                self.homebrewStatus = b
                 self.languageEcosystemItems = e
                 self.hasScannedDevAndAI = true
                 self.hasScannedLanguageEcosystems = true
-                self.log.info(.audit, "Dev & Project Artifacts scan completed: \(r.count) build dirs, \(a.count) AI items, \(e.count) ecosystem items, Homebrew installed: \(b.isInstalled)")
+                self.log.info(.audit, "Dev & Project Artifacts scan completed: \(r.count) build dirs, \(a.count) AI items, \(e.count) ecosystem items")
             }
         )
     }

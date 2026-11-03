@@ -716,7 +716,7 @@ public struct UninstallerView: View {
 
                 Spacer()
 
-                if model.homebrewStatus.isInstalled {
+                if model.isHomebrewAvailable {
                     Button {
                         model.selectedSection = .homebrew
                         if model.homebrewPackages.isEmpty {

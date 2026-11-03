@@ -237,6 +237,32 @@ struct CuratareAppTests {
         #expect(bundleEntry.sizeBytes >= 64 * 1024)
     }
 
+    @Test("Dev & AI scan leaves Homebrew status to the Homebrew tab")
+    func devAIScanSkipsHomebrewStatus() async throws {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+
+        let root = URL(fileURLWithPath: "/private/tmp", isDirectory: true)
+            .appendingPathComponent("curatare-devai-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+
+        let model = AppModel(
+            settings: AppSettings(defaults: defaults),
+            log: AppLog(directory: nil),
+            homeDirectoryURL: root,
+            startBackgroundWatchers: false
+        )
+
+        await model.scanDevAndAI()
+
+        #expect(model.hasScannedDevAndAI)
+        #expect(model.isBusy == false)
+        // `brew cleanup --dry-run` (~7 sn) Dev & AI taramasında çalışmaz; Homebrew sekmesi kendi taramasını yapar.
+        #expect(model.homebrewStatus.isInstalled == false)
+        #expect(model.hasScannedHomebrew == false)
+    }
+
     @Test("All studio views render off-screen without crashing across tr, en, and ro")
     func renderAllViews() {
         let (defaults, cleanup) = TestDefaults.make()
