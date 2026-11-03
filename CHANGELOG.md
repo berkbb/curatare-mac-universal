@@ -32,6 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
 - **System Status loads once:** The tab no longer re-runs `status-go`, `system_profiler` and `diskutil` on every visit; data is cached until **Refresh**. Live CPU, memory and disk metrics refresh every 15 seconds while the Live Status dashboard is visible. App launch now fetches only the light `status-go` metrics.
 
+- **Permissions after the window appears:**
+  - **Launch:** The app reads only its own settings before the window appears. Tweak preferences, Dated Trash batches, the SmartDelete watcher, the Mole engine and the update consent start once the window is on screen, so a macOS permission prompt or a slow read can no longer hold the window back.
+  - **Full Disk Access banner:** When Full Disk Access is missing, a banner on every tab says what cannot work and opens the right System Settings pane. **Later** hides it for the session, and it updates by itself when you come back from System Settings. Accessibility access is not needed and is not asked for.
+  - **Prompt-free check:** The access check no longer looks inside Mail's container, which could raise the "access data from other apps" prompt.
+
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
