@@ -8,8 +8,8 @@
 ## 1. System Overview
 
 **Curatare** (`com.babadogantech.curatare`) is a universal macOS system cleaner, library auditor, app/plugin uninstaller, developer/AI cache cleaner, disk analyzer, and system optimizer (`arm64` + `x86_64`, macOS 26+) split into two SwiftPM targets:
-- **`CuratareCore`**: Mole engine discovery/updating (`EngineLocator`, `EngineUpdater`), `MoleBridge` (`status-go`, `analyze-go`, `mole` CLI), `ProtectionRules` (`library_clean.md` Do-Not-Touch invariants), `DatedTrash` (reversible dated batches in `~/.Trash/Curatare-YYYY-MM-DD-HHmmss`), `LibraryScanner` (Steps 1–6, Groups A–E, safe `sudo` command generator), `ExtendedScanners` (GitHub build artifacts, AI tools footprint, Browser/App heavy caches, Time Machine local snapshots), `AppUninstaller` (Applications, Widgets, Plugins, associated files discovery), `TrashWatcher` (SmartDelete `~/.Trash` monitor), `SandboxProfile`, `CommandRunner`, `ChildProcessGuard`, `AppLog`, `AppUpdate`, and `Localization`.
-- **`Curatare`**: `@MainActor` SwiftUI Liquid Glass application (`AppModel`, `AppSettings`, `FinderService`, 7 main studio tabs, menu bar monitor, log viewer, settings, and about sheets).
+- **`CuratareCore`**: Mole engine discovery/updating (`EngineLocator`, `EngineUpdater`), `MoleBridge` (`status-go`, `analyze-go`, `mole` CLI), `ProtectionRules` (`library_clean.md` Do-Not-Touch invariants), `DatedTrash` (reversible dated batches in `~/.Trash/Curatare-YYYY-MM-DD-HHmmss`), `LibraryScanner` (Steps 1–6, Groups A–E, safe `sudo` command generator), `ExtendedScanners` (GitHub build artifacts, AI tools footprint, Browser/App heavy caches, Time Machine local snapshots), `AppUninstaller` (Applications, Widgets, Plugins, associated files discovery), `TrashWatcher` (SmartDelete `~/.Trash` monitor), `HomebrewScanner`, `SystemTweaks` (`SystemTweakManager`, typed `PreferenceStoreProtocol`), `SystemInfoCenter` (`SystemCenterCollector`, S.M.A.R.T.), `FileChecksum`, `FullDiskAccess`, `SandboxProfile`, `CommandRunner`, `ChildProcessGuard`, `AppLog`, `AppUpdate`, and `Localization`.
+- **`Curatare`**: `@MainActor` SwiftUI Liquid Glass application (`AppModel`, `AppSettings`, `FinderService`, 9 studio sections (`StudioSection`: home, libraryAudit, uninstaller, homebrew, devAndAI, browserAndCaches, diskAnalyzer, systemStatus, trashHistory), menu bar monitor, log viewer, settings, and about sheets).
 
 ## 2. Three Integrated Pillars
 
@@ -50,28 +50,59 @@
 Curatare achieves 100% feature coverage across all 8 core functional areas of industry-standard macOS maintenance utilities:
 
 1. **Welcome / Quick Actions:** Mole-powered 100-point system health score, instant quick clean, deep clean, and maintenance task shortcuts.
-2. **Maintenance Tasks (`MaintenanceTasks.swift`):** 11 native maintenance routines:
-   - APFS live filesystem verification (`fsck_apfs -n`)
-   - Spotlight search metadata rebuild (`mdutil -E`)
-   - Time Machine local snapshot thinning (`tmutil thinlocalsnapshots`)
-   - Apple Mail Envelope Index rebuild
-   - CUPS printer queue clearing (`cancel -a -`)
-   - QuickLook cache reload (`qlmanage -r cache`)
-   - DNS cache flush (`mDNSResponder -HUP`)
-   - System and user font caches reset (`atsutil`)
-   - IconServices icon cache flush
-   - LaunchServices "Open With" database rebuild
-   - System and diagnostic log cache purging
-3. **Hidden Utilities & Checksum (`HiddenSystemToolsLauncher`, `ChecksumCalculator`):**
+2. **Maintenance Tasks (`MoleOptimizationTask`, `MoleBridge.runOptimizationTasks` in `MoleBridge.swift`):**
+   - **Outcome reporting:** There are 12 routines. Each returns a `MoleOptimizationOutcome` with status `done`, `failed` or `needsAdmin(command:)`.
+     - The completion toast counts only `done` outcomes and is skipped when nothing completed.
+     - Failures and administrator commands share one alert with a **Copy Command** button.
+     - Curatare never elevates itself.
+   - **Default selection:** Only QuickLook is selected.
+   - **The routines:**
+     - QuickLook cache reload (`qlmanage -r cache`).
+     - Saved window states not written for 30 days move to the Dated Trash (`MoleBridge.staleSavedStates`). Protected (`com.apple.*`) and running apps are skipped.
+     - DNS cache flush. The cache lives in root-owned `mDNSResponder`, so the task hands over `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder && echo TAMAM` (`needsAdmin`).
+     - Icon redraw: restarts Dock and Finder.
+       - A process counts as restarted only after its old PID has exited.
+       - The user's `iconservicesagent` ignores SIGTERM, so it is not touched.
+       - The root-owned `/Library/Caches/com.apple.iconservices.store` is not touched either.
+     - User font cache (`atsutil databases -removeUser`).
+     - LaunchServices "Open With" rebuild (`lsregister -kill -r`).
+     - Spotlight rebuild (`mdutil -E /`).
+     - User diagnostic reports (`~/Library/Logs/DiagnosticReports`) move to the Dated Trash.
+     - Time Machine local snapshot thinning (`tmutil thinlocalsnapshots`).
+     - Apple Mail Envelope Index moves to the Dated Trash. The task is reported as failed while Mail runs.
+     - CUPS queue clearing (`cancel -a -`).
+     - APFS verification (`diskutil verifyVolume /`). It is `done` only when the output says "appears to be OK"; it runs without root in about 10 seconds.
+3. **Hidden Utilities & Checksum (`HiddenSystemUtility` in `MoleBridge.swift`, `FileChecksumCalculator` in `FileChecksum.swift`):**
    - 1-click launchers for 7 hidden Apple utilities (Wireless Diagnostics, Directory Utility, ColorSync, Archive Utility, Keychain Access, Feedback Assistant, Screen Sharing).
-   - Real-time streaming MD5, SHA-1, and SHA-256 hash calculator with auto-matching verification.
+   - MD5, SHA-1, and SHA-256 hash calculator (`computeHashes(for:)`) with auto-matching verification (`verify(expected:)`).
 4. **Files & Caches:** 5-group orphan cleaning, 12 developer language ecosystem package caches (pip, cargo, npm, gradle, maven, swiftpm, pub, ccache, go-build, etc.), AI tool caches (Ollama, LM Studio, HuggingFace), browser site storage (Safari, Chrome, Arc, Brave, Edge, Firefox), and Xcode archives.
-5. **Security Center (`SecurityStatusCard`):** Live status indicators for SIP, FileVault, Gatekeeper, XProtect & XProtect Remediator definitions, and Lockdown Mode.
+5. **Security Center (`SystemSecurityStatus`, `MoleBridge.fetchSecurityStatus`):** Live status indicators for SIP, FileVault, Gatekeeper, XProtect & XProtect Remediator definitions, and Lockdown Mode.
 6. **Disk Analyzer (`DiskAnalyzerView`):** Multi-level interactive disk tree powered by native universal `analyze-go`.
-7. **macOS Tweaks (`SystemTweakManager`):** 20 curated macOS preferences (Finder hidden files, POSIX path in title, Dock spacer tiles, external USB `.DS_Store` prevention, Ctrl+Cmd window dragging, key repeat speed, TextEdit blank doc, screenshot destination and shadow toggles).
-8. **System Center (`SystemInfoCenter`):** 5-panel system inspector (Hardware core topology, Memory with live Memory Pressure gauge & swap purge, APFS Volumes, OS/Identity Uptime, and Profile export).
+7. **macOS Tweaks (`SystemTweakManager` in `SystemTweaks.swift`; user-level preferences only):**
+   - **32 boolean `SystemTweakItem`s** across the Finder, Dock, Screenshot, Disk & Network and System categories.
+     - Items with an `enabledValue` write a typed value when on and remove the key when off: `autohide-delay` 0, `autohide-time-modifier` 0, `QLPanelAnimationDuration` 0, `NSToolbarTitleViewRolloverDelay` 0, `AnimateWindowZoom` false, `AnimateInfoPanes` false.
+   - **8 multi-value `SystemChoiceTweak`s:** minimize effect (Genie, Scale, Suck), Dock recent-app count, column auto-sizing, Quick Look hide on deactivate, recent documents limit, recent places limit, tooltip delay, power button sleep.
+     - The "macOS default" option removes the key, so no default has to be guessed.
+   - **Screenshot cards:** format (PNG, JPG, HEIC, PDF; `ScreenshotFormat`), sanitized file-name prefix (`ScreenshotNamePrefix`; no `/` or `:`, at most 60 characters) and save folder picker (`ScreenshotLocation`).
+   - **Safari Develop menu** is a read-only status card (`SafariDevelopMenu`: `com.apple.Safari.SandboxBroker` `ShowDevelopMenu`) with an **Open Safari** button.
+   - **Reset All** restores every toggle and choice plus the screenshot format, name and folder. It never touches Safari.
+   - **Dock spacers:** tiles can be added and removed.
+   - **Preference store:** All reads and writes go through `PreferenceStoreProtocol`: `SystemPreferenceStore` on CFPreferences, `MockPreferenceStore` in tests.
+     - `PreferenceValue` (bool, int, double, string) matches values that `defaults` wrote with another type. For example, a legacy `-string 0` still reads as `0`.
+     - `NSGlobalDomain` must map to `kCFPreferencesAnyApplication`. Passed through as an app ID, it silently writes a stray `~/Library/Preferences/NSGlobalDomain.plist`.
+8. **System Center (`SystemCenterCollector` in `SystemInfoCenter.swift`):** A 5-tab system inspector (`SystemCenterTab`):
+   - Hardware: core topology, plus the startup disk S.M.A.R.T. status (`DiskSmartStatus`) from `diskutil info disk0`.
+   - Memory: live Memory Pressure gauge and swap purge.
+   - APFS Volumes.
+   - OS and Identity, with uptime.
+   - Profile export.
 
 ### Constitutional Redlines on Feature Adoption
 - **DoD 7-Pass Shredding / Permanent Erase:** Strictly rejected. Modern SSD/NVMe wear-leveling makes multi-pass rewriting ineffective and degrades flash longevity. All deletions must strictly route to reversible dated batches under `~/.Trash/Curatare-TARİH` (`DatedTrash`).
 - **Legacy HFS+ / Pre-APFS Routines:** Obsolete defragmentation and NetInfo caches are omitted to maintain APFS system integrity.
 - **Root/Kext Invasions:** Kernel extensions or intrusive root-level system volume modifications are prohibited under Apple Silicon Signed System Volume (SSV) security.
+- **No Fake Success:** A maintenance task that cannot do its work must report `failed` or `needsAdmin`, never `done`. A sent signal or a zero exit code is not proof: compare PIDs or parse the tool's own verdict.
+- **Sandboxed Apps' Preferences Are Read-Only:**
+  - **Rule:** Curatare does not write another sandboxed app's preferences unless a live test proves the change works both ways.
+  - **Why:** The `com.apple.Safari` domain resolves to Safari's protected container. Safari applies an outside "off" through `SandboxBroker` but ignores an outside "on" (live test, 2026-11-03).
+- **Security-Weakening Toggles:** Curatare offers no Gatekeeper, firewall, XProtect or disk-image verification switches. It offers no Recent Items or Help cache cleanup either, because those live under the `com.apple.*` do-not-touch list.
