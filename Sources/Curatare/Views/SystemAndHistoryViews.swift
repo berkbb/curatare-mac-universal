@@ -1832,7 +1832,7 @@ public struct TrashHistoryView: View {
     private var masterBottomBar: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(model.filteredTrashBatches.count) / \(model.trashBatches.count) tur")
+                Text(model.LF(.trashBatchCountFiltered, Int64(model.filteredTrashBatches.count), Int64(model.trashBatches.count)))
                     .font(.caption2.weight(.semibold))
                 Text(DiskSpace.formatBytes(model.filteredTrashBatches.map(\.totalBytes).reduce(0, +)))
                     .font(.caption2.monospacedDigit())

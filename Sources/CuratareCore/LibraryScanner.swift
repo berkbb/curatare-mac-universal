@@ -146,6 +146,16 @@ public struct LibraryAuditReport: Sendable, Equatable {
 
 /// `library_clean.md` Adım 1–6 tarayıcısı.
 public struct LibraryScanner: Sendable {
+    /// Kullanıcıya gösterilen açıklama ve gerekçelerin dili; metinler `Localizable.strings` tablolarından gelir.
+    public var language: String = "en"
+
+    /// Aynı yapılandırmanın verilen dilde metin üreten kopyası.
+    public func localized(to code: String) -> LibraryScanner {
+        var copy = self
+        copy.language = code
+        return copy
+    }
+
     /// Denetlenen 11 `~/Library` klasörü (`library_clean.md` Adım 2).
     public static let userLibrarySubfolders: [String] = [
         "Preferences",
@@ -361,7 +371,7 @@ public struct LibraryScanner: Sendable {
                         matchedIdentifier: stripped,
                         librarySubfolder: subfolder,
                         sizeBytes: size,
-                        explanation: "Test run or template project artifact"
+                        explanation: StringTable.shared.string(.auditExpTestRunOrTemplateProject, language: language)
                     ))
                     continue
                 }
@@ -394,7 +404,7 @@ public struct LibraryScanner: Sendable {
                         matchedIdentifier: stripped,
                         librarySubfolder: subfolder,
                         sizeBytes: size,
-                        explanation: "Bare-named CLI / swift run trace without an installed app bundle"
+                        explanation: StringTable.shared.string(.auditExpBareNamedCLISwiftRun, language: language)
                     ))
                 }
             }
@@ -469,7 +479,7 @@ public struct LibraryScanner: Sendable {
             matchedIdentifier: identifier,
             librarySubfolder: "Containers",
             sizeBytes: size,
-            explanation: "Container points to missing build: \(appBundlePath)"
+            explanation: StringTable.shared.format(.auditExpContainerPointsToMissingBuild, language: language, "\(appBundlePath)")
         )
     }
 
@@ -524,7 +534,7 @@ public struct LibraryScanner: Sendable {
             matchedIdentifier: label,
             librarySubfolder: subfolder,
             sizeBytes: size,
-            explanation: "Target executable missing on disk: \(executablePath)",
+            explanation: StringTable.shared.format(.auditExpTargetExecutableMissingOnDisk, language: language, "\(executablePath)"),
             requiresSudo: requiresSudo,
             launchctlLabel: label
         )

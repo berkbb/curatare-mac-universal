@@ -30,6 +30,16 @@ public struct ProtectionDecision: Sendable, Equatable {
 }
 
 public struct ProtectionRules: Sendable, Equatable {
+    /// Kullanıcıya gösterilen açıklama ve gerekçelerin dili; metinler `Localizable.strings` tablolarından gelir.
+    public var language: String = "en"
+
+    /// Aynı yapılandırmanın verilen dilde metin üreten kopyası.
+    public func localized(to code: String) -> ProtectionRules {
+        var copy = self
+        copy.language = code
+        return copy
+    }
+
     public var installedBundleIDs: Set<String>
     public var installedAppNames: Set<String>
     public var activeGradleVersions: Set<String>
@@ -155,22 +165,22 @@ public struct ProtectionRules: Sendable, Equatable {
         if lowerPath.hasPrefix("/system/") || lowerPath == "/system" ||
            lowerPath.hasPrefix("/usr/bin") || lowerPath.hasPrefix("/usr/sbin") ||
            lowerPath.hasPrefix("/usr/lib") || lowerPath.hasPrefix("/bin/") || lowerPath.hasPrefix("/sbin/") {
-            return .protected(.appleSystem, reason: "/System or OS core path")
+            return .protected(.appleSystem, reason: StringTable.shared.string(.protReasonSystemOrOSCorePath, language: language))
         }
 
         // 2. Kimlik bilgisi kasaları
         for marker in Self.credentialMarkers where lowerPath.contains(marker) {
-            return .protected(.credentialVault, reason: "Credential or keychain directory")
+            return .protected(.credentialVault, reason: StringTable.shared.string(.protReasonCredentialOrKeychainDirectory, language: language))
         }
 
         // 3. Kullanıcı beyaz listesi (`~/.config/mole/whitelist` ve özel kurallar)
         for pattern in userWhitelistPatterns where matchesWhitelistPattern(path: normalizedPath, pattern: pattern) {
-            return .protected(.userWhitelisted, reason: "Whitelisted: \(pattern)")
+            return .protected(.userWhitelisted, reason: StringTable.shared.format(.protReasonWhitelisted, language: language, "\(pattern)"))
         }
 
         // 4. Aktif YZ ve sanal makine diskleri
         for marker in Self.activeAIPathMarkers where lowerPath.contains(marker) {
-            return .protected(.activeAITool, reason: "Protected AI/VM state (\(marker))")
+            return .protected(.activeAITool, reason: StringTable.shared.format(.protReasonProtectedAIVMState, language: language, "\(marker)"))
         }
 
         // 5. Bundle ID veya aday kimlik değerlendirmesi
@@ -178,7 +188,7 @@ public struct ProtectionRules: Sendable, Equatable {
         let strippedID = Self.stripKnownSuffixes(from: idToCheck)
 
         if Self.siblingIdentifiers.contains(strippedID) || Self.siblingIdentifiers.contains(lowerName) {
-            return .protected(.curatareFamily, reason: "Curatare / sibling application")
+            return .protected(.curatareFamily, reason: StringTable.shared.string(.protReasonCuratareSiblingApplication, language: language))
         }
 
         for sysPrefix in Self.systemPrefixes where strippedID.hasPrefix(sysPrefix) || lowerName.hasPrefix(sysPrefix) {
@@ -187,42 +197,42 @@ public struct ProtectionRules: Sendable, Equatable {
             }
             if allowUninstallingProtectedApps && !lowerPath.hasPrefix("/system") {
                 if Self.appleSystemBareNames.contains(lowerName) || Self.knownAppleDaemons.contains(lowerName) {
-                    return .protected(.appleSystem, reason: "Apple system service (\(lastComponent))")
+                    return .protected(.appleSystem, reason: StringTable.shared.format(.protReasonAppleSystemService, language: language, "\(lastComponent)"))
                 }
                 continue
             }
-            return .protected(.appleSystem, reason: "Apple system prefix (\(sysPrefix))")
+            return .protected(.appleSystem, reason: StringTable.shared.format(.protReasonAppleSystemPrefix, language: language, "\(sysPrefix)"))
         }
 
         if Self.appleSystemBareNames.contains(lowerName) || Self.appleSystemBareNames.contains(strippedID) {
             if allowUninstallingProtectedApps && !lowerPath.hasPrefix("/system") && lowerPath.hasSuffix(".app") {
                 // Allowed when user unlocked protected apps for an app bundle outside /System
             } else {
-                return .protected(.appleSystem, reason: "Apple system service (\(lastComponent))")
+                return .protected(.appleSystem, reason: StringTable.shared.format(.protReasonAppleSystemService, language: language, "\(lastComponent)"))
             }
         }
 
         // Sonu 'd' ile biten sistem daemon süreçleri (contactsd, cloudd, bird, rapportd vb.)
         if !strippedID.contains(".") && lowerName.hasSuffix("d") && Self.knownAppleDaemons.contains(lowerName) {
-            return .protected(.appleSystem, reason: "Apple system daemon (\(lastComponent))")
+            return .protected(.appleSystem, reason: StringTable.shared.format(.protReasonAppleSystemDaemon, language: language, "\(lastComponent)"))
         }
 
         // 6. Ortak çatılar (Sparkle, Firebase, Kingfisher, Segment, Keystone, install4j)
         for token in Self.sharedFrameworkTokens {
             if strippedID == token || strippedID.hasPrefix(token + ".") || lowerName == token || lowerPath.contains("/\(token)/") {
-                return .protected(.sharedFramework, reason: "Shared framework (\(token))")
+                return .protected(.sharedFramework, reason: StringTable.shared.format(.protReasonSharedFramework, language: language, "\(token)"))
             }
         }
 
         if (strippedID.contains("install4j") || lowerName.contains("install4j")),
            installedBundleIDs.contains(where: { $0.contains("install4j") }) {
-            return .protected(.sharedFramework, reason: "install4j runtime used by an installed app")
+            return .protected(.sharedFramework, reason: StringTable.shared.string(.protReasonInstall4jRuntimeUsedByAn, language: language))
         }
 
         // Google / Microsoft ortak grupları (ilgili uygulamalar kuruluysa)
         if strippedID == "google" || strippedID.hasPrefix("com.google.common") || lowerName == "google" {
             if installedBundleIDs.contains(where: { $0.hasPrefix("com.google.") }) {
-                return .protected(.sharedFramework, reason: "Shared Google group while Google apps are installed")
+                return .protected(.sharedFramework, reason: StringTable.shared.string(.protReasonSharedGoogleGroupWhileGoogle, language: language))
             }
         }
         if strippedID == "microsoft" || strippedID.hasPrefix("ubf8t346g9.") || lowerName == "microsoft" {
@@ -233,19 +243,19 @@ public struct ProtectionRules: Sendable, Equatable {
             } else if lowerPath.hasSuffix("/microsoft/teams") && !installedBundleIDs.contains("com.microsoft.teams") {
                 // İzin verildi
             } else if installedBundleIDs.contains(where: { $0.hasPrefix("com.microsoft.") }) {
-                return .protected(.sharedFramework, reason: "Shared Microsoft group while Microsoft apps are installed")
+                return .protected(.sharedFramework, reason: StringTable.shared.string(.protReasonSharedMicrosoftGroupWhileMicrosoft, language: language))
             }
         }
 
         // 7. Sanallaştırma yardımcıları (VMware Fusion / Parallels kuruluysa mksSandbox vb. korunur)
         if strippedID.hasPrefix("com.vmware.") || lowerName.contains("vmware") {
             if installedBundleIDs.contains("com.vmware.fusion") || installedAppNames.contains("vmware fusion") {
-                return .protected(.virtualization, reason: "VMware helper protected while VMware Fusion is installed")
+                return .protected(.virtualization, reason: StringTable.shared.string(.protReasonVMwareHelperProtectedWhileVMware, language: language))
             }
         }
         if strippedID.hasPrefix("com.parallels.") || lowerName.contains("parallels") {
             if installedBundleIDs.contains(where: { $0.hasPrefix("com.parallels.") }) {
-                return .protected(.virtualization, reason: "Parallels helper protected while Parallels is installed")
+                return .protected(.virtualization, reason: StringTable.shared.string(.protReasonParallelsHelperProtectedWhileParallels, language: language))
             }
         }
 
@@ -253,14 +263,14 @@ public struct ProtectionRules: Sendable, Equatable {
         if !allowDeveloperCacheCleaning {
             if Self.sharedDevTokens.contains(strippedID) || Self.sharedDevTokens.contains(lowerName) ||
                lowerName.hasPrefix("ms-playwright") {
-                return .protected(.sharedDevToolchain, reason: "Shared developer toolchain cache (\(lastComponent))")
+                return .protected(.sharedDevToolchain, reason: StringTable.shared.format(.protReasonSharedDeveloperToolchainCache, language: language, "\(lastComponent)"))
             }
             if lowerPath.contains("/.gradle/caches/modules-2") || lowerPath.contains("/.android/avd") {
-                return .protected(.sharedDevToolchain, reason: "Protected Gradle modules-2 / Android AVD")
+                return .protected(.sharedDevToolchain, reason: StringTable.shared.string(.protReasonProtectedGradleModules2Android, language: language))
             }
             if lowerPath.contains("/.gradle/caches/") || lowerPath.contains("/.gradle/wrapper/dists/gradle-") {
                 for activeVer in activeGradleVersions where !activeVer.isEmpty && lowerPath.contains(activeVer.lowercased()) {
-                    return .protected(.sharedDevToolchain, reason: "Active Gradle version (\(activeVer))")
+                    return .protected(.sharedDevToolchain, reason: StringTable.shared.format(.protReasonActiveGradleVersion, language: language, "\(activeVer)"))
                 }
             }
         }

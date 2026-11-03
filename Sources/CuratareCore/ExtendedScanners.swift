@@ -390,6 +390,16 @@ public struct CacheSubdirectoryInfo: Sendable, Codable, Equatable, Identifiable 
 }
 
 public struct ExtendedScanners: Sendable {
+    /// Kullanıcıya gösterilen açıklama ve gerekçelerin dili; metinler `Localizable.strings` tablolarından gelir.
+    public var language: String = "en"
+
+    /// Aynı yapılandırmanın verilen dilde metin üreten kopyası.
+    public func localized(to code: String) -> ExtendedScanners {
+        var copy = self
+        copy.language = code
+        return copy
+    }
+
     public let homeDirectoryURL: URL
     public let githubDirectoryURL: URL
     public let applicationsDirectoryURL: URL
@@ -702,9 +712,11 @@ public struct ExtendedScanners: Sendable {
     public func scanHeavyCachesAndInstallers(
         activeGradleVersions: Set<String>? = nil,
         minimumBrowserOriginBytes: Int64 = 2 * 1024 * 1024,
+        language: String = "en",
         isCancelled: () -> Bool = { false }
     ) -> [HeavyCacheItem] {
         let fm = FileManager.default
+        let strings = StringTable()
         let activeGradle = activeGradleVersions ?? discoverActiveGradleVersions()
         var items: [HeavyCacheItem] = []
 
@@ -762,7 +774,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: owner,
                         url: cacheURL,
                         sizeBytes: size,
-                        explanation: "\(label) disk & HTTP web cache"
+                        explanation: StringTable.shared.format(.scanExpDiskHTTPWebCache, language: language, "\(label)")
                     ))
                 }
             }
@@ -789,11 +801,11 @@ public struct ExtendedScanners: Sendable {
                     if swSize >= minimumBrowserOriginBytes {
                         items.append(HeavyCacheItem(
                             category: .browserSiteData,
-                            title: "\(owner) (\(pname)) · Service Worker CacheStorage",
+                            title: strings.format(.scanServiceWorkerCache, language: language, owner, pname),
                             ownerApp: owner,
                             url: swCache,
                             sizeBytes: swSize,
-                            explanation: "Offline service worker cache storage"
+                            explanation: StringTable.shared.string(.scanExpOfflineServiceWorkerCacheStorage, language: language)
                         ))
                     }
                 }
@@ -811,7 +823,7 @@ public struct ExtendedScanners: Sendable {
                                 ownerApp: owner,
                                 url: origin,
                                 sizeBytes: size,
-                                explanation: "\(storageKind) offline site storage blob (browser must be closed before moving)"
+                                explanation: StringTable.shared.format(.scanExpOfflineSiteStorageBlobBrowser, language: language, "\(storageKind)")
                             ))
                         }
                     }
@@ -830,7 +842,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "Safari",
                     url: file,
                     sizeBytes: size,
-                    explanation: "Orphaned Safari temporary cookie write file"
+                    explanation: StringTable.shared.string(.scanExpOrphanedSafariTemporaryCookieWrite, language: language)
                 ))
             }
         }
@@ -847,11 +859,11 @@ public struct ExtendedScanners: Sendable {
             if size > 0 {
                 items.append(HeavyCacheItem(
                     category: .mailDownloads,
-                    title: "Apple Mail Downloads",
+                    title: strings.string(.scanAppleMailDownloads, language: language),
                     ownerApp: "Mail",
                     url: mailDir,
                     sizeBytes: size,
-                    explanation: "Cached attachments opened from Apple Mail (original email retains attachments)"
+                    explanation: StringTable.shared.string(.scanExpCachedAttachmentsOpenedFromApple, language: language)
                 ))
             }
         }
@@ -868,11 +880,11 @@ public struct ExtendedScanners: Sendable {
                     let shortName = entry.lastPathComponent.count > 12 ? "\(entry.lastPathComponent.prefix(12))…" : entry.lastPathComponent
                     items.append(HeavyCacheItem(
                         category: .iosDeviceBackup,
-                        title: "iOS Backup (\(shortName))",
+                        title: strings.format(.scanIOSBackup, language: language, shortName),
                         ownerApp: "MobileSync",
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Local iPhone/iPad device backup synced via Finder/iTunes",
+                        explanation: StringTable.shared.string(.scanExpLocalIPhoneIPadDeviceBackup, language: language),
                         isSelected: false // Safe default: requires explicit opt-in
                     ))
                 }
@@ -895,7 +907,7 @@ public struct ExtendedScanners: Sendable {
                             ownerApp: "Downloads",
                             url: entry,
                             sizeBytes: size,
-                            explanation: "Incomplete or interrupted download artifact in ~/Downloads"
+                            explanation: StringTable.shared.string(.scanExpIncompleteOrInterruptedDownloadArtifact, language: language)
                         ))
                     }
                 }
@@ -924,7 +936,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "Finder",
                         url: file,
                         sizeBytes: size,
-                        explanation: "Extraneous Windows metadata or AppleDouble resource fork in \(uDir.lastPathComponent)"
+                        explanation: StringTable.shared.format(.scanExpExtraneousWindowsMetadataOrAppleDouble, language: language, "\(uDir.lastPathComponent)")
                     ))
                 }
             }
@@ -943,7 +955,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "CrashReporter",
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Kernel process memory core dump (/cores)"
+                        explanation: StringTable.shared.string(.scanExpKernelProcessMemoryCoreDump, language: language)
                     ))
                 }
             }
@@ -962,7 +974,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "DiagnosticReports",
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Diagnostic crash or hang report log"
+                        explanation: StringTable.shared.string(.scanExpDiagnosticCrashOrHangReport, language: language)
                     ))
                 }
             }
@@ -984,7 +996,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "Terminal",
                     url: sDir,
                     sizeBytes: size,
-                    explanation: "Accumulated shell session history and state logs"
+                    explanation: StringTable.shared.string(.scanExpAccumulatedShellSessionHistoryAnd, language: language)
                 ))
             }
         }
@@ -1005,7 +1017,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "Wallpaper",
                     url: wpDir,
                     sizeBytes: size,
-                    explanation: "Downloaded 4K/8K aerial wallpaper or screensaver video cache (redownloaded as needed)"
+                    explanation: StringTable.shared.string(.scanExpDownloaded4K8KAerialWallpaper, language: language)
                 ))
             }
         }
@@ -1017,11 +1029,11 @@ public struct ExtendedScanners: Sendable {
             if size > 0 {
                 items.append(HeavyCacheItem(
                     category: .quickTimeAutosave,
-                    title: "QuickTime Autosave Information",
+                    title: strings.string(.scanQuickTimeAutosave, language: language),
                     ownerApp: "QuickTime Player",
                     url: qtAutosaveDir,
                     sizeBytes: size,
-                    explanation: "Unsaved temporary screen or audio recording buffer"
+                    explanation: StringTable.shared.string(.scanExpUnsavedTemporaryScreenOrAudio, language: language)
                 ))
             }
         }
@@ -1051,7 +1063,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: owner,
                         url: older,
                         sizeBytes: size,
-                        explanation: "Eski güncelleme sürümü (güncel sürüm olan \(sorted[0].lastPathComponent) korunur)"
+                        explanation: StringTable.shared.format(.scanExpEskiGuncellemeSurumuGuncelSurum, language: language, "\(sorted[0].lastPathComponent)")
                     ))
                 }
             }
@@ -1075,7 +1087,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: appName,
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Eski uygulama güncelleme indirme ve yükleme paketi (ShipIt)"
+                        explanation: StringTable.shared.string(.scanExpEskiUygulamaGuncellemeIndirmeVe, language: language)
                     ))
                 }
             }
@@ -1129,7 +1141,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "JetBrains Air",
                         url: jbURL,
                         sizeBytes: size,
-                        explanation: "JetBrains Air uygulama artığı (uygulama kurulu değil)"
+                        explanation: StringTable.shared.string(.scanExpJetBrainsAirUygulamaArtigiUygulama, language: language)
                     ))
                 }
             }
@@ -1146,7 +1158,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "IcedTea-Web",
                     url: icedTeaDir,
                     sizeBytes: size,
-                    explanation: "Java Web Start önbellek artığı (Oracle Java / JRE kalıntısı)"
+                    explanation: StringTable.shared.string(.scanExpJavaWebStartOnbellekArtigi, language: language)
                 ))
             }
         }
@@ -1167,7 +1179,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "Gradle",
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Gradle version \(name) is not referenced in any repo's gradle-wrapper.properties"
+                        explanation: StringTable.shared.format(.scanExpGradleVersionIsNotReferenced, language: language, "\(name)")
                     ))
                 }
             }
@@ -1187,7 +1199,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "Gradle",
                         url: entry,
                         sizeBytes: size,
-                        explanation: "Unused Gradle wrapper distribution (modules-2 and active versions are kept)"
+                        explanation: StringTable.shared.string(.scanExpUnusedGradleWrapperDistributionModules, language: language)
                     ))
                 }
             }
@@ -1204,7 +1216,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "Dart / Flutter",
                     url: dartAnalysis,
                     sizeBytes: size,
-                    explanation: "Dart analysis server cache (regenerated on next Flutter/Dart project open)"
+                    explanation: StringTable.shared.string(.scanExpDartAnalysisServerCacheRegenerated, language: language)
                 ))
             }
         }
@@ -1225,7 +1237,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "Microsoft Office / LibreOffice",
                         url: file,
                         sizeBytes: size,
-                        explanation: "Stale Office lock file in \(scanDir.lastPathComponent)"
+                        explanation: StringTable.shared.format(.scanExpStaleOfficeLockFileIn, language: language, "\(scanDir.lastPathComponent)")
                     ))
                 } else if installerExts.contains(file.pathExtension.lowercased()) {
                     let size = DiskSpace.size(of: file, isCancelled: isCancelled)
@@ -1235,7 +1247,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: scanDir.lastPathComponent,
                         url: file,
                         sizeBytes: size,
-                        explanation: "Installer image/package in \(scanDir.lastPathComponent)",
+                        explanation: StringTable.shared.format(.scanExpInstallerImagePackageIn, language: language, "\(scanDir.lastPathComponent)"),
                         isSelected: false
                     ))
                 }
@@ -1253,7 +1265,7 @@ public struct ExtendedScanners: Sendable {
                     ownerApp: "Audio Units / CoreAudio",
                     url: auCache,
                     sizeBytes: size,
-                    explanation: "Audio Units plug-in validation cache (DAWs will re-validate plug-ins on next launch)"
+                    explanation: StringTable.shared.string(.scanExpAudioUnitsPlugInValidation, language: language)
                 ))
             }
         }
@@ -1274,7 +1286,7 @@ public struct ExtendedScanners: Sendable {
                         ownerApp: "Apple Music / iTunes",
                         url: dir,
                         sizeBytes: size,
-                        explanation: "Obsolete previous Music/iTunes library backup copies (\(dir.path))"
+                        explanation: StringTable.shared.format(.scanExpObsoletePreviousMusicITunesLibrary, language: language, "\(dir.path)")
                     ))
                 }
             }
@@ -1287,11 +1299,11 @@ public struct ExtendedScanners: Sendable {
             if size > 10 * 1024 * 1024 { // > 10 MB
                 items.append(HeavyCacheItem(
                     category: .xcodeArchives,
-                    title: "Xcode Archives",
+                    title: strings.string(.scanXcodeArchives, language: language),
                     ownerApp: "Xcode",
                     url: xcodeArchivesDir,
                     sizeBytes: size,
-                    explanation: "Built .xcarchive application distribution packages in ~/Library/Developer/Xcode/Archives"
+                    explanation: StringTable.shared.string(.scanExpBuiltXcarchiveApplicationDistributionPackages, language: language)
                 ))
             }
         }
@@ -1403,106 +1415,106 @@ public struct ExtendedScanners: Sendable {
         }
 
         // 1. Python (pip, uv, pipx, poetry, pdm, conda/mamba)
-        probe(ecosystem: .python, toolName: "pip", relPath: "Library/Caches/pip", explanation: "pip paket indirme ve HTTP önbelleği")
-        probe(ecosystem: .python, toolName: "pip", relPath: ".cache/pip", explanation: "pip paket indirme önbelleği (~/.cache/pip)")
-        probe(ecosystem: .python, toolName: "uv", relPath: "Library/Caches/uv", explanation: "uv tekerlek (wheel) ve paket önbelleği")
-        probe(ecosystem: .python, toolName: "uv", relPath: ".cache/uv", explanation: "uv önbellek dizini (~/.cache/uv)")
-        probe(ecosystem: .python, toolName: "pipx", relPath: ".local/pipx/trash", explanation: "pipx geçici ve silinmiş paket artıkları")
-        probe(ecosystem: .python, toolName: "pipx", relPath: ".local/share/pipx/shared", explanation: "pipx paylaşılan kütüphaneler önbelleği")
-        probe(ecosystem: .python, toolName: "pipx", relPath: ".cache/pipx", explanation: "pipx tekerlek önbelleği (~/.cache/pipx)")
-        probe(ecosystem: .python, toolName: "poetry", relPath: "Library/Caches/pypoetry", explanation: "Poetry paket ve sanal ortam önbelleği")
-        probe(ecosystem: .python, toolName: "poetry", relPath: ".cache/pypoetry", explanation: "Poetry önbellek dizini (~/.cache/pypoetry)")
-        probe(ecosystem: .python, toolName: "pdm", relPath: "Library/Caches/pdm", explanation: "PDM paket yöneticisi önbelleği")
-        probe(ecosystem: .python, toolName: "pdm", relPath: ".cache/pdm", explanation: "PDM paket önbelleği (~/.cache/pdm)")
-        probe(ecosystem: .python, toolName: "conda / mamba", relPath: ".conda/pkgs", explanation: "Conda / Mamba paket arşivi önbelleği")
-        probe(ecosystem: .python, toolName: "conda / mamba", relPath: ".mamba/pkgs", explanation: "Mamba paket arşivi önbelleği (~/.mamba/pkgs)")
-        probe(ecosystem: .python, toolName: "miniforge", relPath: "miniforge3/pkgs", explanation: "Miniforge Conda paket arşivi")
-        probe(ecosystem: .python, toolName: "anaconda", relPath: "anaconda3/pkgs", explanation: "Anaconda Conda paket arşivi")
+        probe(ecosystem: .python, toolName: "pip", relPath: "Library/Caches/pip", explanation: StringTable.shared.string(.scanExpPipPaketIndirmeVeHTTP, language: language))
+        probe(ecosystem: .python, toolName: "pip", relPath: ".cache/pip", explanation: StringTable.shared.string(.scanExpPipPaketIndirmeOnbellegiCache, language: language))
+        probe(ecosystem: .python, toolName: "uv", relPath: "Library/Caches/uv", explanation: StringTable.shared.string(.scanExpUvTekerlekWheelVePaket, language: language))
+        probe(ecosystem: .python, toolName: "uv", relPath: ".cache/uv", explanation: StringTable.shared.string(.scanExpUvOnbellekDiziniCacheUv, language: language))
+        probe(ecosystem: .python, toolName: "pipx", relPath: ".local/pipx/trash", explanation: StringTable.shared.string(.scanExpPipxGeciciVeSilinmisPaket, language: language))
+        probe(ecosystem: .python, toolName: "pipx", relPath: ".local/share/pipx/shared", explanation: StringTable.shared.string(.scanExpPipxPaylasilanKutuphanelerOnbellegi, language: language))
+        probe(ecosystem: .python, toolName: "pipx", relPath: ".cache/pipx", explanation: StringTable.shared.string(.scanExpPipxTekerlekOnbellegiCachePipx, language: language))
+        probe(ecosystem: .python, toolName: "poetry", relPath: "Library/Caches/pypoetry", explanation: StringTable.shared.string(.scanExpPoetryPaketVeSanalOrtam, language: language))
+        probe(ecosystem: .python, toolName: "poetry", relPath: ".cache/pypoetry", explanation: StringTable.shared.string(.scanExpPoetryOnbellekDiziniCachePypoetry, language: language))
+        probe(ecosystem: .python, toolName: "pdm", relPath: "Library/Caches/pdm", explanation: StringTable.shared.string(.scanExpPDMPaketYoneticisiOnbellegi, language: language))
+        probe(ecosystem: .python, toolName: "pdm", relPath: ".cache/pdm", explanation: StringTable.shared.string(.scanExpPDMPaketOnbellegiCachePdm, language: language))
+        probe(ecosystem: .python, toolName: "conda / mamba", relPath: ".conda/pkgs", explanation: StringTable.shared.string(.scanExpCondaMambaPaketArsiviOnbellegi, language: language))
+        probe(ecosystem: .python, toolName: "conda / mamba", relPath: ".mamba/pkgs", explanation: StringTable.shared.string(.scanExpMambaPaketArsiviOnbellegiMamba, language: language))
+        probe(ecosystem: .python, toolName: "miniforge", relPath: "miniforge3/pkgs", explanation: StringTable.shared.string(.scanExpMiniforgeCondaPaketArsivi, language: language))
+        probe(ecosystem: .python, toolName: "anaconda", relPath: "anaconda3/pkgs", explanation: StringTable.shared.string(.scanExpAnacondaCondaPaketArsivi, language: language))
 
         // 2. JavaScript / TypeScript (npm, pnpm, yarn, bun, deno)
         let npmCachePath = homeDirectoryURL.appendingPathComponent(".npm/_cacache").path
         if fm.fileExists(atPath: npmCachePath) {
-            probe(ecosystem: .javascriptNode, toolName: "npm", relPath: ".npm/_cacache", explanation: "npm içerik adreslenebilir paket önbelleği")
+            probe(ecosystem: .javascriptNode, toolName: "npm", relPath: ".npm/_cacache", explanation: StringTable.shared.string(.scanExpNpmIcerikAdreslenebilirPaketOnbellegi, language: language))
         } else {
-            probe(ecosystem: .javascriptNode, toolName: "npm", relPath: ".npm", explanation: "npm indirme önbelleği")
+            probe(ecosystem: .javascriptNode, toolName: "npm", relPath: ".npm", explanation: StringTable.shared.string(.scanExpNpmIndirmeOnbellegi, language: language))
         }
-        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: "Library/pnpm/store", explanation: "pnpm küresel içerik deposu önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: ".local/share/pnpm/store", explanation: "pnpm veri deposu (~/.local/share/pnpm/store)")
-        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: "Library/Caches/pnpm", explanation: "pnpm geçici paket önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: "Library/Caches/Yarn", explanation: "Yarn paket önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: ".yarn/berry/cache", explanation: "Yarn Berry (v2+) paket önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: ".cache/yarn", explanation: "Yarn önbellek dizini (~/.cache/yarn)")
-        probe(ecosystem: .javascriptNode, toolName: "bun", relPath: ".bun/install/cache", explanation: "Bun hızlı paket indirme önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "deno", relPath: "Library/Caches/deno", explanation: "Deno derleme ve uzaktan modül önbelleği")
-        probe(ecosystem: .javascriptNode, toolName: "deno", relPath: ".deno/deps", explanation: "Deno uzak bağımlılık önbelleği (~/.deno/deps)")
+        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: "Library/pnpm/store", explanation: StringTable.shared.string(.scanExpPnpmKureselIcerikDeposuOnbellegi, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: ".local/share/pnpm/store", explanation: StringTable.shared.string(.scanExpPnpmVeriDeposuLocalShare, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "pnpm", relPath: "Library/Caches/pnpm", explanation: StringTable.shared.string(.scanExpPnpmGeciciPaketOnbellegi, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: "Library/Caches/Yarn", explanation: StringTable.shared.string(.scanExpYarnPaketOnbellegi, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: ".yarn/berry/cache", explanation: StringTable.shared.string(.scanExpYarnBerryV2PaketOnbellegi, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "yarn", relPath: ".cache/yarn", explanation: StringTable.shared.string(.scanExpYarnOnbellekDiziniCacheYarn, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "bun", relPath: ".bun/install/cache", explanation: StringTable.shared.string(.scanExpBunHizliPaketIndirmeOnbellegi, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "deno", relPath: "Library/Caches/deno", explanation: StringTable.shared.string(.scanExpDenoDerlemeVeUzaktanModul, language: language))
+        probe(ecosystem: .javascriptNode, toolName: "deno", relPath: ".deno/deps", explanation: StringTable.shared.string(.scanExpDenoUzakBagimlilikOnbellegiDeno, language: language))
 
         // 3. Rust (Asla ~/.cargo/bin veya config'e dokunulmaz!)
-        probe(ecosystem: .rust, toolName: "cargo", relPath: ".cargo/registry/cache", explanation: "Cargo .crate paket indirme arşivi")
-        probe(ecosystem: .rust, toolName: "cargo", relPath: ".cargo/git/db", explanation: "Cargo git bağımlılıkları klon veritabanı")
+        probe(ecosystem: .rust, toolName: "cargo", relPath: ".cargo/registry/cache", explanation: StringTable.shared.string(.scanExpCargoCratePaketIndirmeArsivi, language: language))
+        probe(ecosystem: .rust, toolName: "cargo", relPath: ".cargo/git/db", explanation: StringTable.shared.string(.scanExpCargoGitBagimliliklariKlonVeritabani, language: language))
 
         // 4. Go (go-build, mod cache)
-        probe(ecosystem: .goLang, toolName: "go-build", relPath: "Library/Caches/go-build", explanation: "Go derleme ve ara nesne önbelleği")
-        probe(ecosystem: .goLang, toolName: "go mod", relPath: "go/pkg/mod/cache", explanation: "Go modül indirme önbelleği (GOPATH)")
+        probe(ecosystem: .goLang, toolName: "go-build", relPath: "Library/Caches/go-build", explanation: StringTable.shared.string(.scanExpGoDerlemeVeAraNesne, language: language))
+        probe(ecosystem: .goLang, toolName: "go mod", relPath: "go/pkg/mod/cache", explanation: StringTable.shared.string(.scanExpGoModulIndirmeOnbellegiGOPATH, language: language))
 
         // 5. Ruby (bundler, gem)
-        probe(ecosystem: .ruby, toolName: "bundler", relPath: ".bundle/cache", explanation: "Bundler gem arşiv önbelleği")
-        probe(ecosystem: .ruby, toolName: "gem", relPath: ".gem/specs", explanation: "RubyGems uzak spesifikasyonlar önbelleği")
-        probe(ecosystem: .ruby, toolName: "gem", relPath: ".gem/cache", explanation: "RubyGems .gem ikili paket indirme arşivi")
-        probe(ecosystem: .ruby, toolName: "gem", relPath: ".local/share/gem", explanation: "RubyGems kullanıcı kütüphane dizini (~/.local/share/gem)")
+        probe(ecosystem: .ruby, toolName: "bundler", relPath: ".bundle/cache", explanation: StringTable.shared.string(.scanExpBundlerGemArsivOnbellegi, language: language))
+        probe(ecosystem: .ruby, toolName: "gem", relPath: ".gem/specs", explanation: StringTable.shared.string(.scanExpRubyGemsUzakSpesifikasyonlarOnbellegi, language: language))
+        probe(ecosystem: .ruby, toolName: "gem", relPath: ".gem/cache", explanation: StringTable.shared.string(.scanExpRubyGemsGemIkiliPaketIndirme, language: language))
+        probe(ecosystem: .ruby, toolName: "gem", relPath: ".local/share/gem", explanation: StringTable.shared.string(.scanExpRubyGemsKullaniciKutuphaneDiziniLocal, language: language))
 
         // 6. PHP (composer)
-        probe(ecosystem: .php, toolName: "composer", relPath: "Library/Caches/composer", explanation: "Composer paket ve havuz önbelleği")
-        probe(ecosystem: .php, toolName: "composer", relPath: ".composer/cache", explanation: "Composer küresel önbellek dizini (~/.composer/cache)")
+        probe(ecosystem: .php, toolName: "composer", relPath: "Library/Caches/composer", explanation: StringTable.shared.string(.scanExpComposerPaketVeHavuzOnbellegi, language: language))
+        probe(ecosystem: .php, toolName: "composer", relPath: ".composer/cache", explanation: StringTable.shared.string(.scanExpComposerKureselOnbellekDiziniComposer, language: language))
 
         // 7. JVM (Java / Kotlin / Scala: gradle, maven, coursier/sbt)
-        probe(ecosystem: .jvm, toolName: "gradle", relPath: ".gradle/caches", explanation: "Gradle bağımlılık ve derleme önbelleği")
-        probe(ecosystem: .jvm, toolName: "maven", relPath: ".m2/repository", explanation: "Maven yerel kütüphane deposu (~/.m2/repository)")
-        probe(ecosystem: .jvm, toolName: "coursier / sbt", relPath: "Library/Caches/Coursier", explanation: "Scala / SBT Coursier bağımlılık önbelleği")
-        probe(ecosystem: .jvm, toolName: "coursier / sbt", relPath: ".cache/coursier", explanation: "Coursier indirme önbelleği (~/.cache/coursier)")
-        probe(ecosystem: .jvm, toolName: "sbt", relPath: ".sbt/boot", explanation: "SBT önyükleme bileşenleri önbelleği (~/.sbt/boot)")
+        probe(ecosystem: .jvm, toolName: "gradle", relPath: ".gradle/caches", explanation: StringTable.shared.string(.scanExpGradleBagimlilikVeDerlemeOnbellegi, language: language))
+        probe(ecosystem: .jvm, toolName: "maven", relPath: ".m2/repository", explanation: StringTable.shared.string(.scanExpMavenYerelKutuphaneDeposuM2, language: language))
+        probe(ecosystem: .jvm, toolName: "coursier / sbt", relPath: "Library/Caches/Coursier", explanation: StringTable.shared.string(.scanExpScalaSBTCoursierBagimlilikOnbellegi, language: language))
+        probe(ecosystem: .jvm, toolName: "coursier / sbt", relPath: ".cache/coursier", explanation: StringTable.shared.string(.scanExpCoursierIndirmeOnbellegiCacheCoursier, language: language))
+        probe(ecosystem: .jvm, toolName: "sbt", relPath: ".sbt/boot", explanation: StringTable.shared.string(.scanExpSBTOnyuklemeBilesenleriOnbellegiSbt, language: language))
 
         // 8. .NET / C# (nuget)
-        probe(ecosystem: .dotnet, toolName: "nuget", relPath: ".nuget/packages", explanation: "NuGet paket indirme önbelleği")
-        probe(ecosystem: .dotnet, toolName: "nuget", relPath: ".local/share/NuGet/v3-cache", explanation: "NuGet v3 HTTP meta veri önbelleği")
+        probe(ecosystem: .dotnet, toolName: "nuget", relPath: ".nuget/packages", explanation: StringTable.shared.string(.scanExpNuGetPaketIndirmeOnbellegi, language: language))
+        probe(ecosystem: .dotnet, toolName: "nuget", relPath: ".local/share/NuGet/v3-cache", explanation: StringTable.shared.string(.scanExpNuGetV3HTTPMetaVeri, language: language))
 
         // 9. Swift (spm, cocoapods, carthage)
-        probe(ecosystem: .swift, toolName: "swiftpm", relPath: "Library/Caches/org.swift.swiftpm", explanation: "Swift Package Manager repo ve manifest önbelleği")
-        probe(ecosystem: .swift, toolName: "swiftpm", relPath: "Library/org.swift.swiftpm", explanation: "Swift Package Manager yapılandırma ve kütük verileri")
-        probe(ecosystem: .swift, toolName: "cocoapods", relPath: "Library/Caches/CocoaPods", explanation: "CocoaPods paket ve spec indirme önbelleği")
-        probe(ecosystem: .swift, toolName: "carthage", relPath: "Library/Caches/carthage", explanation: "Carthage ikili derleme önbelleği")
+        probe(ecosystem: .swift, toolName: "swiftpm", relPath: "Library/Caches/org.swift.swiftpm", explanation: StringTable.shared.string(.scanExpSwiftPackageManagerRepoVe, language: language))
+        probe(ecosystem: .swift, toolName: "swiftpm", relPath: "Library/org.swift.swiftpm", explanation: StringTable.shared.string(.scanExpSwiftPackageManagerYapilandirmaVe, language: language))
+        probe(ecosystem: .swift, toolName: "cocoapods", relPath: "Library/Caches/CocoaPods", explanation: StringTable.shared.string(.scanExpCocoaPodsPaketVeSpecIndirme, language: language))
+        probe(ecosystem: .swift, toolName: "carthage", relPath: "Library/Caches/carthage", explanation: StringTable.shared.string(.scanExpCarthageIkiliDerlemeOnbellegi, language: language))
 
         // 10. Dart / Flutter (pub, analysis-driver)
-        probe(ecosystem: .dartFlutter, toolName: "pub", relPath: ".pub-cache", explanation: "Dart / Flutter pub paket deposu önbelleği")
-        probe(ecosystem: .dartFlutter, toolName: "dartServer", relPath: ".dartServer/.analysis-driver", explanation: "Dart analiz sunucusu önbelleği")
+        probe(ecosystem: .dartFlutter, toolName: "pub", relPath: ".pub-cache", explanation: StringTable.shared.string(.scanExpDartFlutterPubPaketDeposu, language: language))
+        probe(ecosystem: .dartFlutter, toolName: "dartServer", relPath: ".dartServer/.analysis-driver", explanation: StringTable.shared.string(.scanExpDartAnalizSunucusuOnbellegi, language: language))
 
         // 11. Sürüm Yöneticileri (Version Managers: mise, asdf, nvm, fnm, pyenv, rbenv, rustup, sdkman)
-        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".local/share/mise/cache", explanation: "mise çalışma zamanı indirme önbelleği")
-        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".local/share/mise/downloads", explanation: "mise arşiv indirmeleri")
-        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".cache/mise", explanation: "mise önbellek dizini (~/.cache/mise)")
-        probe(ecosystem: .versionManager, toolName: "asdf", relPath: ".asdf/downloads", explanation: "asdf çalışma zamanı indirme arşivi")
-        probe(ecosystem: .versionManager, toolName: "asdf", relPath: ".asdf/repository", explanation: "asdf eklenti deposu meta verileri")
-        probe(ecosystem: .versionManager, toolName: "nvm", relPath: ".nvm/.cache", explanation: "nvm Node.js sürüm indirme arşivi")
-        probe(ecosystem: .versionManager, toolName: "fnm", relPath: ".local/share/fnm/cache", explanation: "fnm Node indirme önbelleği")
-        probe(ecosystem: .versionManager, toolName: "fnm", relPath: "Library/Caches/fnm_multicache", explanation: "fnm çoklu sürüm önbelleği")
-        probe(ecosystem: .versionManager, toolName: "pyenv", relPath: ".pyenv/cache", explanation: "pyenv Python kaynak kodu indirme önbelleği")
-        probe(ecosystem: .versionManager, toolName: "rbenv", relPath: ".rbenv/cache", explanation: "rbenv Ruby kaynak kodu indirme önbelleği")
-        probe(ecosystem: .versionManager, toolName: "rustup", relPath: ".rustup/downloads", explanation: "rustup araç zinciri indirme arşivi")
-        probe(ecosystem: .versionManager, toolName: "sdkman", relPath: ".sdkman/archives", explanation: "SDKMAN JVM sürüm arşivleri")
-        probe(ecosystem: .versionManager, toolName: "sdkman", relPath: ".sdkman/tmp", explanation: "SDKMAN geçici dosyaları")
+        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".local/share/mise/cache", explanation: StringTable.shared.string(.scanExpMiseCalismaZamaniIndirmeOnbellegi, language: language))
+        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".local/share/mise/downloads", explanation: StringTable.shared.string(.scanExpMiseArsivIndirmeleri, language: language))
+        probe(ecosystem: .versionManager, toolName: "mise", relPath: ".cache/mise", explanation: StringTable.shared.string(.scanExpMiseOnbellekDiziniCacheMise, language: language))
+        probe(ecosystem: .versionManager, toolName: "asdf", relPath: ".asdf/downloads", explanation: StringTable.shared.string(.scanExpAsdfCalismaZamaniIndirmeArsivi, language: language))
+        probe(ecosystem: .versionManager, toolName: "asdf", relPath: ".asdf/repository", explanation: StringTable.shared.string(.scanExpAsdfEklentiDeposuMetaVerileri, language: language))
+        probe(ecosystem: .versionManager, toolName: "nvm", relPath: ".nvm/.cache", explanation: StringTable.shared.string(.scanExpNvmNodeJsSurumIndirme, language: language))
+        probe(ecosystem: .versionManager, toolName: "fnm", relPath: ".local/share/fnm/cache", explanation: StringTable.shared.string(.scanExpFnmNodeIndirmeOnbellegi, language: language))
+        probe(ecosystem: .versionManager, toolName: "fnm", relPath: "Library/Caches/fnm_multicache", explanation: StringTable.shared.string(.scanExpFnmCokluSurumOnbellegi, language: language))
+        probe(ecosystem: .versionManager, toolName: "pyenv", relPath: ".pyenv/cache", explanation: StringTable.shared.string(.scanExpPyenvPythonKaynakKoduIndirme, language: language))
+        probe(ecosystem: .versionManager, toolName: "rbenv", relPath: ".rbenv/cache", explanation: StringTable.shared.string(.scanExpRbenvRubyKaynakKoduIndirme, language: language))
+        probe(ecosystem: .versionManager, toolName: "rustup", relPath: ".rustup/downloads", explanation: StringTable.shared.string(.scanExpRustupAracZinciriIndirmeArsivi, language: language))
+        probe(ecosystem: .versionManager, toolName: "sdkman", relPath: ".sdkman/archives", explanation: StringTable.shared.string(.scanExpSDKMANJVMSurumArsivleri, language: language))
+        probe(ecosystem: .versionManager, toolName: "sdkman", relPath: ".sdkman/tmp", explanation: StringTable.shared.string(.scanExpSDKMANGeciciDosyalari, language: language))
 
         // 12. Diğer Ekosistemler (Elixir, Haskell, Lua, R, Perl)
-        probe(ecosystem: .otherEcosystem, toolName: "hex / mix", relPath: ".hex/cache", explanation: "Elixir Hex paket önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "mix", relPath: ".mix/archives", explanation: "Elixir Mix arşiv önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "cabal", relPath: ".cabal/packages", explanation: "Haskell Cabal paket deposu")
-        probe(ecosystem: .otherEcosystem, toolName: "stack", relPath: ".stack/snapshots", explanation: "Haskell Stack snapshot derleme önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "stack", relPath: ".stack/indices", explanation: "Haskell Stack Hackage indeks arşivi")
-        probe(ecosystem: .otherEcosystem, toolName: "luarocks", relPath: ".cache/luarocks", explanation: "LuaRocks paket indirme önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "luarocks", relPath: ".luarocks/cache", explanation: "LuaRocks yerel kayaç önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "R / renv", relPath: "Library/Caches/R", explanation: "R / renv paket önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "R / renv", relPath: ".cache/R/renv", explanation: "R renv proje paket havuzu önbelleği")
-        probe(ecosystem: .otherEcosystem, toolName: "cpan", relPath: ".cpan/sources", explanation: "Perl CPAN kaynak arşivleri")
-        probe(ecosystem: .otherEcosystem, toolName: "cpan", relPath: ".cpan/build", explanation: "Perl CPAN derleme artıkları (~/.cpan/build)")
-        probe(ecosystem: .otherEcosystem, toolName: "cpanm", relPath: ".cpanm/work", explanation: "App::cpanminus geçici çalışma dizini (~/.cpanm/work)")
+        probe(ecosystem: .otherEcosystem, toolName: "hex / mix", relPath: ".hex/cache", explanation: StringTable.shared.string(.scanExpElixirHexPaketOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "mix", relPath: ".mix/archives", explanation: StringTable.shared.string(.scanExpElixirMixArsivOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "cabal", relPath: ".cabal/packages", explanation: StringTable.shared.string(.scanExpHaskellCabalPaketDeposu, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "stack", relPath: ".stack/snapshots", explanation: StringTable.shared.string(.scanExpHaskellStackSnapshotDerlemeOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "stack", relPath: ".stack/indices", explanation: StringTable.shared.string(.scanExpHaskellStackHackageIndeksArsivi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "luarocks", relPath: ".cache/luarocks", explanation: StringTable.shared.string(.scanExpLuaRocksPaketIndirmeOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "luarocks", relPath: ".luarocks/cache", explanation: StringTable.shared.string(.scanExpLuaRocksYerelKayacOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "R / renv", relPath: "Library/Caches/R", explanation: StringTable.shared.string(.scanExpRRenvPaketOnbellegi, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "R / renv", relPath: ".cache/R/renv", explanation: StringTable.shared.string(.scanExpRRenvProjePaketHavuzu, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "cpan", relPath: ".cpan/sources", explanation: StringTable.shared.string(.scanExpPerlCPANKaynakArsivleri, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "cpan", relPath: ".cpan/build", explanation: StringTable.shared.string(.scanExpPerlCPANDerlemeArtiklariCpan, language: language))
+        probe(ecosystem: .otherEcosystem, toolName: "cpanm", relPath: ".cpanm/work", explanation: StringTable.shared.string(.scanExpAppCpanminusGeciciCalismaDizini, language: language))
 
         // 13. Homebrew Ekosistem Araçları ve Çalışma Zamanları (Origin: .homebrew)
         let brewPrefixes = ["/opt/homebrew", "/usr/local"]
@@ -1513,44 +1525,44 @@ public struct ExtendedScanners: Sendable {
             for pyVer in ["python@3.13", "python@3.12", "python@3.11", "python3"] {
                 let pyPath = "\(prefix)/opt/\(pyVer)"
                 if fm.fileExists(atPath: pyPath) {
-                    probe(ecosystem: .python, origin: .homebrew, toolName: "Homebrew Python (\(pyVer))", relPath: pyPath, explanation: "Homebrew Python çalışma ortamı ve kütüphaneleri", fullURL: URL(fileURLWithPath: pyPath))
+                    probe(ecosystem: .python, origin: .homebrew, toolName: "Homebrew Python (\(pyVer))", relPath: pyPath, explanation: StringTable.shared.string(.scanExpHomebrewPythonCalismaOrtamiVe, language: language), fullURL: URL(fileURLWithPath: pyPath))
                 }
             }
             // Homebrew Node
             let nodePath = "\(prefix)/opt/node"
             if fm.fileExists(atPath: nodePath) {
-                probe(ecosystem: .javascriptNode, origin: .homebrew, toolName: "Homebrew Node.js", relPath: nodePath, explanation: "Homebrew Node.js çalışma ortamı", fullURL: URL(fileURLWithPath: nodePath))
+                probe(ecosystem: .javascriptNode, origin: .homebrew, toolName: "Homebrew Node.js", relPath: nodePath, explanation: StringTable.shared.string(.scanExpHomebrewNodeJsCalismaOrtami, language: language), fullURL: URL(fileURLWithPath: nodePath))
             }
             // Homebrew Ruby
             for rbVer in ["ruby", "ruby@3.3", "ruby@3.2"] {
                 let rbPath = "\(prefix)/opt/\(rbVer)"
                 if fm.fileExists(atPath: rbPath) {
-                    probe(ecosystem: .ruby, origin: .homebrew, toolName: "Homebrew Ruby (\(rbVer))", relPath: rbPath, explanation: "Homebrew Ruby çalışma ortamı", fullURL: URL(fileURLWithPath: rbPath))
+                    probe(ecosystem: .ruby, origin: .homebrew, toolName: "Homebrew Ruby (\(rbVer))", relPath: rbPath, explanation: StringTable.shared.string(.scanExpHomebrewRubyCalismaOrtami, language: language), fullURL: URL(fileURLWithPath: rbPath))
                 }
             }
             // Homebrew Go
             let goPath = "\(prefix)/opt/go"
             if fm.fileExists(atPath: goPath) {
-                probe(ecosystem: .goLang, origin: .homebrew, toolName: "Homebrew Go", relPath: goPath, explanation: "Homebrew Go SDK araçları", fullURL: URL(fileURLWithPath: goPath))
+                probe(ecosystem: .goLang, origin: .homebrew, toolName: "Homebrew Go", relPath: goPath, explanation: StringTable.shared.string(.scanExpHomebrewGoSDKAraclari, language: language), fullURL: URL(fileURLWithPath: goPath))
             }
             // Homebrew Rust
             let rustPath = "\(prefix)/opt/rust"
             if fm.fileExists(atPath: rustPath) {
-                probe(ecosystem: .rust, origin: .homebrew, toolName: "Homebrew Rust", relPath: rustPath, explanation: "Homebrew Rust derleme araçları", fullURL: URL(fileURLWithPath: rustPath))
+                probe(ecosystem: .rust, origin: .homebrew, toolName: "Homebrew Rust", relPath: rustPath, explanation: StringTable.shared.string(.scanExpHomebrewRustDerlemeAraclari, language: language), fullURL: URL(fileURLWithPath: rustPath))
             }
             // Homebrew OpenJDK
             let jdkPath = "\(prefix)/opt/openjdk"
             if fm.fileExists(atPath: jdkPath) {
-                probe(ecosystem: .jvm, origin: .homebrew, toolName: "Homebrew OpenJDK", relPath: jdkPath, explanation: "Homebrew Java geliştirme ortamı", fullURL: URL(fileURLWithPath: jdkPath))
+                probe(ecosystem: .jvm, origin: .homebrew, toolName: "Homebrew OpenJDK", relPath: jdkPath, explanation: StringTable.shared.string(.scanExpHomebrewJavaGelistirmeOrtami, language: language), fullURL: URL(fileURLWithPath: jdkPath))
             }
             // Homebrew Perl
             let perlPath = "\(prefix)/opt/perl"
             if fm.fileExists(atPath: perlPath) {
-                probe(ecosystem: .otherEcosystem, origin: .homebrew, toolName: "Homebrew Perl", relPath: perlPath, explanation: "Homebrew Perl 5 ortamı", fullURL: URL(fileURLWithPath: perlPath))
+                probe(ecosystem: .otherEcosystem, origin: .homebrew, toolName: "Homebrew Perl", relPath: perlPath, explanation: StringTable.shared.string(.scanExpHomebrewPerl5Ortami, language: language), fullURL: URL(fileURLWithPath: perlPath))
             }
         }
         // Homebrew Downloads / Caches
-        probe(ecosystem: .otherEcosystem, origin: .homebrew, toolName: "Homebrew İndirme Önbelleği", relPath: "Library/Caches/Homebrew/downloads", explanation: "Homebrew şişe (bottle) ve kaynak arşiv indirmeleri")
+        probe(ecosystem: .otherEcosystem, origin: .homebrew, toolName: "Homebrew İndirme Önbelleği", relPath: "Library/Caches/Homebrew/downloads", explanation: StringTable.shared.string(.scanExpHomebrewSiseBottleVeKaynak, language: language))
 
         let sizes = DiskSpace.sizes(of: candidates.map(\.url), isCancelled: isCancelled)
         for (candidate, size) in zip(candidates, sizes) where size > 0 {

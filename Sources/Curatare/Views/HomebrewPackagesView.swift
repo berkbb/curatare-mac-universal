@@ -487,7 +487,7 @@ public struct HomebrewPackagesMasterDetailView: View {
             .help(model.L(.buttonSelectAll))
             .keyboardShortcut("a", modifiers: .command)
 
-            Text("\(model.filteredHomebrewPackages.count) paket")
+            Text(model.LF(.homebrewPackageCount, Int64(model.filteredHomebrewPackages.count)))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 

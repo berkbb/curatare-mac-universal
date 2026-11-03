@@ -369,10 +369,10 @@ public final class AppModel {
                 userWhitelistPatterns: settings.customWhitelistPaths,
                 allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps,
                 allowDeveloperCacheCleaning: true
-            )
+            ).localized(to: settings.resolvedLanguageCode)
             let manifest = try trashService.moveToDatedTrash(
                 candidates: [candidate],
-                title: "Ecosystem Cleanup: \(item.toolName)",
+                title: LF(.trashTitleEcosystem, item.toolName),
                 protectionRules: protection,
                 verifyRunningProcess: settings.protectRunningApps
             )
@@ -606,7 +606,8 @@ public final class AppModel {
                 bundle: event.bundle,
                 associatedFiles: event.orphanedFiles,
                 trashService: trashService,
-                verifyRunningProcess: false
+                verifyRunningProcess: false,
+                language: settings.resolvedLanguageCode
             )
             smartDeleteEvent = nil
             trashBatches = trashService.listBatches()
@@ -901,7 +902,7 @@ public final class AppModel {
     }
 
     public func runLibraryAudit() async {
-        let scanner = libraryScanner
+        let scanner = libraryScanner.localized(to: settings.resolvedLanguageCode)
         let whitelist = settings.customWhitelistPaths
         await performCancellableOperation(
             inline: true,
@@ -933,10 +934,10 @@ public final class AppModel {
             let protection = ProtectionRules(
                 userWhitelistPatterns: settings.customWhitelistPaths,
                 allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps
-            )
+            ).localized(to: settings.resolvedLanguageCode)
             let manifest = try trashService.moveToDatedTrash(
                 candidates: candidates,
-                title: "Library Audit (Groups A–E)",
+                title: L(.trashTitleLibraryAudit),
                 protectionRules: protection,
                 verifyRunningProcess: settings.protectRunningApps
             )
@@ -995,13 +996,14 @@ public final class AppModel {
         let uninstaller = appUninstaller
         let whitelist = settings.customWhitelistPaths
         let allowProtected = settings.allowUninstallingProtectedApps
+        let language = settings.resolvedLanguageCode
         await performCancellableOperation(
             inline: true,
             operation: { token in
                 let protection = ProtectionRules(
                     userWhitelistPatterns: whitelist,
                     allowUninstallingProtectedApps: allowProtected
-                )
+                ).localized(to: language)
                 // Liste paket boyutunu göstermez; boyut, seçilen paket incelenirken `discoverAssociatedFiles`
                 // içinde hesaplanır. Tüm paketleri baştan gezmek (Xcode ~10 GB) listeyi ~30 sn geciktiriyordu.
                 return uninstaller.scanInstalledBundles(
@@ -1033,7 +1035,7 @@ public final class AppModel {
         let protection = ProtectionRules(
             userWhitelistPatterns: settings.customWhitelistPaths,
             allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps
-        )
+        ).localized(to: settings.resolvedLanguageCode)
         inspectionTask = Task { @MainActor [weak self] in
             let files = await Task.detached(priority: .userInitiated) {
                 uninstaller.discoverAssociatedFiles(
@@ -1069,7 +1071,7 @@ public final class AppModel {
         let protection = ProtectionRules(
             userWhitelistPatterns: settings.customWhitelistPaths,
             allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps
-        )
+        ).localized(to: settings.resolvedLanguageCode)
         let ext = first.pathExtension.lowercased()
         let kind: BundleKind = (ext == "wdgt" || ext == "appex") ? .widget : (ext == "app" ? .application : .plugin)
         guard let inspected = appUninstaller.inspectBundle(at: first, kind: kind, protectionRules: protection) else { return }
@@ -1110,13 +1112,14 @@ public final class AppModel {
             let protection = ProtectionRules(
                 userWhitelistPatterns: settings.customWhitelistPaths,
                 allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps
-            )
+            ).localized(to: settings.resolvedLanguageCode)
             let manifest = try appUninstaller.uninstallToDatedTrash(
                 bundle: bundle,
                 associatedFiles: associatedFiles,
                 trashService: trashService,
                 protectionRules: protection,
-                verifyRunningProcess: settings.protectRunningApps
+                verifyRunningProcess: settings.protectRunningApps,
+                language: settings.resolvedLanguageCode
             )
             installedBundles.removeAll { $0.id == bundle.id }
             inspectingBundle = nil
@@ -1150,7 +1153,7 @@ public final class AppModel {
     // MARK: - 3. Geliştirme ve Yapay Zekâ Temizliği
 
     public func scanDevAndAI() async {
-        let scanners = extendedScanners
+        let scanners = extendedScanners.localized(to: settings.resolvedLanguageCode)
         let currentWorkspace = Bundle.main.bundleURL.deletingLastPathComponent().path
         await performCancellableOperation(
             inline: true,
@@ -1174,7 +1177,7 @@ public final class AppModel {
     }
 
     public func scanLanguageEcosystems() async {
-        let scanners = extendedScanners
+        let scanners = extendedScanners.localized(to: settings.resolvedLanguageCode)
         await performCancellableOperation(
             inline: true,
             operation: { token in
@@ -1412,10 +1415,10 @@ public final class AppModel {
                 userWhitelistPatterns: settings.customWhitelistPaths,
                 allowUninstallingProtectedApps: settings.allowUninstallingProtectedApps,
                 allowDeveloperCacheCleaning: true
-            )
+            ).localized(to: settings.resolvedLanguageCode)
             let manifest = try trashService.moveToDatedTrash(
                 candidates: candidates,
-                title: "Developer & AI Cleanup",
+                title: L(.trashTitleDevAI),
                 protectionRules: protection,
                 verifyRunningProcess: settings.protectRunningApps
             )
@@ -1516,11 +1519,12 @@ public final class AppModel {
     }
 
     public func scanBrowserAndCaches() async {
-        let scanners = extendedScanners
+        let scanners = extendedScanners.localized(to: settings.resolvedLanguageCode)
+        let language = settings.resolvedLanguageCode
         await performCancellableOperation(
             inline: true,
             operation: { token in
-                let caches = scanners.scanHeavyCachesAndInstallers(isCancelled: { token.isCancelled })
+                let caches = scanners.scanHeavyCachesAndInstallers(language: language, isCancelled: { token.isCancelled })
                 guard !token.isCancelled else { return ([HeavyCacheItem](), [TimeMachineSnapshot]()) }
                 let snapshots = await scanners.listTimeMachineSnapshots()
                 return (caches, snapshots)
@@ -1552,7 +1556,7 @@ public final class AppModel {
             userWhitelistPatterns: settings.customWhitelistPaths,
             allowDeveloperCacheCleaning: true,
             allowUserCacheCleaning: true
-        )
+        ).localized(to: settings.resolvedLanguageCode)
         let candidates = selected.map { item in
             DatedTrashMoveCandidate(
                 url: item.url,
@@ -1565,7 +1569,7 @@ public final class AppModel {
         do {
             let manifest = try trashService.moveToDatedTrash(
                 candidates: candidates,
-                title: "Browser & Heavy Caches Cleanup",
+                title: L(.trashTitleBrowserCaches),
                 protectionRules: protection,
                 verifyRunningProcess: settings.protectRunningApps
             )
@@ -1583,7 +1587,7 @@ public final class AppModel {
     }
 
     public func thinTimeMachineSnapshots() async {
-        let scanners = extendedScanners
+        let scanners = extendedScanners.localized(to: settings.resolvedLanguageCode)
         await performCancellableOperation(
             operation: { token in
                 _ = try? await scanners.thinTimeMachineSnapshots()
@@ -1816,9 +1820,10 @@ public final class AppModel {
     public func runSelectedOptimizations() async {
         let bridge = MoleBridge(engine: engineInfo)
         let tasks = optimizationTasks
+        let language = settings.resolvedLanguageCode
         await performCancellableOperation(
             operation: { _ in
-                await bridge.runOptimizationTasks(tasks)
+                await bridge.runOptimizationTasks(tasks, language: language)
             },
             onComplete: { outcomes in
                 self.reportOptimizationOutcomes(outcomes)

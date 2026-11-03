@@ -879,7 +879,8 @@ public struct AppUninstaller: Sendable {
         associatedFiles: [AssociatedFile],
         trashService: DatedTrashService,
         protectionRules: ProtectionRules = ProtectionRules(),
-        verifyRunningProcess: Bool = true
+        verifyRunningProcess: Bool = true,
+        language: String = "en"
     ) throws -> TrashBatchManifest {
         let selected = associatedFiles.filter { $0.isSelected && !$0.requiresSudo }
 
@@ -901,7 +902,7 @@ public struct AppUninstaller: Sendable {
         }
         return try trashService.moveToDatedTrash(
             candidates: candidates,
-            title: "Uninstall \(bundle.name)",
+            title: StringTable().format(.trashTitleUninstall, language: language, bundle.name),
             protectionRules: protectionRules,
             verifyRunningProcess: verifyRunningProcess
         )

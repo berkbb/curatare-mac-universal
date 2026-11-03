@@ -274,6 +274,33 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakScreenshotLocationDefault, tweakScreenshotLocationChoose, tweakScreenshotLocationReset
     case tweakSafariOpenButton
     case trashStatItemCount, trashStatTotalSize, trashStatDate, homebrewCaveats, trashFilterItemsPlaceholder
+    case trashBatchCountFiltered, homebrewPackageCount, menuBarMetricCPU, menuBarMetricRAM, menuBarMetricDisk
+    case trashTitleEcosystem, trashTitleLibraryAudit, trashTitleDevAI, trashTitleBrowserCaches, trashTitleUninstall
+    case trashTitleSavedState, trashTitleDiagnosticReports, trashTitleMailEnvelopeIndex
+    case scanAppleMailDownloads, scanIOSBackup, scanQuickTimeAutosave, scanXcodeArchives, scanServiceWorkerCache
+    // Çekirdek katmanın ürettiği tarama açıklamaları, koruma gerekçeleri ve denetim bulguları
+    case scanExpDiskHTTPWebCache, scanExpOfflineServiceWorkerCacheStorage, scanExpOfflineSiteStorageBlobBrowser, scanExpOrphanedSafariTemporaryCookieWrite, scanExpCachedAttachmentsOpenedFromApple, scanExpLocalIPhoneIPadDeviceBackup
+    case scanExpIncompleteOrInterruptedDownloadArtifact, scanExpExtraneousWindowsMetadataOrAppleDouble, scanExpKernelProcessMemoryCoreDump, scanExpDiagnosticCrashOrHangReport, scanExpAccumulatedShellSessionHistoryAnd, scanExpDownloaded4K8KAerialWallpaper
+    case scanExpUnsavedTemporaryScreenOrAudio, scanExpEskiGuncellemeSurumuGuncelSurum, scanExpEskiUygulamaGuncellemeIndirmeVe, scanExpJetBrainsAirUygulamaArtigiUygulama, scanExpJavaWebStartOnbellekArtigi, scanExpGradleVersionIsNotReferenced
+    case scanExpUnusedGradleWrapperDistributionModules, scanExpDartAnalysisServerCacheRegenerated, scanExpStaleOfficeLockFileIn, scanExpInstallerImagePackageIn, scanExpAudioUnitsPlugInValidation, scanExpObsoletePreviousMusicITunesLibrary
+    case scanExpBuiltXcarchiveApplicationDistributionPackages, scanExpPipPaketIndirmeVeHTTP, scanExpPipPaketIndirmeOnbellegiCache, scanExpUvTekerlekWheelVePaket, scanExpUvOnbellekDiziniCacheUv, scanExpPipxGeciciVeSilinmisPaket
+    case scanExpPipxPaylasilanKutuphanelerOnbellegi, scanExpPipxTekerlekOnbellegiCachePipx, scanExpPoetryPaketVeSanalOrtam, scanExpPoetryOnbellekDiziniCachePypoetry, scanExpPDMPaketYoneticisiOnbellegi, scanExpPDMPaketOnbellegiCachePdm
+    case scanExpCondaMambaPaketArsiviOnbellegi, scanExpMambaPaketArsiviOnbellegiMamba, scanExpMiniforgeCondaPaketArsivi, scanExpAnacondaCondaPaketArsivi, scanExpNpmIcerikAdreslenebilirPaketOnbellegi, scanExpNpmIndirmeOnbellegi
+    case scanExpPnpmKureselIcerikDeposuOnbellegi, scanExpPnpmVeriDeposuLocalShare, scanExpPnpmGeciciPaketOnbellegi, scanExpYarnPaketOnbellegi, scanExpYarnBerryV2PaketOnbellegi, scanExpYarnOnbellekDiziniCacheYarn
+    case scanExpBunHizliPaketIndirmeOnbellegi, scanExpDenoDerlemeVeUzaktanModul, scanExpDenoUzakBagimlilikOnbellegiDeno, scanExpCargoCratePaketIndirmeArsivi, scanExpCargoGitBagimliliklariKlonVeritabani, scanExpGoDerlemeVeAraNesne
+    case scanExpGoModulIndirmeOnbellegiGOPATH, scanExpBundlerGemArsivOnbellegi, scanExpRubyGemsUzakSpesifikasyonlarOnbellegi, scanExpRubyGemsGemIkiliPaketIndirme, scanExpRubyGemsKullaniciKutuphaneDiziniLocal, scanExpComposerPaketVeHavuzOnbellegi
+    case scanExpComposerKureselOnbellekDiziniComposer, scanExpGradleBagimlilikVeDerlemeOnbellegi, scanExpMavenYerelKutuphaneDeposuM2, scanExpScalaSBTCoursierBagimlilikOnbellegi, scanExpCoursierIndirmeOnbellegiCacheCoursier, scanExpSBTOnyuklemeBilesenleriOnbellegiSbt
+    case scanExpNuGetPaketIndirmeOnbellegi, scanExpNuGetV3HTTPMetaVeri, scanExpSwiftPackageManagerRepoVe, scanExpSwiftPackageManagerYapilandirmaVe, scanExpCocoaPodsPaketVeSpecIndirme, scanExpCarthageIkiliDerlemeOnbellegi
+    case scanExpDartFlutterPubPaketDeposu, scanExpDartAnalizSunucusuOnbellegi, scanExpMiseCalismaZamaniIndirmeOnbellegi, scanExpMiseArsivIndirmeleri, scanExpMiseOnbellekDiziniCacheMise, scanExpAsdfCalismaZamaniIndirmeArsivi
+    case scanExpAsdfEklentiDeposuMetaVerileri, scanExpNvmNodeJsSurumIndirme, scanExpFnmNodeIndirmeOnbellegi, scanExpFnmCokluSurumOnbellegi, scanExpPyenvPythonKaynakKoduIndirme, scanExpRbenvRubyKaynakKoduIndirme
+    case scanExpRustupAracZinciriIndirmeArsivi, scanExpSDKMANJVMSurumArsivleri, scanExpSDKMANGeciciDosyalari, scanExpElixirHexPaketOnbellegi, scanExpElixirMixArsivOnbellegi, scanExpHaskellCabalPaketDeposu
+    case scanExpHaskellStackSnapshotDerlemeOnbellegi, scanExpHaskellStackHackageIndeksArsivi, scanExpLuaRocksPaketIndirmeOnbellegi, scanExpLuaRocksYerelKayacOnbellegi, scanExpRRenvPaketOnbellegi, scanExpRRenvProjePaketHavuzu
+    case scanExpPerlCPANKaynakArsivleri, scanExpPerlCPANDerlemeArtiklariCpan, scanExpAppCpanminusGeciciCalismaDizini, scanExpHomebrewPythonCalismaOrtamiVe, scanExpHomebrewNodeJsCalismaOrtami, scanExpHomebrewRubyCalismaOrtami
+    case scanExpHomebrewGoSDKAraclari, scanExpHomebrewRustDerlemeAraclari, scanExpHomebrewJavaGelistirmeOrtami, scanExpHomebrewPerl5Ortami, scanExpHomebrewSiseBottleVeKaynak
+    case protReasonSystemOrOSCorePath, protReasonCredentialOrKeychainDirectory, protReasonWhitelisted, protReasonProtectedAIVMState, protReasonCuratareSiblingApplication, protReasonAppleSystemService
+    case protReasonAppleSystemPrefix, protReasonAppleSystemDaemon, protReasonSharedFramework, protReasonInstall4jRuntimeUsedByAn, protReasonSharedGoogleGroupWhileGoogle, protReasonSharedMicrosoftGroupWhileMicrosoft
+    case protReasonVMwareHelperProtectedWhileVMware, protReasonParallelsHelperProtectedWhileParallels, protReasonSharedDeveloperToolchainCache, protReasonProtectedGradleModules2Android, protReasonActiveGradleVersion
+    case auditExpTestRunOrTemplateProject, auditExpBareNamedCLISwiftRun, auditExpContainerPointsToMissingBuild, auditExpTargetExecutableMissingOnDisk
     case toastTweakApplied, toastTweaksReset
 
     // 7. Tarihli Çöp Turları ve Geçmiş (`~/.Trash/Curatare-...`)
@@ -358,4 +385,15 @@ public enum LKey: String, CaseIterable, Sendable {
     case statusScanning, statusMovingToTrash, statusRestoring
     case toastMovedToDatedTrash, toastRestoredBatch, toastOptimizationDone, toastScanCancelled
     case errorTitle, errorProtectedTarget, errorProcessRunning, errorEngineNotFound
+}
+
+extension StringTable {
+    /// Çekirdek katmanın paylaştığı tek tablo; yüzlerce öğe için tablolar yeniden yüklenmez.
+    public static let shared = StringTable()
+
+    /// Çekirdek katmanın kullanıcıya gösterdiği metinler (çöp turu başlıkları, tarama adları) için biçimli dize.
+    /// Metin her zaman ilgili dilin `Localizable.strings` tablosundan gelir; koda gömülü metin kullanılmaz.
+    public func format(_ key: LKey, language code: String, _ args: CVarArg...) -> String {
+        String(format: string(key, language: code), locale: Locale(identifier: code), arguments: args)
+    }
 }

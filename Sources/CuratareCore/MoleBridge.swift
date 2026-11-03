@@ -502,7 +502,8 @@ public struct MoleBridge: Sendable {
 
     /// Seçilen güvenli sistem bakım görevlerini (`qlmanage -r cache`, `diskutil verifyVolume /` vb.) çalıştırır ve
     /// her görevin gerçek sonucunu döner; yönetici izni gereken adımı kendisi çalıştırmaz, komutunu verir.
-    public func runOptimizationTasks(_ tasks: [MoleOptimizationTask]) async -> [MoleOptimizationOutcome] {
+    public func runOptimizationTasks(_ tasks: [MoleOptimizationTask], language: String = "en") async -> [MoleOptimizationOutcome] {
+        let strings = StringTable()
         var outcomes: [MoleOptimizationOutcome] = []
         for task in tasks where task.isSelected {
             func record(_ status: MoleOptimizationOutcome.Status, _ detail: String) {
@@ -525,7 +526,7 @@ public struct MoleBridge: Sendable {
                 let candidates = Self.staleSavedStates(in: directory, olderThan: Date().addingTimeInterval(-Self.savedStateMaxAge))
                 if candidates.isEmpty {
                     record(.done, "No saved window states older than 30 days outside Apple apps")
-                } else if let manifest = try? DatedTrashService(homeDirectoryURL: home).moveToDatedTrash(candidates: candidates, title: "Saved Application State Prune") {
+                } else if let manifest = try? DatedTrashService(homeDirectoryURL: home).moveToDatedTrash(candidates: candidates, title: strings.string(.trashTitleSavedState, language: language)) {
                     record(.done, "Moved \(manifest.items.count) saved window states older than 30 days to dated Trash")
                 } else {
                     record(.failed, "Saved window states could not be moved to dated Trash")
@@ -579,7 +580,7 @@ public struct MoleBridge: Sendable {
                 if let items = try? fm.contentsOfDirectory(at: userReports, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]), !items.isEmpty {
                     let trashService = DatedTrashService(homeDirectoryURL: fm.homeDirectoryForCurrentUser)
                     let candidates = items.map { DatedTrashMoveCandidate(url: $0, category: "DiagnosticReport") }
-                    if let manifest = try? trashService.moveToDatedTrash(candidates: candidates, title: "Diagnostic Reports Prune") {
+                    if let manifest = try? trashService.moveToDatedTrash(candidates: candidates, title: strings.string(.trashTitleDiagnosticReports, language: language)) {
                         count = manifest.items.count
                     }
                 }
@@ -610,7 +611,7 @@ public struct MoleBridge: Sendable {
                     }
                     if !indexCandidates.isEmpty {
                         let trashService = DatedTrashService(homeDirectoryURL: fm.homeDirectoryForCurrentUser)
-                        if let manifest = try? trashService.moveToDatedTrash(candidates: indexCandidates, title: "Apple Mail Envelope Index Reset") {
+                        if let manifest = try? trashService.moveToDatedTrash(candidates: indexCandidates, title: strings.string(.trashTitleMailEnvelopeIndex, language: language)) {
                             record(.done, "Apple Mail Envelope Index reset (\(manifest.items.count) index files moved to dated Trash)")
                         } else {
                             record(.failed, "Apple Mail Envelope Index reset could not be completed.")

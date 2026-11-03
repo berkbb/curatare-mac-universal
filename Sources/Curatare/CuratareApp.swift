@@ -146,10 +146,10 @@ private struct MenuBarQuickPanel: View {
             }
 
             HStack(spacing: 8) {
-                miniMetric(title: "CPU", value: String(format: "%.0f%%", model.systemStatus.cpu.usage), icon: "cpu")
-                miniMetric(title: "RAM", value: String(format: "%.0f%%", model.systemStatus.memory.usedPercent), icon: "memorychip")
+                miniMetric(title: model.L(.menuBarMetricCPU), value: String(format: "%.0f%%", model.systemStatus.cpu.usage), icon: "cpu")
+                miniMetric(title: model.L(.menuBarMetricRAM), value: String(format: "%.0f%%", model.systemStatus.memory.usedPercent), icon: "memorychip")
                 let diskPct = model.systemStatus.disks.first?.usedPercent ?? 0
-                miniMetric(title: "Disk", value: String(format: "%.0f%%", diskPct), icon: "internaldrive")
+                miniMetric(title: model.L(.menuBarMetricDisk), value: String(format: "%.0f%%", diskPct), icon: "internaldrive")
             }
 
             Divider()
