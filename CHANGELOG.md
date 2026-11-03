@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Disk health (S.M.A.R.T.) status** in System Center → Hardware, read from the same `diskutil info disk0` call already used for the disk name: green when verified, red with a back-up warning when failing.
+- **Screenshot format tweak** (PNG, JPG, HEIC, PDF) in System Tweaks → Screenshot; choosing PNG restores the macOS default, and **Reset All** returns it to PNG.
+
 ### Changed
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
 - **System Status loads once:** The tab no longer re-runs `status-go`, `system_profiler` and `diskutil` on every visit; data is cached until **Refresh**. Live CPU, memory and disk metrics refresh every 15 seconds while the Live Status dashboard is visible. App launch now fetches only the light `status-go` metrics.
