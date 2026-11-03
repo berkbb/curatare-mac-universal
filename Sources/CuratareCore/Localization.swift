@@ -179,6 +179,11 @@ public enum LKey: String, CaseIterable, Sendable {
     // 5. Disk Analizi (`analyze-go`)
     case diskTitle, diskSubtitle
     case diskChooseFolder, diskNavigateUp, diskTotalSize, diskEmptyFolder, diskInspectFolder
+    case diskTabUsage, diskTabDuplicateDownloads
+    case duplicatesTitle, duplicatesSubtitle, duplicatesScanning, duplicatesReclaimable, duplicatesGroupDetail, duplicatesOldestBadge
+    case duplicatesSharedWith, duplicatesCreated, duplicatesSelectExtras, duplicatesSelectedSummary, duplicatesKeepOneHelp
+    case duplicatesNoneTitle, duplicatesNoneMessage, duplicatesNotScannedTitle, duplicatesNotScannedMessage
+    case duplicatesAccessDeniedTitle, duplicatesAccessDeniedMessage, duplicatesSkippedChanged, duplicatesMovedWithSkipped
 
     // 6. Sistem Durumu ve Bakım (`status-go`, `optimize` & `SystemTweaks`)
     case statusTitle, statusSubtitle
@@ -277,7 +282,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case sysBuildLabel, sysDarwinLabel, trashBatchIDLabel, logProcessLabel, logPIDLabel, bundleVersionLabel
     case engineVersionUnknown
     case trashTitleEcosystem, trashTitleLibraryAudit, trashTitleDevAI, trashTitleBrowserCaches, trashTitleUninstall
-    case trashTitleSavedState, trashTitleDiagnosticReports, trashTitleMailEnvelopeIndex
+    case trashTitleSavedState, trashTitleDiagnosticReports, trashTitleMailEnvelopeIndex, trashTitleDuplicateDownloads
     case scanAppleMailDownloads, scanIOSBackup, scanQuickTimeAutosave, scanXcodeArchives, scanServiceWorkerCache
     // Çekirdek katmanın ürettiği tarama açıklamaları, koruma gerekçeleri ve denetim bulguları
     case scanExpDiskHTTPWebCache, scanExpOfflineServiceWorkerCacheStorage, scanExpOfflineSiteStorageBlobBrowser, scanExpOrphanedSafariTemporaryCookieWrite, scanExpCachedAttachmentsOpenedFromApple, scanExpLocalIPhoneIPadDeviceBackup

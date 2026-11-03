@@ -781,6 +781,84 @@ struct CuratareAppTests {
         #expect(model.fullDiskAccessGranted == true)
         #expect(model.showsPermissionBanner == false)
     }
+
+    @Test("Duplicate downloads: no scan at launch, one copy always kept, extras move to dated Trash")
+    func duplicateDownloadsFlow() async throws {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+
+        let fm = FileManager.default
+        let fakeHome = fm.temporaryDirectory.appendingPathComponent("curatare-duplicates-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: fakeHome) }
+        let downloads = fakeHome.appendingPathComponent("Downloads", isDirectory: true)
+        try fm.createDirectory(at: downloads, withIntermediateDirectories: true)
+        let payload = Data((0..<(2 << 20)).map { _ in UInt8.random(in: 0...255) })
+        let original = downloads.appendingPathComponent("installer.dmg")
+        let extra = downloads.appendingPathComponent("installer (1).dmg")
+        try payload.write(to: original)
+        try payload.write(to: extra)
+        try fm.setAttributes([.creationDate: Date(timeIntervalSince1970: 1_700_000_000)], ofItemAtPath: original.path)
+
+        let settings = AppSettings(defaults: defaults)
+        settings.language = .en
+        let model = AppModel(
+            settings: settings,
+            log: AppLog(directory: nil),
+            homeDirectoryURL: fakeHome,
+            trashService: DatedTrashService(
+                trashRootURL: fakeHome.appendingPathComponent(".Trash"),
+                homeDirectoryURL: fakeHome,
+                registryFileURL: fakeHome.appendingPathComponent("Library/Application Support/Curatare/trash-batches.json")
+            ),
+            tweakManager: SystemTweakManager(store: MockPreferenceStore()),
+            startBackgroundWatchers: false
+        )
+        // Alt sekme kaydedilmez ve İndirilenler kendiliğinden okunmaz.
+        #expect(model.diskAnalyzerSubTab == .usage)
+        #expect(model.duplicateScan == nil)
+
+        await model.scanDuplicateDownloads()
+        #expect(model.isBusy == false)
+        let group = try #require(model.duplicateScan?.groups.first)
+        #expect(model.duplicateScan?.groups.count == 1)
+        #expect(group.copies.count == 2)
+        #expect(group.copies[0].url.lastPathComponent == "installer.dmg")
+
+        // Her gruptan en az bir kopya yerinde kalır
+        model.toggleDuplicateCopySelection(groupID: group.id, copyID: group.copies[0].id)
+        #expect(model.selectedDuplicateCopyCount == 1)
+        #expect(model.canSelectDuplicateCopy(groupID: group.id, copyID: group.copies[1].id) == false)
+        model.toggleDuplicateCopySelection(groupID: group.id, copyID: group.copies[1].id)
+        #expect(model.selectedDuplicateCopyCount == 1)
+
+        model.toggleSelectAllDuplicateExtras()
+        #expect(model.allDuplicateExtrasSelected)
+        #expect(model.duplicateScan?.groups[0].copies.map(\.isSelected) == [false, true])
+        #expect(model.selectedDuplicateBytes == Int64(payload.count))
+
+        model.diskAnalyzerSubTab = .duplicateDownloads
+        model.selectedSection = .diskAnalyzer
+        for language in [AppLanguage.tr, .en, .ro] {
+            settings.language = language
+            let host = NSHostingView(rootView: ContentView(model: model))
+            host.frame = NSRect(x: 0, y: 0, width: 1180, height: 700)
+            host.layoutSubtreeIfNeeded()
+            #expect(host.bounds.width == 1180)
+        }
+        settings.language = .en
+
+        settings.confirmBeforeTrashMove = true
+        model.requestMoveDuplicatesToDatedTrash()
+        #expect(model.pendingTrashConfirmation == .duplicateDownloads(count: 1, bytes: Int64(payload.count)))
+        model.executePendingTrashMove()
+
+        #expect(fm.fileExists(atPath: original.path))
+        #expect(!fm.fileExists(atPath: extra.path))
+        #expect(model.duplicateScan?.groups.isEmpty == true)
+        #expect(model.trashBatches.count == 1)
+        #expect(model.trashBatches.first?.title == "Duplicate Downloads Cleanup")
+        #expect(model.trashBatches.first?.items.map(\.trashedRelativePath) == ["user/Downloads/installer (1).dmg"])
+    }
 }
 
 final class MockURLProtocol: URLProtocol, @unchecked Sendable {

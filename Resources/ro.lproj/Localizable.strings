@@ -266,6 +266,27 @@
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "Niciun element de analizat.";
 "diskInspectFolder" = "Inspectează Acest Dosar";
+"diskTabUsage" = "Utilizare Disc";
+"diskTabDuplicateDownloads" = "Descărcări Duplicate";
+"duplicatesTitle" = "Fișiere Identice în Descărcări (SHA-256)";
+"duplicatesSubtitle" = "Găsește fișierele de %@ sau mai mari cu conținut identic în ~/Downloads. Clonele APFS și legăturile fixe își partajează datele, deci contează ca o singură copie.";
+"duplicatesScanning" = "Se scanează Descărcările pentru fișiere identice";
+"duplicatesReclaimable" = "Spațiu recuperabil: %@";
+"duplicatesGroupDetail" = "%lld copii · %@ fiecare";
+"duplicatesOldestBadge" = "Cea mai veche";
+"duplicatesSharedWith" = "Căi care partajează aceste date (clonă APFS sau legătură fixă): %@";
+"duplicatesCreated" = "Creat: %@";
+"duplicatesSelectExtras" = "Selectează Toate în Afară de Cele Mai Vechi";
+"duplicatesSelectedSummary" = "%lld copii selectate · %@";
+"duplicatesKeepOneHelp" = "Cel puțin o copie din fiecare grup rămâne pe loc.";
+"duplicatesNoneTitle" = "Nicio Descărcare Duplicată";
+"duplicatesNoneMessage" = "Au fost verificate %lld fișiere (%@ sau mai mari). Clonele APFS și legăturile fixe nu sunt considerate duplicate.";
+"duplicatesNotScannedTitle" = "Descărcările Nu Au Fost Încă Scanate";
+"duplicatesNotScannedMessage" = "Apăsați Scanează Acum pentru a căuta fișiere identice. macOS poate cere acces la dosarul Descărcări.";
+"duplicatesAccessDeniedTitle" = "Dosarul Descărcări Nu Poate Fi Citit";
+"duplicatesAccessDeniedMessage" = "Permiteți accesul Curatare la dosarul Descărcări în Setări Sistem > Confidențialitate și securitate > Fișiere și dosare (sau Acces complet la disc), apoi scanați din nou.";
+"duplicatesSkippedChanged" = "%lld fișiere s-au modificat după scanare și au fost lăsate pe loc.";
+"duplicatesMovedWithSkipped" = "%lld elemente (%@) au fost mutate în ~/.Trash/%@. %lld fișiere s-au modificat după scanare și au fost lăsate pe loc.";
 
 "statusTitle" = "Stare Sistem în Timp Real și Întreținere Sigură";
 "statusSubtitle" = "Monitorizați procesorul, memoria, discul și scorul de sănătate prin Mole status-go și rulați sarcini sigure de reîmprospătare a cache-ului.";
@@ -564,6 +585,7 @@
 "trashTitleSavedState" = "Curățare stări salvate ale ferestrelor";
 "trashTitleDiagnosticReports" = "Curățare rapoarte de diagnostic";
 "trashTitleMailEnvelopeIndex" = "Resetare index plicuri Apple Mail";
+"trashTitleDuplicateDownloads" = "Curățare Descărcări Duplicate";
 "scanAppleMailDownloads" = "Descărcări Apple Mail";
 "scanIOSBackup" = "Backup iOS (%@)";
 "scanQuickTimeAutosave" = "Informații de salvare automată QuickTime";

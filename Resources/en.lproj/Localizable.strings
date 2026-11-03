@@ -266,6 +266,27 @@
 "diskTotalSize" = "Total: %@";
 "diskEmptyFolder" = "No items to analyze.";
 "diskInspectFolder" = "Inspect This Folder";
+"diskTabUsage" = "Disk Usage";
+"diskTabDuplicateDownloads" = "Duplicate Downloads";
+"duplicatesTitle" = "Identical Files in Downloads (SHA-256)";
+"duplicatesSubtitle" = "Finds files of %@ or more with identical content in ~/Downloads. APFS clones and hard links share their data, so they count as one copy.";
+"duplicatesScanning" = "Scanning Downloads for identical files";
+"duplicatesReclaimable" = "Reclaimable: %@";
+"duplicatesGroupDetail" = "%lld copies · %@ each";
+"duplicatesOldestBadge" = "Oldest";
+"duplicatesSharedWith" = "Paths sharing this data (APFS clone or hard link): %@";
+"duplicatesCreated" = "Created: %@";
+"duplicatesSelectExtras" = "Select All but the Oldest";
+"duplicatesSelectedSummary" = "%lld copies selected · %@";
+"duplicatesKeepOneHelp" = "At least one copy in each group stays in place.";
+"duplicatesNoneTitle" = "No Duplicate Downloads";
+"duplicatesNoneMessage" = "Checked %lld files (%@ or larger). APFS clones and hard links are not counted as duplicates.";
+"duplicatesNotScannedTitle" = "Downloads Not Scanned Yet";
+"duplicatesNotScannedMessage" = "Press Scan Now to look for identical files. macOS may ask for access to the Downloads folder.";
+"duplicatesAccessDeniedTitle" = "Downloads Folder Not Readable";
+"duplicatesAccessDeniedMessage" = "Allow Curatare to access the Downloads folder in System Settings > Privacy & Security > Files and Folders (or Full Disk Access), then scan again.";
+"duplicatesSkippedChanged" = "%lld files changed after the scan and were left in place.";
+"duplicatesMovedWithSkipped" = "Moved %lld items (%@) to ~/.Trash/%@. %lld files changed after the scan and were left in place.";
 
 "statusTitle" = "Live System Status & Safe Maintenance";
 "statusSubtitle" = "Monitor CPU, memory, disk, and health score via Mole status-go telemetry and run non-destructive macOS cache refresh tasks.";
@@ -564,6 +585,7 @@
 "trashTitleSavedState" = "Saved Window States Cleanup";
 "trashTitleDiagnosticReports" = "Diagnostic Reports Cleanup";
 "trashTitleMailEnvelopeIndex" = "Apple Mail Envelope Index Reset";
+"trashTitleDuplicateDownloads" = "Duplicate Downloads Cleanup";
 "scanAppleMailDownloads" = "Apple Mail Downloads";
 "scanIOSBackup" = "iOS Backup (%@)";
 "scanQuickTimeAutosave" = "QuickTime Autosave Information";

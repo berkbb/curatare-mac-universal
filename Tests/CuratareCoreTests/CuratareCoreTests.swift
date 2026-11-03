@@ -2185,3 +2185,166 @@ struct DiskHealthAndScreenshotFormatTests {
         #expect(store.restartedServices.count == 3)
     }
 }
+
+@Suite("Duplicate Downloads Finder Tests (APFS clone aware)")
+struct DuplicateFileFinderTests {
+    private static let size = 256 * 1024
+    private let finder = DuplicateFileFinder(minimumFileSize: 128 * 1024)
+
+    private static func makeFolder() throws -> URL {
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("curatare-duplicates-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        return folder
+    }
+
+    private static func randomData(count: Int = size) -> Data {
+        Data((0..<count).map { _ in UInt8.random(in: 0...255) })
+    }
+
+    @Test("Finds independent identical copies, counts APFS clones and hard links as one copy")
+    func findsDuplicatesAndMergesClones() throws {
+        let fm = FileManager.default
+        let folder = try Self.makeFolder()
+        defer { try? fm.removeItem(at: folder) }
+
+        let payload = Self.randomData()
+        let original = folder.appendingPathComponent("setup.dmg")
+        let copy = folder.appendingPathComponent("setup (1).dmg")
+        let nested = folder.appendingPathComponent("Archive/setup.dmg")
+        try payload.write(to: original)
+        try payload.write(to: copy)
+        try fm.createDirectory(at: nested.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try payload.write(to: nested)
+
+        // APFS klonu: aynı veri blokları, ek yer kaplamaz
+        let clone = folder.appendingPathComponent("setup copy.dmg")
+        let cloned = clonefile(original.path, clone.path, 0) == 0
+        try fm.setAttributes([.creationDate: Date(timeIntervalSince1970: 1_700_000_000)], ofItemAtPath: original.path)
+        if cloned {
+            let originalID = try #require(DuplicateFileFinder.cloneID(atPath: original.path))
+            #expect(DuplicateFileFinder.cloneID(atPath: clone.path) == originalID)
+            #expect(DuplicateFileFinder.cloneID(atPath: copy.path) != originalID)
+        }
+
+        // Yalnızca birbirinin klonu ve sabit bağlantısı olan dosyalar yineleme sayılmaz
+        let solo = folder.appendingPathComponent("video.mov")
+        try Self.randomData().write(to: solo)
+        try fm.linkItem(at: solo, to: folder.appendingPathComponent("video-link.mov"))
+        _ = clonefile(solo.path, folder.appendingPathComponent("video copy.mov").path, 0)
+
+        // Eşik altı, gizli ve yarım kalmış indirmeler atlanır
+        let small = Data(repeating: 7, count: 1024)
+        try small.write(to: folder.appendingPathComponent("note-a.txt"))
+        try small.write(to: folder.appendingPathComponent("note-b.txt"))
+        try payload.write(to: folder.appendingPathComponent(".hidden.dmg"))
+        try payload.write(to: folder.appendingPathComponent("setup.dmg.crdownload"))
+
+        let result = finder.scan(directory: folder)
+        #expect(result.accessDenied == false)
+        #expect(result.groups.count == 1)
+        let group = try #require(result.groups.first)
+        #expect(group.fileSize == Int64(Self.size))
+        #expect(group.sha256 == SHA256.hash(data: payload).map { String(format: "%02x", $0) }.joined())
+        #expect(group.copies.count == 3)
+        #expect(group.reclaimableBytes == Int64(Self.size) * 2)
+        #expect(group.copies.allSatisfy { !$0.isSelected })
+
+        // En eski kopya önde; klonu aynı satırda paylaşılan yol olarak durur
+        let keeper = group.copies[0]
+        #expect(keeper.url.resolvingSymlinksInPath() == original.resolvingSymlinksInPath())
+        #expect(keeper.sharedURLs.map(\.lastPathComponent) == (cloned ? ["setup copy.dmg"] : []))
+        let names = Set(group.copies.flatMap(\.allURLs).map(\.lastPathComponent))
+        #expect(names.isSuperset(of: ["setup.dmg", "setup (1).dmg"]))
+        #expect(!names.contains(".hidden.dmg") && !names.contains("setup.dmg.crdownload"))
+
+        // Salt okunur: tarama hiçbir dosyayı taşımaz ya da değiştirmez
+        for url in [original, copy, nested, solo] {
+            #expect(fm.fileExists(atPath: url.path))
+        }
+    }
+
+    @Test("Ignores singletons, including same-size files with different content")
+    func ignoresSingletons() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+
+        try Self.randomData().write(to: folder.appendingPathComponent("a.zip"))
+        try Self.randomData().write(to: folder.appendingPathComponent("b.zip"))
+        try Self.randomData(count: Self.size + 1).write(to: folder.appendingPathComponent("c.zip"))
+
+        let result = finder.scan(directory: folder)
+        #expect(result.groups.isEmpty)
+        #expect(result.examinedFileCount == 3)
+        #expect(result.accessDenied == false)
+
+        let missing = finder.scan(directory: folder.appendingPathComponent("Missing"))
+        #expect(missing.groups.isEmpty)
+        #expect(missing.accessDenied == false)
+    }
+
+    @Test("Honors cancellation before and during the scan")
+    func honorsCancellation() throws {
+        let folder = try Self.makeFolder()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let payload = Self.randomData(count: 4 << 20)
+        for index in 0..<3 {
+            try payload.write(to: folder.appendingPathComponent("movie-\(index).mp4"))
+        }
+
+        let token = ScanCancellationToken()
+        token.cancel()
+        let cancelled = finder.scan(directory: folder, isCancelled: { token.isCancelled })
+        #expect(cancelled.groups.isEmpty)
+        #expect(cancelled.examinedFileCount == 0)
+
+        // İptal geldikten sonra tarama birkaç denetim içinde durur ve yarım sonuç döndürmez.
+        var calls = 0
+        var callsAfterCancel = 0
+        let midway = finder.scan(directory: folder) {
+            calls += 1
+            guard calls > 4 else { return false }
+            callsAfterCancel += 1
+            return true
+        }
+        #expect(midway.groups.isEmpty)
+        #expect(callsAfterCancel <= 3)
+        #expect(finder.scan(directory: folder).groups.first?.copies.count == 3)
+    }
+
+    @Test("Trash candidates keep one copy and skip files that changed after the scan")
+    func trashCandidatesGuardKeeper() throws {
+        let fm = FileManager.default
+        let folder = try Self.makeFolder()
+        defer { try? fm.removeItem(at: folder) }
+        let payload = Self.randomData()
+        let first = folder.appendingPathComponent("report.pdf")
+        let second = folder.appendingPathComponent("report (1).pdf")
+        let third = folder.appendingPathComponent("report (2).pdf")
+        for url in [first, second, third] {
+            try payload.write(to: url)
+        }
+
+        var group = try #require(finder.scan(directory: folder).groups.first)
+        for index in group.copies.indices {
+            group.copies[index].isSelected = index > 0
+        }
+        let candidates = DuplicateFileFinder.trashCandidates(from: [group])
+        #expect(candidates.urls.count == 2)
+        #expect(candidates.skippedCount == 0)
+        #expect(candidates.urls.map(\.size) == [Int64(Self.size), Int64(Self.size)])
+        #expect(!candidates.urls.contains { $0.url.lastPathComponent == group.copies[0].url.lastPathComponent })
+
+        // Seçili bir kopya taramadan sonra değişti: o yol alınmaz
+        try Data("edited".utf8).write(to: group.copies[1].url)
+        let afterEdit = DuplicateFileFinder.trashCandidates(from: [group])
+        #expect(afterEdit.urls.count == 1)
+        #expect(afterEdit.skippedCount == 1)
+
+        // Tutulacak kopya silindi: grubun hiçbir kopyası alınmaz
+        try fm.removeItem(at: group.copies[0].url)
+        let withoutKeeper = DuplicateFileFinder.trashCandidates(from: [group])
+        #expect(withoutKeeper.urls.isEmpty)
+        #expect(withoutKeeper.skippedCount == 2)
+    }
+}

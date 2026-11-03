@@ -266,6 +266,27 @@
 "diskTotalSize" = "Toplam: %@";
 "diskEmptyFolder" = "Analiz edilecek öğe bulunamadı.";
 "diskInspectFolder" = "Bu Klasörü İncele";
+"diskTabUsage" = "Disk Kullanımı";
+"diskTabDuplicateDownloads" = "Yinelenen İndirmeler";
+"duplicatesTitle" = "İndirilenlerdeki Aynı Dosyalar (SHA-256)";
+"duplicatesSubtitle" = "~/Downloads içinde %@ ve üzeri aynı içerikli dosyaları bulur. APFS klonları ve sabit bağlantılar veriyi paylaştığı için tek kopya sayılır.";
+"duplicatesScanning" = "İndirilenler aynı dosyalar için taranıyor";
+"duplicatesReclaimable" = "Açılabilecek alan: %@";
+"duplicatesGroupDetail" = "%lld kopya · her biri %@";
+"duplicatesOldestBadge" = "En eski";
+"duplicatesSharedWith" = "Aynı veriyi paylaşan yollar (APFS klonu ya da sabit bağlantı): %@";
+"duplicatesCreated" = "Oluşturulma: %@";
+"duplicatesSelectExtras" = "En Eskiler Dışındakileri Seç";
+"duplicatesSelectedSummary" = "%lld kopya seçildi · %@";
+"duplicatesKeepOneHelp" = "Her gruptan en az bir kopya yerinde kalır.";
+"duplicatesNoneTitle" = "Yinelenen İndirme Bulunamadı";
+"duplicatesNoneMessage" = "%lld dosya denetlendi (%@ ve üzeri). APFS klonları ve sabit bağlantılar yineleme sayılmaz.";
+"duplicatesNotScannedTitle" = "İndirilenler Henüz Taranmadı";
+"duplicatesNotScannedMessage" = "Aynı dosyaları aramak için Şimdi Tara'ya basın. macOS, İndirilenler klasörüne erişim izni isteyebilir.";
+"duplicatesAccessDeniedTitle" = "İndirilenler Klasörü Okunamıyor";
+"duplicatesAccessDeniedMessage" = "Sistem Ayarları > Gizlilik ve Güvenlik > Dosyalar ve Klasörler (ya da Tam Disk Erişimi) altında Curatare'ye İndirilenler izni verin, ardından yeniden tarayın.";
+"duplicatesSkippedChanged" = "Taramadan sonra değişen %lld dosya yerinde bırakıldı.";
+"duplicatesMovedWithSkipped" = "%lld öğe (%@) ~/.Trash/%@ klasörüne taşındı. Taramadan sonra değişen %lld dosya yerinde bırakıldı.";
 
 "statusTitle" = "Canlı Sistem Durumu ve Güvenli Bakım";
 "statusSubtitle" = "Mole status-go telemetrisi ile CPU, bellek, disk ve sistem sağlığı puanını izleyin; zararsız önbellek yenileme görevlerini çalıştırın.";
@@ -564,6 +585,7 @@
 "trashTitleSavedState" = "Pencere Durumu Temizliği";
 "trashTitleDiagnosticReports" = "Tanılama Raporları Temizliği";
 "trashTitleMailEnvelopeIndex" = "Apple Mail Zarf İndeksi Sıfırlama";
+"trashTitleDuplicateDownloads" = "Yinelenen İndirmeler Temizliği";
 "scanAppleMailDownloads" = "Apple Mail İndirilenleri";
 "scanIOSBackup" = "iOS Yedeği (%@)";
 "scanQuickTimeAutosave" = "QuickTime Otomatik Kayıt Bilgileri";

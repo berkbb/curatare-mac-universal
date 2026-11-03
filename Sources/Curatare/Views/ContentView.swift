@@ -150,6 +150,7 @@ public struct ContentView: View {
 
                 Button {
                     model.selectedSection = .diskAnalyzer
+                    model.diskAnalyzerSubTab = .usage
                     Task { await model.analyzeFolder() }
                 } label: {
                     Label(model.L(.navDiskAnalyzer), systemImage: "chart.pie.fill")
@@ -495,6 +496,7 @@ public struct WelcomeView: View {
                     isProminent: false
                 ) {
                     model.selectedSection = .diskAnalyzer
+                    model.diskAnalyzerSubTab = .usage
                     Task { await model.analyzeFolder() }
                 }
 
