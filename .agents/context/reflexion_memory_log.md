@@ -839,3 +839,28 @@
   - `swift test` 59/59 passed.
   - The three tables hold 742 keys in identical order.
   - Not checked live: the toggle's effect on a running Safari, and the new cards in the app window.
+
+### Episode 54 — Live UI Test: Safari Ignores an Outside "On", `killall` Exit Code Is Not a Restart
+
+- **Date:** 2026-11-03
+- **Task:** Check the new tweak cards, the Safari Develop menu tweak, the DNS admin-command alert and the icon services task in the running app.
+- **How:** A scratchpad Accessibility helper (`AXUIElement` press, value set and scroll; menu bar read) plus `screencapture -l` for window shots. Both need the host app to hold Accessibility and Screen Recording. `osascript` / System Events stays denied even then, while a compiled helper is trusted.
+- **Findings:**
+  - All new cards render with the real system values.
+  - The DNS alert shows the command, and **Copy Command** puts it on the clipboard verbatim.
+  - **Safari:** Writing `com.apple.Safari.SandboxBroker` `ShowDevelopMenu = 0` hid the Develop menu at Safari's next launch, because Safari then also turned off its container key. Writing `1` afterwards did not bring the menu back, so the broker key is a mirror for "on". Safari applies its own Settings checkbox live and consistently.
+  - **Icon services:** `killall iconservicesagent` exits 0, but the agent (running since boot) ignores SIGTERM. The task logged a restart that never happened.
+- **Fix:**
+  - The Safari toggle became a read-only status card with an **Open Safari** button. Curatare never writes Safari's keys, and Reset All leaves them alone.
+  - The icon task restarts only Dock and Finder, and counts a process as restarted only once its old PID has exited.
+  - The toast is skipped when no task completed.
+- **Mistakes during the test:**
+  - **Wrong card:** The first "press the checkbox near this title" helper walked the shared parent and pressed the first checkbox in the whole list. That turned on `system.suppressCrashDialog`. It was reverted within a minute; the key was removed, which is Curatare's "off" state.
+  - **Safari left inconsistent:** The Curatare off→on round trip left Safari with the menu hidden. It was restored by toggling Safari's own checkbox off and on.
+- **Lesson:**
+  - In a flattened SwiftUI list, target a control by its own label, or by the first matching sibling after the card title, stopping at the next card's icon. Never press "the first match under an ancestor".
+  - A successful signal is not a restart: compare PIDs.
+  - For third-party or sandboxed apps, prove a written preference in both directions before shipping a toggle.
+- **Verification:**
+  - Before the fix: Safari menu bar read through AX after each launch; Dock and Finder PIDs changed (699→48794, 44492→48789) while `iconservicesagent` stayed 736.
+  - Restored afterwards: the clipboard (all four pasteboard types), Safari closed with the Develop menu on, and Curatare's remembered tab.

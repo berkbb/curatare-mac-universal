@@ -36,16 +36,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Global tweaks had no effect:** Tweaks in the global domain (show all extensions, Ctrl+⌘ window drag, key repeat, window animations) were written to a separate `NSGlobalDomain.plist` instead of the real global preferences, so the switch moved but macOS ignored it. They now write to the global domain.
-- **Safari Develop menu tweak showed the wrong state:**
-  - **Cause:** The `com.apple.Safari` domain resolves to Safari's protected container. Without Full Disk Access it reads as empty, so the switch showed off even when the menu was on.
-  - **Fix:** The tweak now uses the `com.apple.Safari.SandboxBroker` `ShowDevelopMenu` key, which Safari's own setting writes.
-- **Maintenance tasks report their real outcome:** The completion toast counts only completed tasks. Failed tasks, and steps that need administrator rights, appear together in one alert.
+- **Safari Develop menu is now a read-only status card:**
+  - **Problem 1, wrong state:** The `com.apple.Safari` domain resolves to Safari's protected container. Without Full Disk Access it reads as empty, so the switch showed off even when the menu was on.
+  - **Problem 2, Safari ignores an outside "on":** Turning the setting off from outside hides the menu at Safari's next launch. Turning it back on does not bring the menu back. This was tested live.
+  - **Now:**
+    - The card shows the state that Safari's own setting writes (`com.apple.Safari.SandboxBroker` `ShowDevelopMenu`). It refreshes when the window becomes active again.
+    - An **Open Safari** button opens Safari; the card names the setting in Safari › Settings › Advanced.
+    - **Reset All** no longer touches it.
+- **Maintenance tasks report their real outcome:**
+  - The completion toast counts only completed tasks, and it is skipped when no task was completed.
+  - Failed tasks, and steps that need administrator rights, appear together in one alert.
   - **DNS flush:**
     - **Before:** It only ran `dscacheutil -flushcache` as the user and reported success.
     - **Now:** It hands over a transparent one-line command, `sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder && echo TAMAM`, with a **Copy Command** button. The task is no longer selected by default.
   - **Icon services:**
     - **Before:** The task did nothing but log "marked for refresh".
-    - **Now:** It restarts the user's icon service, Dock and Finder. The root-owned system icon cache is left alone.
+    - **Now:** It restarts Dock and Finder to redraw icons. A process counts as restarted only after its old copy has actually exited.
+    - **Left alone:** The user's `iconservicesagent` ignores the termination signal, so it is not touched. The root-owned system icon cache is not touched either.
   - **APFS verification:** It succeeds only when `diskutil verifyVolume /` reports the volume as OK. A failure, or a check that could not run, is now reported instead of "verified".
   - **Apple Mail envelope index reset:** When Mail is running or the reset fails, it is reported as not completed.
   - **Saved window states:**
