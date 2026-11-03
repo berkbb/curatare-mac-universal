@@ -1806,13 +1806,52 @@ public final class AppModel {
             operation: { _ in
                 await bridge.runOptimizationTasks(tasks)
             },
-            onComplete: { completed in
-                for item in completed {
-                    self.log.info(.engine, item)
-                }
-                self.showToast(self.LF(.toastOptimizationDone, Int64(completed.count)))
+            onComplete: { outcomes in
+                self.reportOptimizationOutcomes(outcomes)
                 await self.refreshSystemStatus()
             }
+        )
+    }
+
+    /// Tamamlanan görevleri bildirimle sayar; başarısız görevleri ve yönetici komutu gerekenleri tek uyarıda gösterir.
+    func reportOptimizationOutcomes(_ outcomes: [MoleOptimizationOutcome]) {
+        var failedTitles: [String] = []
+        var adminCommands: [String] = []
+        for outcome in outcomes {
+            switch outcome.status {
+            case .done:
+                log.info(.engine, outcome.detail)
+            case .failed:
+                log.warning(.engine, outcome.detail)
+                failedTitles.append(L(outcome.kind.titleKey))
+            case .needsAdmin(let command):
+                log.info(.engine, outcome.detail)
+                adminCommands.append(command)
+            }
+        }
+        let doneCount = outcomes.filter { $0.status == .done }.count
+        showToast(LF(.toastOptimizationDone, Int64(doneCount)))
+
+        guard !failedTitles.isEmpty || !adminCommands.isEmpty else { return }
+        var lines = failedTitles.map { LF(.optimizeFailedLine, $0) }
+        guard !adminCommands.isEmpty else {
+            alertItem = AlertItem(title: L(.optimizeAttentionTitle), message: lines.joined(separator: "\n\n"))
+            return
+        }
+        let command = adminCommands.joined(separator: "\n")
+        lines.append(LF(.optimizeAdminLine, command))
+        alertItem = AlertItem(
+            title: L(.optimizeAttentionTitle),
+            message: lines.joined(separator: "\n\n"),
+            actionTitle: L(.optimizeCopyCommand),
+            action: { [weak self] in
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.copyToClipboard(command, label: self.L(.optimizeCommandCopied))
+                }
+            },
+            cancelTitle: L(.buttonClose),
+            cancelAction: {}
         )
     }
 

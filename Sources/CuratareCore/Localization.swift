@@ -214,6 +214,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case optimizeQuickLook, optimizeSavedState, optimizeDNS, optimizeIconServices, optimizeFontCache, optimizeLaunchServices
     case optimizeSpotlightIndex, optimizeDiagnosticReports, optimizeLocalSnapshots
     case optimizeMailEnvelopeIndex, optimizeCUPSQueue, optimizeAPFSVerify
+    case optimizeAttentionTitle, optimizeFailedLine, optimizeAdminLine, optimizeCopyCommand, optimizeCommandCopied
     case checksumTitle, checksumSubtitle, checksumDropPrompt, checksumChooseFile, checksumComparePlaceholder, checksumMatch, checksumMismatch
     case hiddenUtilitiesTitle, hiddenUtilitiesSubtitle, buttonLaunchUtility, toastLaunchedUtility
     case utilWirelessDiagnosticsTitle, utilWirelessDiagnosticsDesc

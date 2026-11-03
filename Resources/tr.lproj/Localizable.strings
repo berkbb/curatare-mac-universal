@@ -278,9 +278,9 @@
 "optimizeSectionSubtitle" = "Kullanıcı verilerine dokunmadan yalnızca macOS geçici servis önbelleklerini yeniler.";
 "optimizeRunButton" = "Seçili Bakım Görevlerini Çalıştır";
 "optimizeQuickLook" = "QuickLook küçük resim önbelleğini yenile (qlmanage -r cache)";
-"optimizeSavedState" = "30 günden eski uygulama pencere durumu kayıtlarını temizle";
-"optimizeDNS" = "macOS DNS önbelleğini sıfırla (dscacheutil -flushcache)";
-"optimizeIconServices" = "Finder ve Dock simge servislerini yenile";
+"optimizeSavedState" = "30 günden eski pencere durumu kayıtlarını Tarihli Çöp'e taşı (Apple uygulamaları ve açık uygulamalar hariç)";
+"optimizeDNS" = "macOS DNS önbelleğini sıfırla (Terminal'de çalıştırılacak yönetici komutu verir)";
+"optimizeIconServices" = "Simge servisini, Dock'u ve Finder'ı yeniden başlat (sistem simge önbelleği silinmez)";
 "optimizeFontCache" = "Kullanıcı yazı tipi önbelleğini doğrula";
 "optimizeLaunchServices" = "Birlikte Aç (LaunchServices) veritabanını yeniden indeksle";
 "optimizeSpotlightIndex" = "Spotlight arama indeksini baştan oluştur (mdutil -E /)";
@@ -289,6 +289,11 @@
 "optimizeMailEnvelopeIndex" = "Apple Mail Zarf İndeksini Sıfırla (Envelope Index)";
 "optimizeCUPSQueue" = "CUPS Yazıcı İş Kuyruğunu Temizle (cancel -a -)";
 "optimizeAPFSVerify" = "APFS Dosya Sistemi Bütünlüğünü Doğrula (diskutil verifyVolume /)";
+"optimizeAttentionTitle" = "Bazı bakım görevleri tamamlanmadı";
+"optimizeFailedLine" = "%@: tamamlanamadı. Ayrıntılar günlükte.";
+"optimizeAdminLine" = "Bu adım yönetici izni ister. Curatare yetkiyi kendisi yükseltmez; komutu Terminal'de çalıştırın, bitince TAMAM yazar:\n%@";
+"optimizeCopyCommand" = "Komutu Kopyala";
+"optimizeCommandCopied" = "Komut panoya kopyalandı";
 
 "statusTabSystemCenter" = "Sistem Merkezi";
 "statusTabDashboard" = "Canlı Durum ve Bakım";

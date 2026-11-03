@@ -1369,20 +1369,7 @@ public struct SystemStatusView: View {
     }
 
     private func taskTitle(_ kind: MoleOptimizationTask.ActionKind) -> String {
-        switch kind {
-        case .quickLookCacheRefresh: model.L(.optimizeQuickLook)
-        case .savedStatePrune: model.L(.optimizeSavedState)
-        case .dnsCacheFlush: model.L(.optimizeDNS)
-        case .iconServicesRefresh: model.L(.optimizeIconServices)
-        case .fontCacheRefresh: model.L(.optimizeFontCache)
-        case .launchServicesRebuild: model.L(.optimizeLaunchServices)
-        case .spotlightIndexRebuild: model.L(.optimizeSpotlightIndex)
-        case .diagnosticReportsPrune: model.L(.optimizeDiagnosticReports)
-        case .localSnapshotsThin: model.L(.optimizeLocalSnapshots)
-        case .mailEnvelopeIndexReset: model.L(.optimizeMailEnvelopeIndex)
-        case .cupsQueueClear: model.L(.optimizeCUPSQueue)
-        case .apfsVolumeVerify: model.L(.optimizeAPFSVerify)
-        }
+        model.L(kind.titleKey)
     }
 
     // MARK: - Dosya Sağlama Toplamı (Checksum / Hash) Hesaplayıcı Paneli

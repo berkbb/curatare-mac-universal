@@ -1879,6 +1879,79 @@ struct SystemTweaksTests {
         #expect(tasks.contains(where: { $0.kind == .mailEnvelopeIndexReset }))
         #expect(tasks.contains(where: { $0.kind == .cupsQueueClear }))
         #expect(tasks.contains(where: { $0.kind == .apfsVolumeVerify }))
+        // Yönetici komutu isteyen DNS görevi varsayılan çalıştırmada uyarı açmasın diye seçili gelmez.
+        #expect(tasks.first(where: { $0.kind == .dnsCacheFlush })?.isSelected == false)
+        #expect(Set(MoleOptimizationTask.ActionKind.allCases.map(\.titleKey)).count == MoleOptimizationTask.ActionKind.allCases.count)
+    }
+
+    @Test("MoleBridge: DNS flush hands over a transparent sudo command instead of claiming success")
+    func dnsFlushNeedsAdmin() async {
+        let outcomes = await MoleBridge(engine: nil).runOptimizationTasks([MoleOptimizationTask(kind: .dnsCacheFlush)])
+        #expect(outcomes.count == 1)
+        guard case .needsAdmin(let command)? = outcomes.first?.status else {
+            Issue.record("DNS flush should need an administrator command")
+            return
+        }
+        #expect(command.contains("sudo dscacheutil -flushcache"))
+        #expect(command.contains("sudo killall -HUP mDNSResponder"))
+        #expect(command.hasSuffix("echo TAMAM"))
+    }
+
+    @Test("MoleBridge: stale saved states skip Apple apps, open apps and states with recently written contents")
+    func staleSavedStates() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("curatare-saved-state-test-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: root) }
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+
+        let old = Date().addingTimeInterval(-40 * 24 * 60 * 60)
+        func makeState(_ name: String, folderDate: Date, childDate: Date) throws {
+            let folder = root.appendingPathComponent(name, isDirectory: true)
+            try fm.createDirectory(at: folder, withIntermediateDirectories: true)
+            let child = folder.appendingPathComponent("windows.plist")
+            try Data("{}".utf8).write(to: child)
+            try fm.setAttributes([.modificationDate: childDate], ofItemAtPath: child.path)
+            try fm.setAttributes([.modificationDate: folderDate], ofItemAtPath: folder.path)
+        }
+        try makeState("com.example.Old.savedState", folderDate: old, childDate: old)
+        try makeState("com.example.Fresh.savedState", folderDate: Date(), childDate: Date())
+        try makeState("com.example.RecentlyWritten.savedState", folderDate: old, childDate: Date())
+        try makeState("com.apple.Terminal.savedState", folderDate: old, childDate: old)
+        try makeState("com.example.Running.savedState", folderDate: old, childDate: old)
+        let note = root.appendingPathComponent("notes.txt")
+        try Data("x".utf8).write(to: note)
+        try fm.setAttributes([.modificationDate: old], ofItemAtPath: note.path)
+
+        let candidates = MoleBridge.staleSavedStates(
+            in: root,
+            olderThan: Date().addingTimeInterval(-MoleBridge.savedStateMaxAge),
+            isRunning: { $0 == "com.example.Running" }
+        )
+        #expect(candidates.map(\.bundleID) == ["com.example.Old"])
+        #expect(candidates.first?.category == "SavedState")
+        #expect(MoleOptimizationTask.defaultTasks.first(where: { $0.kind == .savedStatePrune })?.isSelected == false)
+    }
+
+    @Test("MoleOptimizationOutcome: APFS verification only succeeds when diskutil reports the volume OK")
+    func apfsVerifyOutcome() {
+        let ok = MoleOptimizationOutcome.apfsVerify(ProcessResult(
+            exitCode: 0,
+            stdout: "The volume /dev/rdisk3s1 appears to be OK\nFinished file system verification on disk3s1",
+            stderr: ""
+        ))
+        #expect(ok.status == .done)
+
+        let corrupt = MoleOptimizationOutcome.apfsVerify(ProcessResult(
+            exitCode: 1,
+            stdout: "Checking the object map\n",
+            stderr: "Error: -69845: File system verify or repair failed"
+        ))
+        #expect(corrupt.status == .failed)
+        #expect(corrupt.detail.contains("-69845"))
+
+        // Çıkış kodu 0 olsa da "appears to be OK" satırı yoksa başarı sayılmaz.
+        let unclear = MoleOptimizationOutcome.apfsVerify(ProcessResult(exitCode: 0, stdout: "Started verification", stderr: ""))
+        #expect(unclear.status == .failed)
     }
 
     @Test("SystemSecurityStatus and HiddenSystemUtilities validation")

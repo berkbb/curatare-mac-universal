@@ -654,6 +654,33 @@ struct CuratareAppTests {
         #expect(model.appUpdateUIState == .noReleases(repo: repo))
     }
 
+    @Test("AppModel maintenance: only completed tasks are counted, failures and admin commands raise one alert")
+    func optimizationOutcomeReporting() {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+        let model = AppModel(
+            settings: AppSettings(defaults: defaults),
+            log: AppLog(directory: nil),
+            tweakManager: SystemTweakManager(store: MockPreferenceStore()),
+            startBackgroundWatchers: false
+        )
+
+        model.reportOptimizationOutcomes([MoleOptimizationOutcome(kind: .quickLookCacheRefresh, status: .done, detail: "ok")])
+        #expect(model.alertItem == nil)
+
+        model.reportOptimizationOutcomes([
+            MoleOptimizationOutcome(kind: .quickLookCacheRefresh, status: .done, detail: "ok"),
+            MoleOptimizationOutcome(kind: .apfsVolumeVerify, status: .failed, detail: "problem"),
+            MoleOptimizationOutcome(kind: .dnsCacheFlush, status: .needsAdmin(command: MoleOptimizationOutcome.dnsFlushCommand), detail: "admin")
+        ])
+        let alert = model.alertItem
+        #expect(alert?.title == model.L(.optimizeAttentionTitle))
+        #expect(alert?.message.contains(model.L(MoleOptimizationTask.ActionKind.apfsVolumeVerify.titleKey)) == true)
+        #expect(alert?.message.contains(MoleOptimizationOutcome.dnsFlushCommand) == true)
+        #expect(alert?.actionTitle == model.L(.optimizeCopyCommand))
+        #expect(model.toastMessage == model.LF(.toastOptimizationDone, Int64(1)))
+    }
+
     @Test("AppModel System Tweaks: apply tweak updates state and reset restores defaults")
     func systemTweaksAppModelTest() {
         let (defaults, cleanup) = TestDefaults.make()

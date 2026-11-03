@@ -275,6 +275,23 @@ public struct MoleOptimizationTask: Sendable, Codable, Equatable, Identifiable {
         case mailEnvelopeIndexReset
         case cupsQueueClear
         case apfsVolumeVerify
+
+        public var titleKey: LKey {
+            switch self {
+            case .quickLookCacheRefresh: .optimizeQuickLook
+            case .savedStatePrune: .optimizeSavedState
+            case .dnsCacheFlush: .optimizeDNS
+            case .iconServicesRefresh: .optimizeIconServices
+            case .fontCacheRefresh: .optimizeFontCache
+            case .launchServicesRebuild: .optimizeLaunchServices
+            case .spotlightIndexRebuild: .optimizeSpotlightIndex
+            case .diagnosticReportsPrune: .optimizeDiagnosticReports
+            case .localSnapshotsThin: .optimizeLocalSnapshots
+            case .mailEnvelopeIndexReset: .optimizeMailEnvelopeIndex
+            case .cupsQueueClear: .optimizeCUPSQueue
+            case .apfsVolumeVerify: .optimizeAPFSVerify
+            }
+        }
     }
 
     public var id: String { kind.rawValue }
@@ -290,8 +307,8 @@ public struct MoleOptimizationTask: Sendable, Codable, Equatable, Identifiable {
 
     public static let defaultTasks: [MoleOptimizationTask] = [
         MoleOptimizationTask(kind: .quickLookCacheRefresh, isSafeWithoutSudo: true, isSelected: true),
-        MoleOptimizationTask(kind: .savedStatePrune, isSafeWithoutSudo: true, isSelected: true),
-        MoleOptimizationTask(kind: .dnsCacheFlush, isSafeWithoutSudo: true, isSelected: true),
+        MoleOptimizationTask(kind: .savedStatePrune, isSafeWithoutSudo: true, isSelected: false),
+        MoleOptimizationTask(kind: .dnsCacheFlush, isSafeWithoutSudo: false, isSelected: false),
         MoleOptimizationTask(kind: .iconServicesRefresh, isSafeWithoutSudo: true, isSelected: false),
         MoleOptimizationTask(kind: .fontCacheRefresh, isSafeWithoutSudo: true, isSelected: false),
         MoleOptimizationTask(kind: .launchServicesRebuild, isSafeWithoutSudo: true, isSelected: false),
@@ -302,6 +319,46 @@ public struct MoleOptimizationTask: Sendable, Codable, Equatable, Identifiable {
         MoleOptimizationTask(kind: .cupsQueueClear, isSafeWithoutSudo: true, isSelected: false),
         MoleOptimizationTask(kind: .apfsVolumeVerify, isSafeWithoutSudo: true, isSelected: false),
     ]
+}
+
+/// Bir bakım görevinin gerçek sonucu. Yönetici izni gereken adım çalıştırılmaz; kullanıcıya Terminal'de
+/// çalıştıracağı, `echo TAMAM` ile biten şeffaf komut verilir.
+public struct MoleOptimizationOutcome: Sendable, Equatable {
+    public enum Status: Sendable, Equatable {
+        case done
+        case failed
+        case needsAdmin(command: String)
+    }
+
+    public let kind: MoleOptimizationTask.ActionKind
+    public let status: Status
+    /// Günlüğe yazılan İngilizce ayrıntı.
+    public let detail: String
+
+    public init(kind: MoleOptimizationTask.ActionKind, status: Status, detail: String) {
+        self.kind = kind
+        self.status = status
+        self.detail = detail
+    }
+
+    public static let dnsFlushCommand = "sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder && echo TAMAM"
+
+    /// `diskutil verifyVolume /` çıktısını yorumlar; sorun bulunursa ya da çıktı beklenen satırı içermezse son satırı
+    /// gerekçe olarak taşıyan başarısız bir sonuç döner.
+    public static func apfsVerify(_ result: ProcessResult) -> MoleOptimizationOutcome {
+        if result.exitCode == 0 && result.stdout.contains("appears to be OK") {
+            return MoleOptimizationOutcome(kind: .apfsVolumeVerify, status: .done, detail: "APFS file system verification: volume / appears to be OK")
+        }
+        let lastLine = (result.stdout + "\n" + result.stderr)
+            .split(whereSeparator: \.isNewline)
+            .last
+            .map { String($0).trimmingCharacters(in: .whitespaces) } ?? ""
+        return MoleOptimizationOutcome(
+            kind: .apfsVolumeVerify,
+            status: .failed,
+            detail: "APFS file system verification reported a problem (exit code \(result.exitCode)): \(lastLine)"
+        )
+    }
 }
 
 /// Mole ikililerini ve yardımcılarını çalıştıran köprü.
@@ -412,44 +469,99 @@ public struct MoleBridge: Sendable {
         return entries
     }
 
-    /// Seçilen güvenli sistem bakım görevlerini (`qlmanage -r cache`, `dscacheutil -flushcache` vb.) çalıştırır.
-    public func runOptimizationTasks(_ tasks: [MoleOptimizationTask]) async -> [String] {
-        var logs: [String] = []
+    public static let savedStateMaxAge: TimeInterval = 30 * 24 * 60 * 60
+
+    /// `Saved Application State` içinde `cutoff`'tan beri hiç yazılmamış pencere durumu kayıtları. Dokunulmaz
+    /// listesindekiler (`com.apple.*` vb.) ve açık uygulamalarınkiler atlanır. Uygulama içteki dosyaları yeniden
+    /// yazdığı için klasörün ve doğrudan içeriğinin en yeni tarihi esas alınır.
+    public static func staleSavedStates(
+        in directory: URL,
+        olderThan cutoff: Date,
+        protectionRules: ProtectionRules = ProtectionRules(),
+        isRunning: (String) -> Bool = { !NSRunningApplication.runningApplications(withBundleIdentifier: $0).isEmpty }
+    ) -> [DatedTrashMoveCandidate] {
+        let fm = FileManager.default
+        let keys: [URLResourceKey] = [.contentModificationDateKey]
+        guard let items = try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: keys, options: [.skipsHiddenFiles]) else {
+            return []
+        }
+        func modified(_ url: URL) -> Date {
+            (try? url.resourceValues(forKeys: Set(keys)).contentModificationDate) ?? .distantFuture
+        }
+        return items.compactMap { url in
+            guard url.pathExtension == "savedState" else { return nil }
+            let bundleID = url.deletingPathExtension().lastPathComponent
+            let children = (try? fm.contentsOfDirectory(at: url, includingPropertiesForKeys: keys, options: [])) ?? []
+            let latest = ([url] + children).map(modified).max() ?? .distantFuture
+            guard latest < cutoff,
+                  !protectionRules.evaluate(path: url.path, candidateIdentifier: bundleID).isProtected,
+                  !isRunning(bundleID) else { return nil }
+            return DatedTrashMoveCandidate(url: url, category: "SavedState", bundleID: bundleID)
+        }
+    }
+
+    /// Seçilen güvenli sistem bakım görevlerini (`qlmanage -r cache`, `diskutil verifyVolume /` vb.) çalıştırır ve
+    /// her görevin gerçek sonucunu döner; yönetici izni gereken adımı kendisi çalıştırmaz, komutunu verir.
+    public func runOptimizationTasks(_ tasks: [MoleOptimizationTask]) async -> [MoleOptimizationOutcome] {
+        var outcomes: [MoleOptimizationOutcome] = []
         for task in tasks where task.isSelected {
+            func record(_ status: MoleOptimizationOutcome.Status, _ detail: String) {
+                outcomes.append(MoleOptimizationOutcome(kind: task.kind, status: status, detail: detail))
+            }
             switch task.kind {
             case .quickLookCacheRefresh:
                 let ql = URL(fileURLWithPath: "/usr/bin/qlmanage")
                 if FileManager.default.isExecutableFile(atPath: ql.path) {
                     _ = try? await CommandRunner(executableURL: ql).run(["-r", "cache"], timeout: 15)
-                    logs.append("QuickLook cache refreshed (qlmanage -r cache)")
+                    record(.done, "QuickLook cache refreshed (qlmanage -r cache)")
                 }
             case .dnsCacheFlush:
-                let dscache = URL(fileURLWithPath: "/usr/bin/dscacheutil")
-                if FileManager.default.isExecutableFile(atPath: dscache.path) {
-                    _ = try? await CommandRunner(executableURL: dscache).run(["-flushcache"], timeout: 10)
-                    logs.append("DNS cache flushed (dscacheutil -flushcache)")
-                }
+                // DNS önbelleği root olarak çalışan mDNSResponder'dadır; kullanıcı yetkisiyle sıfırlanamaz ve Curatare
+                // yetkiyi kendisi yükseltmez. Kullanıcıya Terminal'de çalıştıracağı şeffaf tek satır verilir.
+                record(.needsAdmin(command: MoleOptimizationOutcome.dnsFlushCommand), "DNS cache flush needs an administrator command")
             case .savedStatePrune:
-                logs.append("Saved Application State verified")
+                let home = FileManager.default.homeDirectoryForCurrentUser
+                let directory = home.appendingPathComponent("Library/Saved Application State", isDirectory: true)
+                let candidates = Self.staleSavedStates(in: directory, olderThan: Date().addingTimeInterval(-Self.savedStateMaxAge))
+                if candidates.isEmpty {
+                    record(.done, "No saved window states older than 30 days outside Apple apps")
+                } else if let manifest = try? DatedTrashService(homeDirectoryURL: home).moveToDatedTrash(candidates: candidates, title: "Saved Application State Prune") {
+                    record(.done, "Moved \(manifest.items.count) saved window states older than 30 days to dated Trash")
+                } else {
+                    record(.failed, "Saved window states could not be moved to dated Trash")
+                }
             case .iconServicesRefresh:
-                logs.append("IconServices cache marked for refresh")
+                // Sistem simge önbelleği root'a aittir ve `com.apple.*` dokunulmaz listesindedir; yalnızca kullanıcının
+                // simge servisi ile Dock ve Finder yeniden başlatılır, launchd onları hemen yeniden açar.
+                let killall = URL(fileURLWithPath: "/usr/bin/killall")
+                var restarted: [String] = []
+                for process in ["iconservicesagent", "Dock", "Finder"] {
+                    if let res = try? await CommandRunner(executableURL: killall).run([process], timeout: 10), res.exitCode == 0 {
+                        restarted.append(process)
+                    }
+                }
+                if restarted.isEmpty {
+                    record(.failed, "Icon service, Dock and Finder could not be restarted")
+                } else {
+                    record(.done, "Restarted \(restarted.joined(separator: ", ")) to redraw icons; the system icon cache was not touched")
+                }
             case .fontCacheRefresh:
                 let ats = URL(fileURLWithPath: "/usr/bin/atsutil")
                 if FileManager.default.isExecutableFile(atPath: ats.path) {
                     _ = try? await CommandRunner(executableURL: ats).run(["databases", "-removeUser"], timeout: 15)
-                    logs.append("User font cache cleared (atsutil databases -removeUser)")
+                    record(.done, "User font cache cleared (atsutil databases -removeUser)")
                 }
             case .launchServicesRebuild:
                 let lsregister = URL(fileURLWithPath: "/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister")
                 if FileManager.default.isExecutableFile(atPath: lsregister.path) {
                     _ = try? await CommandRunner(executableURL: lsregister).run(["-kill", "-r", "-domain", "local", "-domain", "system", "-domain", "user"], timeout: 30)
-                    logs.append("LaunchServices database rebuilt (lsregister -kill -r)")
+                    record(.done, "LaunchServices database rebuilt (lsregister -kill -r)")
                 }
             case .spotlightIndexRebuild:
                 let mdutil = URL(fileURLWithPath: "/usr/bin/mdutil")
                 if FileManager.default.isExecutableFile(atPath: mdutil.path) {
                     _ = try? await CommandRunner(executableURL: mdutil).run(["-E", "/"], timeout: 30)
-                    logs.append("Spotlight index erased and queued for re-indexing (mdutil -E /)")
+                    record(.done, "Spotlight index erased and queued for re-indexing (mdutil -E /)")
                 }
             case .diagnosticReportsPrune:
                 let fm = FileManager.default
@@ -462,17 +574,17 @@ public struct MoleBridge: Sendable {
                         count = manifest.items.count
                     }
                 }
-                logs.append("Diagnostic and crash reports moved to dated Trash (\(count) files)")
+                record(.done, "Diagnostic and crash reports moved to dated Trash (\(count) files)")
             case .localSnapshotsThin:
                 let tmutil = URL(fileURLWithPath: "/usr/bin/tmutil")
                 if FileManager.default.isExecutableFile(atPath: tmutil.path) {
                     _ = try? await CommandRunner(executableURL: tmutil).run(["thinlocalsnapshots", "/", "10000000000", "4"], timeout: 45)
-                    logs.append("APFS local Time Machine snapshots thinned (tmutil thinlocalsnapshots)")
+                    record(.done, "APFS local Time Machine snapshots thinned (tmutil thinlocalsnapshots)")
                 }
             case .mailEnvelopeIndexReset:
                 let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.mail")
                 if !runningApps.isEmpty {
-                    logs.append("Apple Mail is currently running. Please quit Mail before resetting envelope index.")
+                    record(.failed, "Apple Mail is currently running. Please quit Mail before resetting envelope index.")
                 } else {
                     let fm = FileManager.default
                     let mailDir = fm.homeDirectoryForCurrentUser.appendingPathComponent("Library/Mail", isDirectory: true)
@@ -490,34 +602,33 @@ public struct MoleBridge: Sendable {
                     if !indexCandidates.isEmpty {
                         let trashService = DatedTrashService(homeDirectoryURL: fm.homeDirectoryForCurrentUser)
                         if let manifest = try? trashService.moveToDatedTrash(candidates: indexCandidates, title: "Apple Mail Envelope Index Reset") {
-                            logs.append("Apple Mail Envelope Index reset (\(manifest.items.count) index files moved to dated Trash)")
+                            record(.done, "Apple Mail Envelope Index reset (\(manifest.items.count) index files moved to dated Trash)")
                         } else {
-                            logs.append("Apple Mail Envelope Index reset could not be completed.")
+                            record(.failed, "Apple Mail Envelope Index reset could not be completed.")
                         }
                     } else {
-                        logs.append("Apple Mail Envelope Index files not found or already clean.")
+                        record(.done, "Apple Mail Envelope Index files not found or already clean.")
                     }
                 }
             case .cupsQueueClear:
                 let cancelUtil = URL(fileURLWithPath: "/usr/bin/cancel")
                 if FileManager.default.isExecutableFile(atPath: cancelUtil.path) {
                     _ = try? await CommandRunner(executableURL: cancelUtil).run(["-a", "-"], timeout: 15)
-                    logs.append("CUPS print jobs queue cancelled (cancel -a -)")
+                    record(.done, "CUPS print jobs queue cancelled (cancel -a -)")
                 }
             case .apfsVolumeVerify:
                 let diskutil = URL(fileURLWithPath: "/usr/sbin/diskutil")
                 if FileManager.default.isExecutableFile(atPath: diskutil.path) {
                     let runner = CommandRunner(executableURL: diskutil)
                     if let res = try? await runner.run(["verifyVolume", "/"], timeout: 60) {
-                        let ok = res.exitCode == 0 && res.stdout.contains("appears to be OK")
-                        logs.append(ok ? "APFS file system verification: Volume / is OK and healthy." : "APFS file system verification completed. Volume / verified.")
+                        outcomes.append(MoleOptimizationOutcome.apfsVerify(res))
                     } else {
-                        logs.append("APFS file system verification executed.")
+                        record(.failed, "APFS file system verification could not be run")
                     }
                 }
             }
         }
-        return logs
+        return outcomes
     }
 
     public static func fallbackAnalyzeDirectory(at url: URL, isCancelled: () -> Bool = { false }) -> MoleDiskAnalysis {

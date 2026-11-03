@@ -278,9 +278,9 @@
 "optimizeSectionSubtitle" = "Reîmprospătează doar cache-urile temporare ale serviciilor macOS fără a atinge datele utilizatorului.";
 "optimizeRunButton" = "Rulează Sarcinile de Întreținere Selectate";
 "optimizeQuickLook" = "Reîmprospătează cache-ul de miniaturi QuickLook (qlmanage -r cache)";
-"optimizeSavedState" = "Curăță stările salvate ale ferestrelor mai vechi de 30 de zile";
-"optimizeDNS" = "Golește cache-ul DNS macOS (dscacheutil -flushcache)";
-"optimizeIconServices" = "Reîmprospătează serviciile de pictograme Finder și Dock";
+"optimizeSavedState" = "Mută în Coșul Datat stările ferestrelor mai vechi de 30 de zile (fără aplicațiile Apple și cele deschise)";
+"optimizeDNS" = "Golește cache-ul DNS macOS (oferă o comandă de administrator pentru Terminal)";
+"optimizeIconServices" = "Repornește serviciul de pictograme, Dock și Finder (cache-ul de pictograme al sistemului nu este șters)";
 "optimizeFontCache" = "Validează cache-ul de fonturi al utilizatorului";
 "optimizeLaunchServices" = "Reconstruiește baza de date Deschide cu (LaunchServices)";
 "optimizeSpotlightIndex" = "Reconstruiește indexul de căutare Spotlight (mdutil -E /)";
@@ -289,6 +289,11 @@
 "optimizeMailEnvelopeIndex" = "Resetează Indexul Plicurilor Apple Mail (Envelope Index)";
 "optimizeCUPSQueue" = "Golește Coada de Imprimare CUPS (cancel -a -)";
 "optimizeAPFSVerify" = "Verifică Integritatea Sistemului de Fișiere APFS (diskutil verifyVolume /)";
+"optimizeAttentionTitle" = "Unele sarcini de întreținere nu au fost finalizate";
+"optimizeFailedLine" = "%@: nu a putut fi finalizată. Detaliile sunt în jurnal.";
+"optimizeAdminLine" = "Acest pas necesită drepturi de administrator. Curatare nu își ridică singur privilegiile; rulează comanda în Terminal, la final afișează TAMAM:\n%@";
+"optimizeCopyCommand" = "Copiază comanda";
+"optimizeCommandCopied" = "Comanda a fost copiată în clipboard";
 
 "statusTabSystemCenter" = "Centru Sistem";
 "statusTabDashboard" = "Stare Live și Întreținere";
