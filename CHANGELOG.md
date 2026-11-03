@@ -35,6 +35,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
+- **Every user-facing text comes from `Localizable.strings`:** Text that was hardcoded in Turkish or English now comes from each language's table:
+  - 128 scan explanations, protection reasons and audit findings produced by the core.
+  - Trash batch titles.
+  - Cache scan names.
+  - The trash and Homebrew counters.
+  - The menu bar metric labels.
+
+  Supporting changes:
+  - The scanners, protection rules, uninstaller and maintenance tasks take the user's language (`localized(to:)`).
+  - A duplicate `settingsEngine` key was removed.
+  - Three untranslated values were translated.
+  - All three tables hold 911 keys in identical order.
+  - Batches created before this change keep their stored titles.
 - **No truncated or cramped text in the interface:** Checked screen by screen in `tr`, `en` and `ro`.
   - **Window size:** The main window's minimum size is now 1180×700 (default 1280×800). Below that, the uninstaller's list and detail panes overflowed the window.
   - **Scrolling instead of squeezing:** The welcome screen and the Library audit intro scroll instead of squeezing their text.
