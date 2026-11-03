@@ -468,14 +468,10 @@
 "tweakScreenshotLocationDesc" = "Alege folderul în care se salvează capturile și înregistrările de ecran noi. Revenirea la implicit le salvează pe Birou.";
 "tweakCrashReporterDialogTitle" = "Suprimă dialogurile de eroare ale aplicațiilor";
 "tweakCrashReporterDialogDesc" = "Dezactivează ferestrele de alertă la închiderea neașteptată a aplicațiilor și le jurnalizează silențios.";
-"tweakMusicHalfStarsTitle" = "Activează evaluarea cu jumătăți de stea în Music";
-"tweakMusicHalfStarsDesc" = "Permite evaluarea melodiilor cu jumătăți de stea (de exemplu 3.5 sau 4.5 stele) în Music.";
 "tweakWindowDragOnGestureTitle" = "Glisează ferestrele de oriunde cu Ctrl+⌘";
 "tweakWindowDragOnGestureDesc" = "Mutați ferestrele făcând clic și glisând oriunde pe fereastră în timp ce țineți apăsat Ctrl+⌘.";
 "tweakPressAndHoldRepeatTitle" = "Repetare taste în loc de meniu de diacritice";
 "tweakPressAndHoldRepeatDesc" = "Repetă tastele rapid când sunt ținute apăsate în loc de a afișa meniul de caractere cu diacritice.";
-"tweakTextEditBlankDocumentTitle" = "Deschide document gol la pornirea TextEdit";
-"tweakTextEditBlankDocumentDesc" = "Deschide direct un document gol la pornirea TextEdit în loc de panoul iCloud.";
 "tweakDockInstantAutohideTitle" = "Autohide instantaneu pentru Dock (fără întârziere)";
 "tweakDockInstantAutohideDesc" = "Elimină întârzierea la autohide, făcând Dock-ul să apară instantaneu la marginea ecranului.";
 "tweakSafariDevelopMenuTitle" = "Meniul Dezvoltator din Safari";

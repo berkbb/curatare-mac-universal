@@ -238,10 +238,8 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakScreenshotIncludeDateTitle, tweakScreenshotIncludeDateDesc
     case tweakScreenshotLocationTitle, tweakScreenshotLocationDesc
     case tweakCrashReporterDialogTitle, tweakCrashReporterDialogDesc
-    case tweakMusicHalfStarsTitle, tweakMusicHalfStarsDesc
     case tweakWindowDragOnGestureTitle, tweakWindowDragOnGestureDesc
     case tweakPressAndHoldRepeatTitle, tweakPressAndHoldRepeatDesc
-    case tweakTextEditBlankDocumentTitle, tweakTextEditBlankDocumentDesc
     case tweakDockInstantAutohideTitle, tweakDockInstantAutohideDesc
     case tweakSafariDevelopMenuTitle, tweakSafariDevelopMenuDesc
     case tweakHideDesktopIconsTitle, tweakHideDesktopIconsDesc

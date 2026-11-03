@@ -79,7 +79,7 @@ Curatare achieves 100% feature coverage across all 8 core functional areas of in
 5. **Security Center (`SystemSecurityStatus`, `MoleBridge.fetchSecurityStatus`):** Live status indicators for SIP, FileVault, Gatekeeper, XProtect & XProtect Remediator definitions, and Lockdown Mode.
 6. **Disk Analyzer (`DiskAnalyzerView`):** Multi-level interactive disk tree powered by native universal `analyze-go`.
 7. **macOS Tweaks (`SystemTweakManager` in `SystemTweaks.swift`; user-level preferences only):**
-   - **32 boolean `SystemTweakItem`s** across the Finder, Dock, Screenshot, Disk & Network and System categories.
+   - **30 boolean `SystemTweakItem`s** across the Finder, Dock, Screenshot, Disk & Network and System categories.
      - Items with an `enabledValue` write a typed value when on and remove the key when off: `autohide-delay` 0, `autohide-time-modifier` 0, `QLPanelAnimationDuration` 0, `NSToolbarTitleViewRolloverDelay` 0, `AnimateWindowZoom` false, `AnimateInfoPanes` false.
    - **8 multi-value `SystemChoiceTweak`s:** minimize effect (Genie, Scale, Suck), Dock recent-app count, column auto-sizing, Quick Look hide on deactivate, recent documents limit, recent places limit, tooltip delay, power button sleep.
      - The "macOS default" option removes the key, so no default has to be guessed.
@@ -103,6 +103,7 @@ Curatare achieves 100% feature coverage across all 8 core functional areas of in
 - **Root/Kext Invasions:** Kernel extensions or intrusive root-level system volume modifications are prohibited under Apple Silicon Signed System Volume (SSV) security.
 - **No Fake Success:** A maintenance task that cannot do its work must report `failed` or `needsAdmin`, never `done`. A sent signal or a zero exit code is not proof: compare PIDs or parse the tool's own verdict.
 - **Sandboxed Apps' Preferences Are Read-Only:**
+  - **Removed for the same reason:** The Apple Music half-stars and TextEdit blank-document toggles were removed on 2026-11-03. Reading `com.apple.Music` at launch opened a Media & Apple Music permission prompt that froze the app's main thread, and both domains live in protected containers.
   - **Rule:** Curatare does not write another sandboxed app's preferences unless a live test proves the change works both ways.
   - **Why:** The `com.apple.Safari` domain resolves to Safari's protected container. Safari applies an outside "off" through `SandboxBroker` but ignores an outside "on" (live test, 2026-11-03).
 - **Security-Weakening Toggles:** Curatare offers no Gatekeeper, firewall, XProtect or disk-image verification switches. It offers no Recent Items or Help cache cleanup either, because those live under the `com.apple.*` do-not-touch list.

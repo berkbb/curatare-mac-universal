@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
+- **No more launch freeze from an Apple Music permission prompt:**
+  - **Cause:** The Apple Music half-stars toggle read `com.apple.Music` at launch, so macOS asked for Media & Apple Music access and the app waited without showing a window.
+  - **Removed:** That toggle and the TextEdit blank-document toggle. Both apps keep their preferences in protected containers, and these toggles could not reliably read or change them.
 - **Every user-facing text comes from `Localizable.strings`:** Text that was hardcoded in Turkish or English now comes from each language's table:
   - 128 scan explanations, protection reasons and audit findings produced by the core.
   - Trash batch titles.

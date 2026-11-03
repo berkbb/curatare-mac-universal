@@ -468,14 +468,10 @@
 "tweakScreenshotLocationDesc" = "Chooses the folder where new screenshots and screen recordings are saved. Using the default saves them to the Desktop.";
 "tweakCrashReporterDialogTitle" = "Suppress Crash Reporter Dialogs";
 "tweakCrashReporterDialogDesc" = "Suppresses modal crash dialogs when applications fail, logging reports silently.";
-"tweakMusicHalfStarsTitle" = "Enable Half-Star Ratings in Music";
-"tweakMusicHalfStarsDesc" = "Allows songs in Music to be rated with half-stars (e.g. 3.5 or 4.5 stars).";
 "tweakWindowDragOnGestureTitle" = "Drag Windows Anywhere with Ctrl+⌘";
 "tweakWindowDragOnGestureDesc" = "Move windows by clicking and dragging anywhere on the window while holding Ctrl+⌘.";
 "tweakPressAndHoldRepeatTitle" = "Key Repeat Instead of Accent Menu";
 "tweakPressAndHoldRepeatDesc" = "Repeats keys rapidly when held down instead of showing the accented character popup.";
-"tweakTextEditBlankDocumentTitle" = "Open Blank Document on TextEdit Launch";
-"tweakTextEditBlankDocumentDesc" = "Opens an untitled blank document directly on TextEdit launch instead of the iCloud open panel.";
 "tweakDockInstantAutohideTitle" = "Instant Dock Autohide (Zero Delay)";
 "tweakDockInstantAutohideDesc" = "Eliminates the autohide hover delay so the Dock pops up instantly when moving to the screen edge.";
 "tweakSafariDevelopMenuTitle" = "Safari Develop Menu";

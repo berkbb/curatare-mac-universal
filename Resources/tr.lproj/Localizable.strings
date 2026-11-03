@@ -468,14 +468,10 @@
 "tweakScreenshotLocationDesc" = "Yeni ekran resimlerinin ve ekran kayıtlarının kaydedileceği klasörü seçer. Varsayılana dönülünce Masaüstü'ne kaydedilir.";
 "tweakCrashReporterDialogTitle" = "Çökme Raporu İletişim Kutusunu Kapat";
 "tweakCrashReporterDialogDesc" = "Bir uygulama çöktüğünde ekrana gelen büyük hata kutusunu kapatır, raporu sessizce günlüğe yazar.";
-"tweakMusicHalfStarsTitle" = "Müzik Uygulamasında Yarım Yıldız Puanlama";
-"tweakMusicHalfStarsDesc" = "Müzik uygulamasında şarkılara 3.5, 4.5 gibi yarım yıldızlı derecelendirme yapılmasına izin verir.";
 "tweakWindowDragOnGestureTitle" = "Pencereleri Ctrl+⌘ ile Her Yerinden Sürükle";
 "tweakWindowDragOnGestureDesc" = "Pencereleri sadece başlık çubuğundan değil, herhangi bir noktasına Ctrl+⌘ ile tıklayıp sürükleyerek taşıyın.";
 "tweakPressAndHoldRepeatTitle" = "Hızlı Tuş Yineleme (Aksan Menüsü Yerine)";
 "tweakPressAndHoldRepeatDesc" = "Bir harfe basılı tutulduğunda aksan seçici kutusu yerine harfi seri biçimde yazmaya devam eder.";
-"tweakTextEditBlankDocumentTitle" = "TextEdit Başlatıldığında Boş Belge Aç";
-"tweakTextEditBlankDocumentDesc" = "TextEdit açıldığında iCloud dosya seçme penceresi yerine doğrudan boş yeni bir belge açar.";
 "tweakDockInstantAutohideTitle" = "Dock Açılma Gecikmesini Sıfırla (Anında Aç)";
 "tweakDockInstantAutohideDesc" = "Fare ekranın kenarına götürüldüğünde Dock'un beklemeden anında görünmesini sağlar.";
 "tweakSafariDevelopMenuTitle" = "Safari Geliştirme Menüsü";

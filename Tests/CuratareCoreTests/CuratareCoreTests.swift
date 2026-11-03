@@ -1616,7 +1616,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
         let tweaks = manager.loadAllTweaks()
 
-        #expect(tweaks.count == 32)
+        #expect(tweaks.count == 30)
         #expect(tweaks.contains(where: { $0.id == "finder.showHiddenFiles" }))
         #expect(tweaks.contains(where: { $0.id == "finder.showFullPathInTitle" }))
         #expect(tweaks.contains(where: { $0.id == "finder.hideDesktopIcons" }))
@@ -1626,7 +1626,7 @@ struct SystemTweaksTests {
         #expect(tweaks.contains(where: { $0.id == "screenshot.disableShadow" }))
         #expect(tweaks.contains(where: { $0.id == "system.windowDragOnGesture" }))
         #expect(tweaks.contains(where: { $0.id == "system.pressAndHoldRepeat" }))
-        #expect(tweaks.contains(where: { $0.id == "system.textEditBlankDocument" }))
+        #expect(!tweaks.contains(where: { $0.id == "system.textEditBlankDocument" || $0.id == "system.musicHalfStars" }))
         #expect(!tweaks.contains(where: { $0.id == "system.safariDevelopMenu" }))
         #expect(tweaks.contains(where: { $0.id == "system.disableWindowAnimations" }))
     }
@@ -1658,8 +1658,6 @@ struct SystemTweaksTests {
         _ = manager.applyTweak(id: "system.pressAndHoldRepeat", enabled: true)
         #expect(mockStore.readBool(domain: "NSGlobalDomain", key: "ApplePressAndHoldEnabled", defaultValue: true) == false)
 
-        _ = manager.applyTweak(id: "system.textEditBlankDocument", enabled: true)
-        #expect(mockStore.readBool(domain: "com.apple.TextEdit", key: "NSShowAppCentricOpenPanelInsteadOfUntitledFile", defaultValue: true) == false)
     }
 
     @Test("SystemTweakManager: resets all tweaks to default values")

@@ -603,7 +603,7 @@ public struct SystemTweakManager: Sendable {
             let str = store.readString(domain: item.domain, key: item.key, defaultValue: "prompt")
             return str.lowercased() == "none"
         }
-        if item.id == "system.pressAndHoldRepeat" || item.id == "system.textEditBlankDocument" || item.id == "finder.hideDesktopIcons" || item.id == "system.disableWindowAnimations" {
+        if item.id == "system.pressAndHoldRepeat" || item.id == "finder.hideDesktopIcons" || item.id == "system.disableWindowAnimations" {
             let raw = store.readBool(domain: item.domain, key: item.key, defaultValue: true)
             return !raw
         }
@@ -627,7 +627,7 @@ public struct SystemTweakManager: Sendable {
             }
             return
         }
-        if item.id == "system.pressAndHoldRepeat" || item.id == "system.textEditBlankDocument" || item.id == "finder.hideDesktopIcons" || item.id == "system.disableWindowAnimations" {
+        if item.id == "system.pressAndHoldRepeat" || item.id == "finder.hideDesktopIcons" || item.id == "system.disableWindowAnimations" {
             store.writeBool(domain: item.domain, key: item.key, value: !value)
             return
         }
@@ -913,17 +913,9 @@ public struct SystemTweakManager: Sendable {
             isEnabled: false,
             restartService: .none
         ),
-        SystemTweakItem(
-            id: "system.musicHalfStars",
-            category: .system,
-            titleKey: .tweakMusicHalfStarsTitle,
-            descriptionKey: .tweakMusicHalfStarsDesc,
-            domain: "com.apple.Music",
-            key: "allow-half-stars",
-            defaultValue: false,
-            isEnabled: false,
-            restartService: .none
-        ),
+        // Apple Music yarım yıldız ve TextEdit boş belge ayarları kaldırıldı: bu sandbox'lı uygulamaların tercihleri
+        // korumalı kapsayıcıdadır; okumak açılışta Apple Music arşiv izni penceresi açıp uygulamayı donduruyordu ve
+        // dışarıdan yazma güvenilir değil (Safari Geliştir menüsüyle aynı sınıf, 2026-11-03).
         SystemTweakItem(
             id: "system.windowDragOnGesture",
             category: .system,
@@ -942,17 +934,6 @@ public struct SystemTweakManager: Sendable {
             descriptionKey: .tweakPressAndHoldRepeatDesc,
             domain: "NSGlobalDomain",
             key: "ApplePressAndHoldEnabled",
-            defaultValue: false,
-            isEnabled: false,
-            restartService: .none
-        ),
-        SystemTweakItem(
-            id: "system.textEditBlankDocument",
-            category: .system,
-            titleKey: .tweakTextEditBlankDocumentTitle,
-            descriptionKey: .tweakTextEditBlankDocumentDesc,
-            domain: "com.apple.TextEdit",
-            key: "NSShowAppCentricOpenPanelInsteadOfUntitledFile",
             defaultValue: false,
             isEnabled: false,
             restartService: .none
