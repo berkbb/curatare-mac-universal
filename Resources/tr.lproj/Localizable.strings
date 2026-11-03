@@ -459,8 +459,8 @@
 "tweakScreenshotShadowDesc" = "Pencere yakalama (⌘⇧4 + Boşluk) sırasında pencerelerin etrafındaki geniş gölge efektini kaldırır.";
 "tweakScreenshotIncludeDateTitle" = "Ekran Resmi Dosya Adında Tarih ve Saat";
 "tweakScreenshotIncludeDateDesc" = "Ekran kayıtlarının dosya adında çekim tarih ve saat bilgisini saklar.";
-"tweakScreenshotLocationTitle" = "Ekran Görüntülerini İndirilenler'e Kaydet";
-"tweakScreenshotLocationDesc" = "Ekran kayıtlarının Masaüstü yerine ~/Downloads klasörüne kaydedilmesini sağlar.";
+"tweakScreenshotLocationTitle" = "Ekran resmi kayıt klasörü";
+"tweakScreenshotLocationDesc" = "Yeni ekran resimlerinin ve ekran kayıtlarının kaydedileceği klasörü seçer. Varsayılana dönülünce Masaüstü'ne kaydedilir.";
 "tweakCrashReporterDialogTitle" = "Çökme Raporu İletişim Kutusunu Kapat";
 "tweakCrashReporterDialogDesc" = "Bir uygulama çöktüğünde ekrana gelen büyük hata kutusunu kapatır, raporu sessizce günlüğe yazar.";
 "tweakMusicHalfStarsTitle" = "Müzik Uygulamasında Yarım Yıldız Puanlama";
@@ -522,6 +522,19 @@
 "tweakScreenshotNameTitle" = "Ekran resmi dosya adı";
 "tweakScreenshotNameDesc" = "Yeni ekran resimlerinin dosya adının başındaki metni değiştirir; tarih ve saat ayarı etkilenmez. / ve : kullanılamaz. Boş bırakılırsa macOS varsayılanına döner.";
 "tweakScreenshotNameApply" = "Uygula";
+"tweakFinderNoWindowZoomTitle" = "Finder Pencerelerini Animasyonsuz Aç";
+"tweakFinderNoWindowZoomDesc" = "Yeni Finder pencereleri büyüyerek açılmak yerine anında görünür.";
+"tweakFinderNoInfoPaneAnimationTitle" = "Bilgi Penceresi Bölümlerini Animasyonsuz Aç";
+"tweakFinderNoInfoPaneAnimationDesc" = "Finder'ın Bilgi Al penceresindeki bölümler kayarak açılmak yerine anında genişler.";
+"tweakToolbarTitleNoDelayTitle" = "Pencere Başlığındaki Belge Simgesini Beklemeden Göster";
+"tweakToolbarTitleNoDelayDesc" = "Araç çubuğu birleşik pencerelerde, fare başlığın üzerine gelince belge simgesi ve menüsü hemen belirir; bundan sonra açılan uygulamalarda geçerli olur.";
+"tweakToolTipDelayTitle" = "İpucu Gecikmesi";
+"tweakToolTipDelayDesc" = "Fare bir öğenin üzerinde durduktan ne kadar sonra açıklama balonunun görüneceğini belirler; bundan sonra açılan uygulamalarda geçerli olur.";
+"tweakPowerButtonSleepTitle" = "Güç Düğmesiyle Uyut";
+"tweakPowerButtonSleepDesc" = "Güç düğmesine kısa basınca Mac'in uyuyup uyumayacağını belirler; Kapalı seçilirse kısa basış Mac'i uyutmaz. macOS varsayılanı seçiliyken anahtar silinir ve macOS kendi davranışına döner.";
+"tweakScreenshotLocationDefault" = "Masaüstü (macOS varsayılanı)";
+"tweakScreenshotLocationChoose" = "Klasör Seç…";
+"tweakScreenshotLocationReset" = "Varsayılana Dön";
 
 "toastTweakApplied" = "Ayar uygulandı: %@";
 "toastTweaksReset" = "Tüm sistem ayarları varsayılanlara sıfırlandı.";

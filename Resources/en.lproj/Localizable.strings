@@ -459,8 +459,8 @@
 "tweakScreenshotShadowDesc" = "Removes the drop shadow border when capturing windows with ⌘⇧4 + Space.";
 "tweakScreenshotIncludeDateTitle" = "Include Date & Time in Screenshot Filenames";
 "tweakScreenshotIncludeDateDesc" = "Appends capture timestamp to screenshot filenames.";
-"tweakScreenshotLocationTitle" = "Save Screenshots to Downloads";
-"tweakScreenshotLocationDesc" = "Saves screen captures to ~/Downloads instead of cluttering your Desktop.";
+"tweakScreenshotLocationTitle" = "Screenshot save folder";
+"tweakScreenshotLocationDesc" = "Chooses the folder where new screenshots and screen recordings are saved. Using the default saves them to the Desktop.";
 "tweakCrashReporterDialogTitle" = "Suppress Crash Reporter Dialogs";
 "tweakCrashReporterDialogDesc" = "Suppresses modal crash dialogs when applications fail, logging reports silently.";
 "tweakMusicHalfStarsTitle" = "Enable Half-Star Ratings in Music";
@@ -522,6 +522,19 @@
 "tweakScreenshotNameTitle" = "Screenshot file name";
 "tweakScreenshotNameDesc" = "Changes the text at the start of new screenshot file names; the date and time setting is unaffected. / and : are not allowed. Leave it empty to return to the macOS default.";
 "tweakScreenshotNameApply" = "Apply";
+"tweakFinderNoWindowZoomTitle" = "Open Finder Windows Without Animation";
+"tweakFinderNoWindowZoomDesc" = "New Finder windows appear instantly instead of zooming open.";
+"tweakFinderNoInfoPaneAnimationTitle" = "Expand Get Info Sections Without Animation";
+"tweakFinderNoInfoPaneAnimationDesc" = "Sections in Finder's Get Info window expand instantly instead of sliding open.";
+"tweakToolbarTitleNoDelayTitle" = "Show the Title Bar Document Icon Without Delay";
+"tweakToolbarTitleNoDelayDesc" = "In windows with a unified toolbar, the document icon and its menu appear as soon as the pointer is over the title; applies to apps opened afterwards.";
+"tweakToolTipDelayTitle" = "Tooltip Delay";
+"tweakToolTipDelayDesc" = "Sets how long the pointer must rest on an item before its help tag appears; applies to apps opened afterwards.";
+"tweakPowerButtonSleepTitle" = "Power Button Puts Mac to Sleep";
+"tweakPowerButtonSleepDesc" = "Sets whether a short press of the power button puts the Mac to sleep; with Off, a short press does not. With macOS default selected, the key is removed and macOS uses its own behavior.";
+"tweakScreenshotLocationDefault" = "Desktop (macOS default)";
+"tweakScreenshotLocationChoose" = "Choose Folder…";
+"tweakScreenshotLocationReset" = "Use Default";
 
 "toastTweakApplied" = "Setting applied: %@";
 "toastTweaksReset" = "All system tweaks have been reset to defaults.";

@@ -425,6 +425,7 @@ public final class AppModel {
     public var systemChoiceTweaks: [SystemChoiceTweak] = []
     public var screenshotFormat: ScreenshotFormat?
     public var screenshotNamePrefix: String = ""
+    public var screenshotLocation: String?
     public let tweakManager: SystemTweakManager
     public var checksumResult: FileChecksumResult?
     public var checksumExpectedHash: String = ""
@@ -477,6 +478,7 @@ public final class AppModel {
         self.systemChoiceTweaks = resolvedTweakManager.loadChoiceTweaks()
         self.screenshotFormat = resolvedTweakManager.screenshotFormat()
         self.screenshotNamePrefix = resolvedTweakManager.screenshotNamePrefix()
+        self.screenshotLocation = resolvedTweakManager.screenshotLocation()
         self.currentAnalyzedURL = homeDirectoryURL
         self.trashBatches = resolvedTrash.listBatches()
         self.selectedSection = resolvedSettings.lastSelectedSection
@@ -1733,6 +1735,15 @@ public final class AppModel {
         systemChoiceTweaks = tweakManager.loadChoiceTweaks()
         screenshotFormat = tweakManager.screenshotFormat()
         screenshotNamePrefix = tweakManager.screenshotNamePrefix()
+        screenshotLocation = tweakManager.screenshotLocation()
+    }
+
+    /// `nil` kayıt klasörünü macOS varsayılanına (Masaüstü) döndürür.
+    public func setScreenshotLocation(_ path: String?) {
+        tweakManager.setScreenshotLocation(path)
+        screenshotLocation = tweakManager.screenshotLocation()
+        showToast(LF(.toastTweakApplied, L(.tweakScreenshotLocationTitle)))
+        log.info(.engine, "Screenshot location updated")
     }
 
     public func applyChoiceTweak(id: String, optionID: String) {
@@ -1783,6 +1794,7 @@ public final class AppModel {
         systemChoiceTweaks = tweakManager.loadChoiceTweaks()
         screenshotFormat = tweakManager.screenshotFormat()
         screenshotNamePrefix = tweakManager.screenshotNamePrefix()
+        screenshotLocation = tweakManager.screenshotLocation()
         showToast(L(.toastTweaksReset))
         log.info(.engine, "All system tweaks reset to defaults")
     }

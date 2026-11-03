@@ -265,6 +265,12 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakRecentPlacesLimitTitle, tweakRecentPlacesLimitDesc
     case tweakOptionSystemDefault, tweakOptionOn, tweakOptionOff
     case tweakScreenshotNameTitle, tweakScreenshotNameDesc, tweakScreenshotNameApply
+    case tweakFinderNoWindowZoomTitle, tweakFinderNoWindowZoomDesc
+    case tweakFinderNoInfoPaneAnimationTitle, tweakFinderNoInfoPaneAnimationDesc
+    case tweakToolbarTitleNoDelayTitle, tweakToolbarTitleNoDelayDesc
+    case tweakToolTipDelayTitle, tweakToolTipDelayDesc
+    case tweakPowerButtonSleepTitle, tweakPowerButtonSleepDesc
+    case tweakScreenshotLocationDefault, tweakScreenshotLocationChoose, tweakScreenshotLocationReset
     case toastTweakApplied, toastTweaksReset
 
     // 7. Tarihli Çöp Turları ve Geçmiş (`~/.Trash/Curatare-...`)

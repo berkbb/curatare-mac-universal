@@ -459,8 +459,8 @@
 "tweakScreenshotShadowDesc" = "Elimină efectul de umbră la capturarea ferestrelor cu ⌘⇧4 + Spațiu.";
 "tweakScreenshotIncludeDateTitle" = "Include data și ora în numele capturii";
 "tweakScreenshotIncludeDateDesc" = "Adaugă data și ora capturii în numele fișierelor.";
-"tweakScreenshotLocationTitle" = "Salvează Capturile de Ecran în Descărcări";
-"tweakScreenshotLocationDesc" = "Salvează capturile de ecran în dosarul ~/Downloads în loc de Desktop.";
+"tweakScreenshotLocationTitle" = "Folderul capturilor de ecran";
+"tweakScreenshotLocationDesc" = "Alege folderul în care se salvează capturile și înregistrările de ecran noi. Revenirea la implicit le salvează pe Birou.";
 "tweakCrashReporterDialogTitle" = "Suprimă dialogurile de eroare ale aplicațiilor";
 "tweakCrashReporterDialogDesc" = "Dezactivează ferestrele de alertă la închiderea neașteptată a aplicațiilor și le jurnalizează silențios.";
 "tweakMusicHalfStarsTitle" = "Activează evaluarea cu jumătăți de stea în Music";
@@ -522,6 +522,19 @@
 "tweakScreenshotNameTitle" = "Numele fișierelor capturilor de ecran";
 "tweakScreenshotNameDesc" = "Schimbă textul de la începutul numelor fișierelor pentru capturile de ecran noi; setarea pentru dată și oră nu este afectată. / și : nu sunt permise. Lasă câmpul gol pentru a reveni la valoarea implicită macOS.";
 "tweakScreenshotNameApply" = "Aplică";
+"tweakFinderNoWindowZoomTitle" = "Deschide ferestrele Finder fără animație";
+"tweakFinderNoWindowZoomDesc" = "Ferestrele Finder noi apar instantaneu, fără efectul de mărire.";
+"tweakFinderNoInfoPaneAnimationTitle" = "Extinde secțiunile Obține informații fără animație";
+"tweakFinderNoInfoPaneAnimationDesc" = "Secțiunile din fereastra Obține informații a Finder se extind instantaneu, fără să alunece.";
+"tweakToolbarTitleNoDelayTitle" = "Afișează fără întârziere pictograma documentului din bara de titlu";
+"tweakToolbarTitleNoDelayDesc" = "În ferestrele cu bară de instrumente unificată, pictograma documentului și meniul ei apar imediat ce cursorul ajunge pe titlu; se aplică aplicațiilor deschise ulterior.";
+"tweakToolTipDelayTitle" = "Întârzierea indiciilor";
+"tweakToolTipDelayDesc" = "Stabilește cât timp trebuie să stea cursorul pe un element până apare indiciul; se aplică aplicațiilor deschise ulterior.";
+"tweakPowerButtonSleepTitle" = "Butonul de pornire pune Mac-ul în repaus";
+"tweakPowerButtonSleepDesc" = "Stabilește dacă o apăsare scurtă pe butonul de pornire pune Mac-ul în repaus; cu Dezactivat, apăsarea scurtă nu o face. Cu Implicit macOS selectat, cheia este eliminată și macOS revine la comportamentul său propriu.";
+"tweakScreenshotLocationDefault" = "Birou (implicit macOS)";
+"tweakScreenshotLocationChoose" = "Alege folderul…";
+"tweakScreenshotLocationReset" = "Revino la implicit";
 
 "toastTweakApplied" = "Setare aplicată: %@";
 "toastTweaksReset" = "Toate ajustările de sistem au fost resetate la valorile implicite.";

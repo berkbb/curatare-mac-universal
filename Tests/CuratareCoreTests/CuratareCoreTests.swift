@@ -1616,7 +1616,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
         let tweaks = manager.loadAllTweaks()
 
-        #expect(tweaks.count == 31)
+        #expect(tweaks.count == 33)
         #expect(tweaks.contains(where: { $0.id == "finder.showHiddenFiles" }))
         #expect(tweaks.contains(where: { $0.id == "finder.showFullPathInTitle" }))
         #expect(tweaks.contains(where: { $0.id == "finder.hideDesktopIcons" }))
@@ -1624,7 +1624,6 @@ struct SystemTweaksTests {
         #expect(tweaks.contains(where: { $0.id == "disk.dontWriteNetworkStores" }))
         #expect(tweaks.contains(where: { $0.id == "disk.dontWriteUSBStores" }))
         #expect(tweaks.contains(where: { $0.id == "screenshot.disableShadow" }))
-        #expect(tweaks.contains(where: { $0.id == "screenshot.saveToDownloads" }))
         #expect(tweaks.contains(where: { $0.id == "system.windowDragOnGesture" }))
         #expect(tweaks.contains(where: { $0.id == "system.pressAndHoldRepeat" }))
         #expect(tweaks.contains(where: { $0.id == "system.textEditBlankDocument" }))
@@ -1767,7 +1766,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
 
         let initial = Dictionary(uniqueKeysWithValues: manager.loadChoiceTweaks().map { ($0.id, $0.selectedOptionID) })
-        #expect(initial.count == 6)
+        #expect(initial.count == 8)
         #expect(initial["dock.minimizeEffect"] == "scale")
         #expect(initial["system.recentDocumentsLimit"] == "5")
         #expect(initial["dock.recentAppsCount"] == "default")
@@ -1814,6 +1813,60 @@ struct SystemTweaksTests {
         manager.setScreenshotNamePrefix("Shot")
         _ = manager.restoreAllToDefaults()
         #expect(manager.screenshotNamePrefix() == "")
+    }
+
+    @Test("SystemTweakManager: screenshot folder keeps legacy paths, writes a chosen folder and resets to the Desktop")
+    func screenshotLocationRoundTrip() {
+        // Eski "İndirilenler'e kaydet" anahtarının yazdığı yol okunmaya devam eder.
+        let mockStore = MockPreferenceStore(initialStrings: ["com.apple.screencapture:location": "/Users/test/Downloads"])
+        let manager = SystemTweakManager(store: mockStore)
+        #expect(manager.screenshotLocation() == "/Users/test/Downloads")
+        #expect(!manager.loadAllTweaks().contains(where: { $0.key == "location" }))
+
+        manager.setScreenshotLocation("/Users/test/Pictures/Shots")
+        #expect(mockStore.readString(domain: "com.apple.screencapture", key: "location", defaultValue: "") == "/Users/test/Pictures/Shots")
+        #expect(mockStore.restartedServices.contains(.systemUIServer))
+
+        manager.setScreenshotLocation(nil)
+        #expect(manager.screenshotLocation() == nil)
+        #expect(mockStore.readValue(domain: "com.apple.screencapture", key: "location") == nil)
+
+        manager.setScreenshotLocation("/Users/test/Pictures/Shots")
+        _ = manager.restoreAllToDefaults()
+        #expect(manager.screenshotLocation() == nil)
+    }
+
+    @Test("SystemTweakManager: Finder animation, toolbar title, tooltip and power button tweaks")
+    func remainingUserLevelTweaks() {
+        // Terminal'den `-bool false` ile kapatılmış animasyon "animasyonsuz" olarak açık görünür.
+        let mockStore = MockPreferenceStore(initialBools: ["com.apple.finder:AnimateInfoPanes": false])
+        let manager = SystemTweakManager(store: mockStore)
+
+        let initial = Dictionary(uniqueKeysWithValues: manager.loadAllTweaks().map { ($0.id, $0.isEnabled) })
+        #expect(initial["finder.noWindowZoomAnimation"] == false)
+        #expect(initial["finder.noInfoPaneAnimation"] == true)
+        #expect(initial["system.toolbarTitleNoDelay"] == false)
+
+        _ = manager.applyTweak(id: "finder.noWindowZoomAnimation", enabled: true)
+        #expect(mockStore.readValue(domain: "com.apple.finder", key: "AnimateWindowZoom") == .bool(false))
+        #expect(mockStore.restartedServices.contains(.finder))
+        _ = manager.applyTweak(id: "finder.noWindowZoomAnimation", enabled: false)
+        #expect(mockStore.readValue(domain: "com.apple.finder", key: "AnimateWindowZoom") == nil)
+
+        _ = manager.applyTweak(id: "system.toolbarTitleNoDelay", enabled: true)
+        #expect(mockStore.readValue(domain: "NSGlobalDomain", key: "NSToolbarTitleViewRolloverDelay") == .double(0))
+
+        let tooltip = manager.applyChoiceTweak(id: "system.toolTipDelay", optionID: "100 ms")
+        #expect(tooltip?.selectedOptionID == "100 ms")
+        #expect(mockStore.readValue(domain: "NSGlobalDomain", key: "NSInitialToolTipDelay") == .int(100))
+
+        _ = manager.applyChoiceTweak(id: "system.powerButtonSleep", optionID: "off")
+        #expect(mockStore.readValue(domain: "com.apple.loginwindow", key: "PowerButtonSleepsSystem") == .bool(false))
+
+        _ = manager.restoreAllToDefaults()
+        #expect(mockStore.readValue(domain: "com.apple.finder", key: "AnimateInfoPanes") == nil)
+        #expect(mockStore.readValue(domain: "NSGlobalDomain", key: "NSInitialToolTipDelay") == nil)
+        #expect(mockStore.readValue(domain: "com.apple.loginwindow", key: "PowerButtonSleepsSystem") == nil)
     }
 
     @Test("MoleOptimizationTask: includes extended maintenance tasks")

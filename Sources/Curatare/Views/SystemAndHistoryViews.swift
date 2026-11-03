@@ -1107,6 +1107,7 @@ public struct SystemStatusView: View {
                         if cat == .screenshot {
                             screenshotFormatCard
                             screenshotNameCard
+                            screenshotLocationCard
                         }
                     }
                 }
@@ -1190,6 +1191,62 @@ public struct SystemStatusView: View {
         .glassEffect(.regular, in: .rect(cornerRadius: 12))
         .onAppear { screenshotNameDraft = model.screenshotNamePrefix }
         .onChange(of: model.screenshotNamePrefix) { _, prefix in screenshotNameDraft = prefix }
+    }
+
+    /// Ekran resmi kayıt klasörü; varsayılana dönünce anahtar silinir ve macOS Masaüstü'ne kaydeder.
+    private var screenshotLocationCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "folder")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28, height: 28)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(model.L(.tweakScreenshotLocationTitle))
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    Button(model.L(.tweakScreenshotLocationChoose), action: chooseScreenshotFolder)
+                        .buttonStyle(.glass)
+                    Button(model.L(.tweakScreenshotLocationReset)) {
+                        model.setScreenshotLocation(nil)
+                    }
+                    .buttonStyle(.glass)
+                    .disabled(model.screenshotLocation == nil)
+                }
+
+                Text(model.screenshotLocation.map { ($0 as NSString).abbreviatingWithTildeInPath }
+                     ?? model.L(.tweakScreenshotLocationDefault))
+                    .font(.callout.monospaced())
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
+
+                Text(model.L(.tweakScreenshotLocationDesc))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                restartNoticeRow(.tweaksRestartNoticeSystemUI)
+            }
+        }
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+    }
+
+    private func chooseScreenshotFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        if let current = model.screenshotLocation {
+            panel.directoryURL = URL(fileURLWithPath: (current as NSString).expandingTildeInPath, isDirectory: true)
+        }
+        if panel.runModal() == .OK, let url = panel.url {
+            model.setScreenshotLocation(url.path)
+        }
     }
 
     private var screenshotNameDraftChanged: Bool {

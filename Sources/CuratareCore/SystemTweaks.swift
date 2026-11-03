@@ -153,6 +153,11 @@ public struct SystemChoiceTweak: Identifiable, Sendable, Equatable {
         public static func count(_ n: Int) -> Option {
             Option(id: String(n), value: .int(n))
         }
+
+        /// "ms" birim simgesi her dilde aynı yazılır.
+        public static func milliseconds(_ n: Int) -> Option {
+            Option(id: "\(n) ms", value: .int(n))
+        }
     }
 
     public let id: String
@@ -218,6 +223,13 @@ public enum ScreenshotNamePrefix {
         let cleaned = raw.filter { $0 != "/" && $0 != ":" }.trimmingCharacters(in: .whitespacesAndNewlines)
         return String(cleaned.prefix(maxLength)).trimmingCharacters(in: .whitespaces)
     }
+}
+
+/// Yeni ekran resimlerinin ve ekran kayıtlarının klasörü (`com.apple.screencapture` → `location`).
+/// Anahtar yoksa macOS Masaüstü'ne kaydeder.
+public enum ScreenshotLocation {
+    public static let domain = "com.apple.screencapture"
+    public static let key = "location"
 }
 
 public protocol PreferenceStoreProtocol: Sendable {
@@ -471,6 +483,7 @@ public struct SystemTweakManager: Sendable {
         }
         setScreenshotFormat(.png, restartService: false)
         setScreenshotNamePrefix("", restartService: false)
+        setScreenshotLocation(nil, restartService: false)
         servicesToRestart.insert(.systemUIServer)
         if restartServices {
             for service in servicesToRestart {
@@ -525,6 +538,24 @@ public struct SystemTweakManager: Sendable {
         }
     }
 
+    /// Geçerli kayıt klasörü; anahtar yoksa `nil` (macOS varsayılanı Masaüstü).
+    public func screenshotLocation() -> String? {
+        let path = store.readString(domain: ScreenshotLocation.domain, key: ScreenshotLocation.key, defaultValue: "")
+        return path.isEmpty ? nil : path
+    }
+
+    /// Kayıt klasörünü yazar; `nil` anahtarı siler ve kayıtlar yeniden Masaüstü'ne gider.
+    public func setScreenshotLocation(_ path: String?, restartService: Bool = true) {
+        if let path, !path.isEmpty {
+            store.writeString(domain: ScreenshotLocation.domain, key: ScreenshotLocation.key, value: path)
+        } else {
+            store.removeValue(domain: ScreenshotLocation.domain, key: ScreenshotLocation.key)
+        }
+        if restartService {
+            store.restartService(.systemUIServer)
+        }
+    }
+
     /// Geçerli dosya adı öneki; anahtar yoksa boş döner (macOS varsayılanı).
     public func screenshotNamePrefix() -> String {
         store.readString(domain: ScreenshotNamePrefix.domain, key: ScreenshotNamePrefix.key, defaultValue: "")
@@ -558,10 +589,6 @@ public struct SystemTweakManager: Sendable {
             let str = store.readString(domain: item.domain, key: item.key, defaultValue: "prompt")
             return str.lowercased() == "none"
         }
-        if item.id == "screenshot.saveToDownloads" {
-            let loc = store.readString(domain: item.domain, key: item.key, defaultValue: "")
-            return loc.contains("Downloads")
-        }
         if item.id == "system.pressAndHoldRepeat" || item.id == "system.textEditBlankDocument" || item.id == "finder.hideDesktopIcons" || item.id == "system.disableWindowAnimations" {
             let raw = store.readBool(domain: item.domain, key: item.key, defaultValue: true)
             return !raw
@@ -581,15 +608,6 @@ public struct SystemTweakManager: Sendable {
         if item.id == "system.suppressCrashDialog" {
             if value {
                 store.writeString(domain: item.domain, key: item.key, value: "none")
-            } else {
-                store.removeValue(domain: item.domain, key: item.key)
-            }
-            return
-        }
-        if item.id == "screenshot.saveToDownloads" {
-            if value {
-                let home = FileManager.default.homeDirectoryForCurrentUser.path
-                store.writeString(domain: item.domain, key: item.key, value: "\(home)/Downloads")
             } else {
                 store.removeValue(domain: item.domain, key: item.key)
             }
@@ -681,6 +699,30 @@ public struct SystemTweakManager: Sendable {
             isEnabled: false,
             restartService: .finder,
             enabledValue: .double(0)
+        ),
+        SystemTweakItem(
+            id: "finder.noWindowZoomAnimation",
+            category: .finder,
+            titleKey: .tweakFinderNoWindowZoomTitle,
+            descriptionKey: .tweakFinderNoWindowZoomDesc,
+            domain: "com.apple.finder",
+            key: "AnimateWindowZoom",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .finder,
+            enabledValue: .bool(false)
+        ),
+        SystemTweakItem(
+            id: "finder.noInfoPaneAnimation",
+            category: .finder,
+            titleKey: .tweakFinderNoInfoPaneAnimationTitle,
+            descriptionKey: .tweakFinderNoInfoPaneAnimationDesc,
+            domain: "com.apple.finder",
+            key: "AnimateInfoPanes",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .finder,
+            enabledValue: .bool(false)
         ),
 
         // MARK: - Dock
@@ -823,17 +865,6 @@ public struct SystemTweakManager: Sendable {
             restartService: .systemUIServer
         ),
         SystemTweakItem(
-            id: "screenshot.saveToDownloads",
-            category: .screenshot,
-            titleKey: .tweakScreenshotLocationTitle,
-            descriptionKey: .tweakScreenshotLocationDesc,
-            domain: "com.apple.screencapture",
-            key: "location",
-            defaultValue: false,
-            isEnabled: false,
-            restartService: .systemUIServer
-        ),
-        SystemTweakItem(
             id: "screenshot.showThumbnail",
             category: .screenshot,
             titleKey: .tweakScreenshotThumbnailTitle,
@@ -957,6 +988,18 @@ public struct SystemTweakManager: Sendable {
             defaultValue: false,
             isEnabled: false,
             restartService: .none
+        ),
+        SystemTweakItem(
+            id: "system.toolbarTitleNoDelay",
+            category: .system,
+            titleKey: .tweakToolbarTitleNoDelayTitle,
+            descriptionKey: .tweakToolbarTitleNoDelayDesc,
+            domain: "NSGlobalDomain",
+            key: "NSToolbarTitleViewRolloverDelay",
+            defaultValue: false,
+            isEnabled: false,
+            restartService: .none,
+            enabledValue: .double(0)
         )
     ]
 
@@ -1025,6 +1068,26 @@ public struct SystemTweakManager: Sendable {
             domain: "NSGlobalDomain",
             key: "NSNavRecentPlacesLimit",
             options: [.systemDefault, .count(0), .count(10), .count(20)],
+            restartService: .none
+        ),
+        SystemChoiceTweak(
+            id: "system.toolTipDelay",
+            category: .system,
+            titleKey: .tweakToolTipDelayTitle,
+            descriptionKey: .tweakToolTipDelayDesc,
+            domain: "NSGlobalDomain",
+            key: "NSInitialToolTipDelay",
+            options: [.systemDefault, .milliseconds(100), .milliseconds(500), .milliseconds(2000)],
+            restartService: .none
+        ),
+        SystemChoiceTweak(
+            id: "system.powerButtonSleep",
+            category: .system,
+            titleKey: .tweakPowerButtonSleepTitle,
+            descriptionKey: .tweakPowerButtonSleepDesc,
+            domain: "com.apple.loginwindow",
+            key: "PowerButtonSleepsSystem",
+            options: [.systemDefault, .on, .off],
             restartService: .none
         )
     ]
