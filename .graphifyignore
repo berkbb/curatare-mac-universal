@@ -8,11 +8,15 @@ dist/
 *.sig
 *.dSYM/
 
-# Vendored binaries and third-party scripts
-Vendor/mole/bin/analyze-go
-Vendor/mole/bin/status-go
+# Graphify output and agent worktrees
+graphify-out/
+.claude/
+
+# Vendored third-party code and binaries (Mole engine, updated by Scripts/update-mole.sh)
+Vendor/
 
 # Secrets, credentials, and private data
+.secrets/
 .env
 .env.*
 *.pem
