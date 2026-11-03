@@ -322,6 +322,9 @@ private struct ProtectionSettingsView: View {
                 }
             }
 
+            // 3.5. Taşınabilir Kurallar (özel koruma listesi ve Mole purge yolları için JSON dışa / içe aktarma)
+            PortableRulesSection(model: model)
+
             // 4. Anayasal Koruma Kuralları
             Section {
                 VStack(alignment: .leading, spacing: 4) {

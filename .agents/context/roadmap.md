@@ -24,4 +24,4 @@
 
 ## 2. Future Milestones (Post-v1.0)
 
-- [ ] **2c. Multi-Mac Whitelist Sync Export/Import:** Portable JSON export/import for custom protection rules and purge paths.
+_No open milestones. Add new items only after a codebase audit and a check against `user_rejected_spec.md`._

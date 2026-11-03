@@ -889,3 +889,82 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
 
     override func stopLoading() {}
 }
+
+@Suite("Portable Rules AppModel Tests (roadmap 2c)")
+@MainActor
+struct PortableRulesAppModelTests {
+    @Test("Export and import change only Curatare's whitelist and Mole purge paths; no file is moved or deleted")
+    func exportMergeReplace() throws {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+        let fm = FileManager.default
+        let home = fm.temporaryDirectory.appendingPathComponent("curatare-portable-app-\(UUID().uuidString)", isDirectory: true)
+        defer { try? fm.removeItem(at: home) }
+        let keep = home.appendingPathComponent("Documents/Keep", isDirectory: true)
+        try fm.createDirectory(at: keep, withIntermediateDirectories: true)
+        let note = keep.appendingPathComponent("note.txt")
+        try Data("not touched".utf8).write(to: note)
+
+        let settings = AppSettings(defaults: defaults)
+        settings.language = .en
+        settings.customWhitelistPaths = [keep.path, "/Volumes/Work/Shared"]
+        let model = AppModel(settings: settings, log: AppLog(directory: nil), homeDirectoryURL: home, startBackgroundWatchers: false)
+
+        let purgeFile = model.molePurgePathsFile
+        try fm.createDirectory(at: purgeFile.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try "# my note\n~/Projects\n".write(to: purgeFile.url, atomically: true, encoding: .utf8)
+
+        // Dışa aktarma: ev klasörü altındaki yollar `~/` ile yazılır.
+        let exportURL = home.appendingPathComponent("export.json")
+        try model.exportPortableRules(to: exportURL)
+        let exported = try PortableRules.decode(Data(contentsOf: exportURL))
+        #expect(exported.whitelist == ["~/Documents/Keep", "/Volumes/Work/Shared"])
+        #expect(exported.purgePaths == ["~/Projects"])
+
+        // İçe aktarma dosyası: iki geçerli, iki reddedilen giriş.
+        let importURL = home.appendingPathComponent("import.json")
+        try Data("""
+        {"version": 1, "whitelist": ["~/Documents/Keep", "~/Documents/Other", "~/Library/Caches/com.apple.Safari"], "purgePaths": ["~/Code", "/"]}
+        """.utf8).write(to: importURL)
+        let validation = try model.validatePortableRules(at: importURL)
+        #expect(validation.rejected.count == 2)
+        let protectedRejection = try #require(validation.rejected.first { $0.section == .whitelist })
+        if case .protected(let detail) = protectedRejection.reason {
+            #expect(!detail.isEmpty)
+        } else {
+            Issue.record("com.apple.* entry should be rejected as protected")
+        }
+
+        // Birleştir (varsayılan): mevcut girişler kalır.
+        let merge = model.portableRulesImportPlan(for: validation, mode: .merge)
+        try model.applyPortableRulesImport(merge)
+        let other = (home.appendingPathComponent("Documents/Other").path as NSString).standardizingPath
+        #expect(settings.customWhitelistPaths == [keep.path, "/Volumes/Work/Shared", other])
+        #expect(purgeFile.load() == ["~/Projects", "~/Code"])
+
+        // Değiştir: dosyada olmayan girişler ayarlardan çıkarılır, yorum satırı korunur.
+        let replace = model.portableRulesImportPlan(for: validation, mode: .replace)
+        #expect(replace.whitelistToRemove == ["/Volumes/Work/Shared"])
+        #expect(replace.purgePathsToRemove == ["~/Projects"])
+        try model.applyPortableRulesImport(replace)
+        #expect(settings.customWhitelistPaths.count == 2)
+        #expect(Set(settings.customWhitelistPaths.map { ($0 as NSString).standardizingPath }) == [(keep.path as NSString).standardizingPath, other])
+        #expect(try String(contentsOf: purgeFile.url, encoding: .utf8) == "# my note\n~/Code\n")
+
+        // Hiçbir dosya taşınmaz veya silinmez; Tarihli Çöp turu oluşmaz.
+        #expect(fm.fileExists(atPath: note.path))
+        #expect(!fm.fileExists(atPath: home.appendingPathComponent(".Trash").path))
+        let files = try #require(fm.enumerator(atPath: home.path)).compactMap { $0 as? String }
+        #expect(Set(files) == [
+            "Documents", "Documents/Keep", "Documents/Keep/note.txt",
+            ".config", ".config/mole", ".config/mole/purge_paths",
+            "export.json", "import.json",
+        ])
+
+        // Hatalar kullanıcının dilinde bildirilir.
+        let broken = home.appendingPathComponent("broken.json")
+        try Data("not json".utf8).write(to: broken)
+        #expect(throws: PortableRulesError.unreadable) { try model.validatePortableRules(at: broken) }
+        #expect(model.portableRulesErrorMessage(PortableRulesError.unreadable) == settings.L(.rulesErrorUnreadable))
+    }
+}
