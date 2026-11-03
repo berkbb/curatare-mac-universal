@@ -343,6 +343,10 @@
 "sysCenterProfileSaveFailed" = "Profil kaydedilemedi: %@";
 "sysCenterProfileFileName" = "Curatare-Sistem-Profili";
 "statusCoresCount" = "%lld çekirdek";
+"sysCenterSmartStatus" = "S.M.A.R.T. durumu";
+"sysCenterSmartVerified" = "Doğrulandı";
+"sysCenterSmartFailing" = "Arızalanıyor — verilerinizi hemen yedekleyin";
+"sysCenterSmartNotSupported" = "Bu disk desteklemiyor";
 "statusSecurityOverviewTitle" = "Sistem Güvenlik Durumu";
 "statusSIPProtected" = "Sistem Bütünlüğü (SIP): Korumalı";
 "statusGatekeeperEnabled" = "Gatekeeper ve XProtect: Etkin";

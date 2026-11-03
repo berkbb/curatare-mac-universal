@@ -343,6 +343,10 @@
 "sysCenterProfileSaveFailed" = "Profilul nu a putut fi salvat: %@";
 "sysCenterProfileFileName" = "Curatare-Profil-Sistem";
 "statusCoresCount" = "%lld nuclee";
+"sysCenterSmartStatus" = "Stare S.M.A.R.T.";
+"sysCenterSmartVerified" = "Verificat";
+"sysCenterSmartFailing" = "Se defectează — faceți imediat o copie de rezervă a datelor";
+"sysCenterSmartNotSupported" = "Nu este acceptat de acest disc";
 "statusSecurityOverviewTitle" = "Stare Securitate Sistem";
 "statusSIPProtected" = "Integritate Sistem (SIP): Protejat";
 "statusGatekeeperEnabled" = "Gatekeeper și XProtect: Activat";

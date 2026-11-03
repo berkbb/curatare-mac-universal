@@ -343,6 +343,10 @@
 "sysCenterProfileSaveFailed" = "Could not save the profile: %@";
 "sysCenterProfileFileName" = "Curatare-System-Profile";
 "statusCoresCount" = "%lld cores";
+"sysCenterSmartStatus" = "S.M.A.R.T. status";
+"sysCenterSmartVerified" = "Verified";
+"sysCenterSmartFailing" = "Failing — back up your data now";
+"sysCenterSmartNotSupported" = "Not supported by this disk";
 "statusSecurityOverviewTitle" = "System Security Status";
 "statusSIPProtected" = "System Integrity (SIP): Protected";
 "statusGatekeeperEnabled" = "Gatekeeper & XProtect: Enabled";

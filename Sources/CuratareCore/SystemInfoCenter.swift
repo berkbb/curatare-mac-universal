@@ -5,6 +5,28 @@ import IOKit
 
 // MARK: - 1. Veri Yapıları (Sistem Merkezi Modelleri)
 
+/// Başlangıç diskinin S.M.A.R.T. durumu (`diskutil info disk0` → `SMART Status:`).
+public enum DiskSmartStatus: Sendable, Codable, Equatable {
+    case verified
+    case failing
+    case notSupported
+    /// `diskutil` çıktısında S.M.A.R.T. satırı yok ya da komut çalışmadı.
+    case unavailable
+    /// Bilinmeyen bir `diskutil` değeri; olduğu gibi gösterilir.
+    case other(String)
+
+    public init(diskutilValue: String) {
+        let value = diskutilValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch value.lowercased() {
+        case "": self = .unavailable
+        case "verified": self = .verified
+        case "failing": self = .failing
+        case "not supported": self = .notSupported
+        default: self = .other(value)
+        }
+    }
+}
+
 public struct SystemCenterHardware: Sendable, Codable, Equatable {
     public var modelName: String
     public var modelIdentifier: String
@@ -22,6 +44,7 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
     public var systemFirmwareVersion: String
     public var hardwareUUID: String
     public var physicalDisk: String
+    public var smartStatus: DiskSmartStatus
     public var serialNumber: String
 
     public init(
@@ -39,6 +62,7 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
         systemFirmwareVersion: String = "",
         hardwareUUID: String = "",
         physicalDisk: String = "",
+        smartStatus: DiskSmartStatus = .unavailable,
         serialNumber: String = ""
     ) {
         self.modelName = modelName
@@ -55,6 +79,7 @@ public struct SystemCenterHardware: Sendable, Codable, Equatable {
         self.systemFirmwareVersion = systemFirmwareVersion
         self.hardwareUUID = hardwareUUID
         self.physicalDisk = physicalDisk
+        self.smartStatus = smartStatus
         self.serialNumber = serialNumber
     }
 }
@@ -313,17 +338,10 @@ public enum SystemCenterCollector {
             }
         }
 
-        // Physical Disk
+        // Physical Disk & S.M.A.R.T. (aynı `diskutil info disk0` çıktısından; ek komut yok)
         if let stdout = await runCommand("/usr/sbin/diskutil", arguments: ["info", "disk0"]) {
-            for line in stdout.components(separatedBy: .newlines) {
-                if line.contains("Device / Media Name:") {
-                    let parts = line.components(separatedBy: ":")
-                    if parts.count >= 2 {
-                        hw.physicalDisk = parts[1].trimmingCharacters(in: .whitespacesAndNewlines)
-                        break
-                    }
-                }
-            }
+            hw.physicalDisk = diskInfoValue(for: "Device / Media Name", in: stdout)
+            hw.smartStatus = DiskSmartStatus(diskutilValue: diskInfoValue(for: "SMART Status", in: stdout))
         }
         if hw.modelName.isEmpty {
             hw.modelName = hw.modelIdentifier
@@ -497,6 +515,16 @@ public enum SystemCenterCollector {
         vols.refreshedAt = Date()
 
         return vols
+    }
+
+    /// `diskutil info` çıktısında `Anahtar:   değer` satırının değeri; satır yoksa boş.
+    public static func diskInfoValue(for key: String, in diskutilOutput: String) -> String {
+        for line in diskutilOutput.components(separatedBy: .newlines) {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.hasPrefix(key + ":") else { continue }
+            return String(trimmed.dropFirst(key.count + 1)).trimmingCharacters(in: .whitespaces)
+        }
+        return ""
     }
 
     /// Birimin kapasiteye oranı (0…100); kapasite okunamazsa 0 (uydurma oran yazılmaz).

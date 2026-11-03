@@ -321,6 +321,8 @@ public struct SystemStatusView: View {
             infoCard {
                 infoRow(label: model.L(.sysCenterPhysicalDisk), value: hw.physicalDisk)
                 Divider()
+                smartStatusRow(hw.smartStatus)
+                Divider()
                 infoRow(label: model.L(.sysCenterSerialNumber), value: hw.serialNumber, copyable: true)
             }
         }
@@ -704,6 +706,34 @@ public struct SystemStatusView: View {
         formatter.unitsStyle = .full
         formatter.allowedUnits = seconds >= 86_400 ? [.day, .hour, .minute] : [.hour, .minute]
         return formatter.string(from: seconds) ?? "—"
+    }
+
+    /// S.M.A.R.T. satırı: doğrulandı yeşil, arızalanıyor kırmızı (yedekleme uyarısıyla), desteklenmiyor ikincil.
+    private func smartStatusRow(_ status: DiskSmartStatus) -> some View {
+        let text: String
+        let systemImage: String
+        let tint: Color
+        switch status {
+        case .verified:
+            (text, systemImage, tint) = (model.L(.sysCenterSmartVerified), "checkmark.seal.fill", .green)
+        case .failing:
+            (text, systemImage, tint) = (model.L(.sysCenterSmartFailing), "exclamationmark.triangle.fill", .red)
+        case .notSupported:
+            (text, systemImage, tint) = (model.L(.sysCenterSmartNotSupported), "minus.circle", .secondary)
+        case .unavailable:
+            (text, systemImage, tint) = ("—", "questionmark.circle", .secondary)
+        case .other(let raw):
+            (text, systemImage, tint) = (raw, "exclamationmark.circle", .orange)
+        }
+        return HStack {
+            Text(model.L(.sysCenterSmartStatus))
+                .foregroundStyle(.secondary)
+            Spacer()
+            Label(text, systemImage: systemImage)
+                .font(.callout.weight(.medium))
+                .foregroundStyle(tint)
+        }
+        .padding(.vertical, 4)
     }
 
     private func infoRow(label: String, value: String, copyable: Bool = false) -> some View {

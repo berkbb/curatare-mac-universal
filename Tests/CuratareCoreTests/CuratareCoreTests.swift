@@ -1819,3 +1819,25 @@ struct SystemCenterFormattingTests {
         #expect(table.string(SystemCenterVolumeKind.data.titleKey, language: "ro") == "Volum de date APFS")
     }
 }
+
+@Suite("Disk Health & Screenshot Format Tests")
+struct DiskHealthAndScreenshotFormatTests {
+    @Test("S.M.A.R.T. status and media name are read from diskutil info output")
+    func smartStatusParsing() {
+        let output = """
+           Device Identifier:         disk0
+           Device / Media Name:       APPLE SSD AP1024Q
+           Protocol:                  Apple Fabric
+           SMART Status:              Verified
+        """
+        #expect(SystemCenterCollector.diskInfoValue(for: "Device / Media Name", in: output) == "APPLE SSD AP1024Q")
+        #expect(DiskSmartStatus(diskutilValue: SystemCenterCollector.diskInfoValue(for: "SMART Status", in: output)) == .verified)
+
+        #expect(DiskSmartStatus(diskutilValue: "Failing") == .failing)
+        #expect(DiskSmartStatus(diskutilValue: "Not Supported") == .notSupported)
+        #expect(DiskSmartStatus(diskutilValue: "  ") == .unavailable)
+        #expect(DiskSmartStatus(diskutilValue: "About to Fail") == .other("About to Fail"))
+        // Satır yoksa durum bilinmiyor; uydurma "Doğrulandı" gösterilmez.
+        #expect(DiskSmartStatus(diskutilValue: SystemCenterCollector.diskInfoValue(for: "SMART Status", in: "Protocol: USB")) == .unavailable)
+    }
+}
