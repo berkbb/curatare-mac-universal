@@ -22,6 +22,8 @@
   - `mole clean --dry-run`: writes candidate clean items and reports estimated reclaimable space.
   - `mole uninstall --list`: returns JSON array of installed apps.
   - `mole purge --dry-run` / `mole installer --dry-run` / `mole optimize --dry-run` / `mole slim --dry-run`.
+- User configuration read by Curatare: `~/.config/mole/whitelist` (merged into `ProtectionRules.userWhitelistPatterns`) and `~/.config/mole/purge_paths` (project folders `mole purge` scans; one path per line, `~` allowed, `#` comments; empty means Mole's defaults).
+- **Portable rules (`PortableRules.swift`):** Settings → Protection exports `AppSettings.customWhitelistPaths` and the purge paths as JSON (`format` = `com.babadogantech.curatare.rules`, `version`, `exportedAt`, `whitelist`, `purgePaths`; home paths as `~/`). Import decodes leniently (unknown keys ignored, missing keys defaulted, non-text entries counted), validates every entry against the built-in do-not-touch list with user whitelist and allow flags switched off, rejects unsafe purge roots, previews a `PortableRulesImportPlan` (`merge` default, `replace` only for sections present in the file), and writes only the whitelist setting and `purge_paths` (`MolePurgePathsFile` keeps comment lines and follows a symlink).
 
 ### Pillar B: `library_clean.md` Methodology (Steps 1–6 & Extended Scanners)
 1. **Rule 1 — Dated Trash Only:** Never run `rm -rf` on user targets. Move items to `~/.Trash/Curatare-YYYY-MM-DD-HHmmss/user/<relative-path>` (or `system/<relative-path>`), recording a manifest for one-click restoration.

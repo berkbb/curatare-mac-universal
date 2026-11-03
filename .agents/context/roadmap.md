@@ -26,4 +26,3 @@
 
 - [ ] **2a. Scheduled Cleanup Reminders (Notification-Only):** Optional monthly notification reminder when reclaimable caches exceed a user threshold.
 - [ ] **2b. APFS Clone / Hard-Link Dedup Inspector:** Identify large identical downloads in `~/Downloads` that are not APFS clones.
-- [ ] **2c. Multi-Mac Whitelist Sync Export/Import:** Portable JSON export/import for custom protection rules and purge paths.

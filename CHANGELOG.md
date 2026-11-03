@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Portable protection rules** in Settings → Protection:
+  - **Export** writes the custom whitelist and the Mole purge paths (`~/.config/mole/purge_paths`) to a versioned JSON file. Paths inside the home folder are written as `~/`, so they open correctly on a Mac with another user name.
+  - **Import** shows a preview of what will be added and removed before anything changes. **Merge** (the default) only adds new entries; **Replace** also drops entries that are not in the file, and only for lists the file contains.
+  - **Validation:** entries on the do-not-touch list (`com.apple.*`, credential folders, shared frameworks, active AI state, sibling apps) are rejected, and so are purge paths that are too broad or unsafe (the home folder, system folders, applications, Library, Trash, wildcards). Each rejected entry is listed with its reason in the user's language.
+  - **Compatibility:** unknown fields from newer versions are ignored and missing fields get defaults. Import changes only Curatare's whitelist and the purge paths file, keeps the file's comment lines and symbolic link, and never moves or deletes any other file.
 - **Disk health (S.M.A.R.T.) status** in System Center → Hardware, read from the same `diskutil info disk0` call already used for the disk name: green when verified, red with a back-up warning when failing.
 - **Screenshot format tweak** (PNG, JPG, HEIC, PDF) in System Tweaks → Screenshot; choosing PNG restores the macOS default, and **Reset All** returns it to PNG.
 - **Eight more system tweaks:** Finder path bar from the home folder; Dock icon and size locks and stack grid highlight; screenshot floating thumbnail and mouse pointer; always-expanded Save dialogs; App Nap off. All are user-level, reversible and restored by **Reset All**.
