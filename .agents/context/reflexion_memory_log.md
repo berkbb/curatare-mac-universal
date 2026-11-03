@@ -817,3 +817,25 @@
 - **Fix:** `SystemPreferenceStore.preferencesDomain(for:)` maps `NSGlobalDomain` to `kCFPreferencesAnyApplication` for every read, write and remove.
 - **Lesson:** A mock preference store proves the key and value, not that the OS reads them. For any new preference domain, verify once with a throwaway key: write through the real store, read back with `defaults read`, then remove the key and any file the probe created.
 - **Verification:** Probe key written through `kCFPreferencesAnyApplication` read back as `1` from `defaults read -g` and was removed; `swift test` 55/55 passed (new `globalDomainMapping`, `extendedTweaksRoundTrip`, `uninstallerKindLabels`); the three tables hold 715 keys in identical order.
+
+### Episode 53 — Sandboxed App Domains Resolve to Protected Containers
+
+- **Date:** 2026-11-03
+- **Task:** Check the Safari Develop menu tweak.
+- **Task:** Add the tweaks left out of the earlier pack, together with value-based (number, string, tri-state) tweak support.
+- **Finding:**
+  - `defaults read com.apple.Safari` reported "Domain not found" although `~/Library/Preferences/com.apple.Safari.plist` exists and has keys. cfprefsd resolves the domain of a sandboxed app to its container. The container is protected by App Data / Full Disk Access ("Operation not permitted").
+  - The tweak therefore read `IncludeDevelopMenu` as missing and showed the menu as off, even though Safari had it on.
+  - Safari's own setting also writes `ShowDevelopMenu` to the unprotected `com.apple.Safari.SandboxBroker` domain.
+  - An earlier assumption in this session, that writes went to the stray `~/Library/Preferences` file, was wrong.
+- **Fix:**
+  - The tweak reads and writes `com.apple.Safari.SandboxBroker` `ShowDevelopMenu`.
+  - `PreferenceStoreProtocol` gained typed `readValue` and `writeValue` (`PreferenceValue`: bool, int, double, string). A real `CFBoolean` is told apart from `CFNumber` before any `NSNumber` bridging.
+  - `SystemTweakItem.enabledValue` replaces the `autohide-delay` string special case.
+  - `SystemChoiceTweak` covers multi-value keys. A "macOS default" option removes the key, so no default has to be guessed.
+- **Lesson:** Before trusting a tweak in a sandboxed app's domain, compare `defaults read <domain>` with a by-path read of `~/Library/Preferences/<domain>.plist`. "Domain not found" next to a populated file means container redirection. Look for an unprotected sibling domain the app itself writes.
+- **Verification:**
+  - Read-only CFPreferences probe: `autohide` → bool, `tilesize` → double, `mod-count` → int (matches `defaults read-type`); SandboxBroker `ShowDevelopMenu` → true; `com.apple.Safari` `IncludeDevelopMenu` → nil.
+  - `swift test` 59/59 passed.
+  - The three tables hold 742 keys in identical order.
+  - Not checked live: the toggle's effect on a running Safari, and the new cards in the app window.

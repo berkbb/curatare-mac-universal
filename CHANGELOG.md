@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Disk health (S.M.A.R.T.) status** in System Center → Hardware, read from the same `diskutil info disk0` call already used for the disk name: green when verified, red with a back-up warning when failing.
 - **Screenshot format tweak** (PNG, JPG, HEIC, PDF) in System Tweaks → Screenshot; choosing PNG restores the macOS default, and **Reset All** returns it to PNG.
 - **Eight more system tweaks:** Finder path bar from the home folder; Dock icon and size locks and stack grid highlight; screenshot floating thumbnail and mouse pointer; always-expanded Save dialogs; App Nap off. All are user-level, reversible and restored by **Reset All**.
+- **Multi-value tweaks:**
+  - **Dock:** window minimize effect (Genie, Scale and the hidden Suck), number of recent apps.
+  - **Finder:** column auto-sizing, hiding Quick Look when Finder is in the background.
+  - **System:** number of recent documents in File menus, number of recent places in Save dialogs.
+  - A **macOS default** choice removes the key, so the tweak never assumes a default it cannot verify.
+- **New toggles:**
+  - **Screenshot file name prefix**, set from a text field.
+  - Dock show and hide without animation.
+  - Suggested and recent apps in the Dock.
+  - Quick Look without animation.
 
 ### Changed
 - **Inline loading for read-only scans:** Library audit, uninstaller, Homebrew, developer & AI, language ecosystem, browser cache and disk analyzer scans now show a thin in-tab progress strip instead of dimming the whole content area; the full-screen overlay is reserved for cleanup, uninstall and maintenance operations. A scan keeps running when you switch tabs, and a tab opened while another scan runs loads as soon as it finishes.
@@ -20,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - **Global tweaks had no effect:** Tweaks in the global domain (show all extensions, Ctrl+⌘ window drag, key repeat, window animations) were written to a separate `NSGlobalDomain.plist` instead of the real global preferences, so the switch moved but macOS ignored it. They now write to the global domain.
+- **Safari Develop menu tweak showed the wrong state:**
+  - **Cause:** The `com.apple.Safari` domain resolves to Safari's protected container. Without Full Disk Access it reads as empty, so the switch showed off even when the menu was on.
+  - **Fix:** The tweak now uses the `com.apple.Safari.SandboxBroker` `ShowDevelopMenu` key, which Safari's own setting writes.
+- **Dock auto-hide delay** is now written as a number (`-float 0`) instead of the string `"0"`. Values written by earlier versions are still read as on.
 - **Uninstaller leftover labels** (Caches, Preferences, Launch Agent and the rest) moved from code into each language's own `Localizable.strings`.
 - **Uninstaller app list ~300× faster:** The list no longer walks every bundle to compute sizes it never displays (32 s → 0.1 s for 92 apps); the selected app is still sized during inspection.
 - **System Status header:** The four-tab picker no longer overlaps the subtitle or hides behind the Refresh button; the safety banner wraps instead of truncating.
