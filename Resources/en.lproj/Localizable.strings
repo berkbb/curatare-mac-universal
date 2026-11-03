@@ -541,6 +541,11 @@
 "tweakScreenshotLocationChoose" = "Choose Folder…";
 "tweakScreenshotLocationReset" = "Use Default";
 "tweakSafariOpenButton" = "Open Safari";
+"trashStatItemCount" = "Item Count";
+"trashStatTotalSize" = "Total Size";
+"trashStatDate" = "Date";
+"homebrewCaveats" = "Caveats";
+"trashFilterItemsPlaceholder" = "Filter files…";
 
 "toastTweakApplied" = "Setting applied: %@";
 "toastTweaksReset" = "All system tweaks have been reset to defaults.";

@@ -273,6 +273,7 @@ public enum LKey: String, CaseIterable, Sendable {
     case tweakPowerButtonSleepTitle, tweakPowerButtonSleepDesc
     case tweakScreenshotLocationDefault, tweakScreenshotLocationChoose, tweakScreenshotLocationReset
     case tweakSafariOpenButton
+    case trashStatItemCount, trashStatTotalSize, trashStatDate, homebrewCaveats, trashFilterItemsPlaceholder
     case toastTweakApplied, toastTweaksReset
 
     // 7. Tarihli Çöp Turları ve Geçmiş (`~/.Trash/Curatare-...`)

@@ -216,7 +216,6 @@ public struct LanguageEcosystemsMasterDetailView: View {
                 HStack(spacing: 6) {
                     Text(item.toolName)
                         .font(.body.weight(.semibold))
-                        .lineLimit(1)
 
                     if item.isSystemProtected {
                         Text(model.L(.devAISystemRuntimeProtected))
@@ -245,7 +244,6 @@ public struct LanguageEcosystemsMasterDetailView: View {
                 Text(item.path)
                     .font(.caption.monospaced())
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
             }
 
             Spacer()
@@ -489,7 +487,6 @@ public struct LanguageEcosystemsMasterDetailView: View {
                 Text(item.url.path)
                     .font(.callout.monospaced())
                     .textSelection(.enabled)
-                    .lineLimit(2)
                 Spacer()
 
                 Button {
@@ -551,7 +548,6 @@ public struct LanguageEcosystemsMasterDetailView: View {
                                 .foregroundStyle(sub.isDirectory ? .blue : .secondary)
                             Text(sub.name)
                                 .font(.callout.monospaced())
-                                .lineLimit(1)
                             Spacer()
                             Text(DiskSpace.formatBytes(sub.sizeBytes))
                                 .font(.caption.monospacedDigit())

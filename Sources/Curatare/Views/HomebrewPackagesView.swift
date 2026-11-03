@@ -209,7 +209,6 @@ public struct HomebrewStudioView: View {
             Text(subtitle)
                 .font(.caption2.monospaced())
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -374,7 +373,6 @@ public struct HomebrewPackagesMasterDetailView: View {
                 HStack(spacing: 6) {
                     Text(pkg.name)
                         .font(.body.weight(.medium))
-                        .lineLimit(1)
                     Text(pkg.version)
                         .font(.caption2.monospaced())
                         .foregroundStyle(.secondary)
@@ -384,7 +382,6 @@ public struct HomebrewPackagesMasterDetailView: View {
                     Text(pkg.description)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
 
                 HStack(spacing: 4) {
@@ -696,7 +693,7 @@ public struct HomebrewPackagesMasterDetailView: View {
             HStack(spacing: 6) {
                 Image(systemName: "info.circle.fill")
                     .foregroundStyle(.orange)
-                Text("Caveats")
+                Text(model.L(.homebrewCaveats))
                     .font(.headline)
             }
             Text(caveats)

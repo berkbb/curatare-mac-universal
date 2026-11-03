@@ -541,6 +541,11 @@
 "tweakScreenshotLocationChoose" = "Alege folderul…";
 "tweakScreenshotLocationReset" = "Revino la implicit";
 "tweakSafariOpenButton" = "Deschide Safari";
+"trashStatItemCount" = "Număr de elemente";
+"trashStatTotalSize" = "Dimensiune totală";
+"trashStatDate" = "Dată";
+"homebrewCaveats" = "Avertismente";
+"trashFilterItemsPlaceholder" = "Filtrează fișierele…";
 
 "toastTweakApplied" = "Setare aplicată: %@";
 "toastTweaksReset" = "Toate ajustările de sistem au fost resetate la valorile implicite.";

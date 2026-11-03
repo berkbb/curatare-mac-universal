@@ -247,12 +247,9 @@ private struct ProtectionSettingsView: View {
                                                 Text(URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent)
                                                     .font(.callout.weight(.medium))
                                                     .foregroundStyle(isSelected ? Color.white : Color.primary)
-                                                    .lineLimit(1)
                                                 Text(path)
                                                     .font(.caption2.monospaced())
                                                     .foregroundStyle(isSelected ? Color.white.opacity(0.85) : Color.secondary)
-                                                    .lineLimit(1)
-                                                    .truncationMode(.middle)
                                             }
 
                                             Spacer()
@@ -519,8 +516,6 @@ private struct AdvancedSettingsView: View {
             Section(model.L(.settingsEngine)) {
                 LabeledContent(model.L(.settingsEnginePath)) {
                     Text(model.engineInfo?.url.path ?? model.L(.settingsEngineNotFound))
-                        .lineLimit(1)
-                        .truncationMode(.head)
                         .textSelection(.enabled)
                         .foregroundStyle(.secondary)
                 }
@@ -532,8 +527,6 @@ private struct AdvancedSettingsView: View {
                     LabeledContent("mole") {
                         HStack {
                             Text(model.settings.customEnginePath)
-                                .lineLimit(1)
-                                .truncationMode(.head)
                                 .foregroundStyle(.secondary)
                             Button(model.L(.buttonChoose)) {
                                 chooseEngine()
@@ -808,8 +801,6 @@ public struct LogView: View {
 
                 TableColumn(model.L(.logColumnMessage)) { entry in
                     Text(entry.message)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
                         .help(entry.text)
                 }
             }

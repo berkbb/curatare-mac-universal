@@ -541,6 +541,11 @@
 "tweakScreenshotLocationChoose" = "Klasör Seç…";
 "tweakScreenshotLocationReset" = "Varsayılana Dön";
 "tweakSafariOpenButton" = "Safari'yi Aç";
+"trashStatItemCount" = "Öğe Sayısı";
+"trashStatTotalSize" = "Toplam Boyut";
+"trashStatDate" = "Tarih";
+"homebrewCaveats" = "Uyarılar";
+"trashFilterItemsPlaceholder" = "Dosyalar içinde filtrele…";
 
 "toastTweakApplied" = "Ayar uygulandı: %@";
 "toastTweaksReset" = "Tüm sistem ayarları varsayılanlara sıfırlandı.";

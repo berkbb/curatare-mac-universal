@@ -180,7 +180,6 @@ public struct LibraryAuditView: View {
                 Text(details.desc)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
             }
 
             Spacer()
@@ -313,7 +312,6 @@ public struct LibraryAuditView: View {
                         Text("\(item.explanation) · \(item.url.path)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
                     }
 
                     Spacer()
@@ -368,7 +366,18 @@ public struct LibraryAuditView: View {
         }
     }
 
+    /// Kısa pencerede açıklama ve grup kartları kırpılmasın diye kaydırılır; yer varsa Spacer'lar ortalar.
     private var auditWelcomeCard: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                auditWelcomeContent
+                    .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private var auditWelcomeContent: some View {
         VStack(spacing: 18) {
             Spacer()
 
@@ -388,6 +397,7 @@ public struct LibraryAuditView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: 540)
             }
 
@@ -423,7 +433,7 @@ public struct LibraryAuditView: View {
 
             Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
         .padding(16)
     }
 
@@ -445,7 +455,6 @@ public struct LibraryAuditView: View {
                 Text(title)
                     .font(.caption.weight(.medium))
                     .multilineTextAlignment(.center)
-                    .lineLimit(2)
                     .foregroundStyle(.primary)
             }
             .frame(maxWidth: .infinity)
@@ -807,12 +816,10 @@ public struct UninstallerView: View {
                     Text(bundle.name)
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
-                        .lineLimit(1)
 
                     Text(abbreviatedPath(bundle.url.path))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
 
                 Spacer()
@@ -932,7 +939,6 @@ public struct UninstallerView: View {
                     Text("\(bundle.bundleID) · \(bundle.url.path)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
 
                 Spacer()
@@ -1121,22 +1127,25 @@ public struct UninstallerView: View {
                             HStack(spacing: 6) {
                                 Text(file.url.lastPathComponent)
                                     .font(.callout.weight(.medium))
+                                    .fixedSize(horizontal: false, vertical: true)
+                                // Tür etiketi ve sudo işareti kırpılmaz; yer darsa dosya adı alt satıra sarılır.
                                 Text(model.L(file.kind.titleKey))
                                     .font(.caption2.weight(.semibold))
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1.5)
                                     .background(.quaternary, in: Capsule())
                                     .foregroundStyle(.secondary)
+                                    .fixedSize()
                                 if file.requiresSudo {
                                     Label("sudo", systemImage: "lock.fill")
                                         .font(.caption2.weight(.bold))
                                         .foregroundStyle(.orange)
+                                        .fixedSize()
                                 }
                             }
                             Text(abbreviatedPath(file.url.path))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                                .lineLimit(1)
                         }
 
                         Spacer()
@@ -1199,63 +1208,84 @@ public struct UninstallerView: View {
                 .scrollContentBackground(.hidden)
             }
 
-            HStack {
+            // Düğmeler kendi genişliğini korur; tek satıra sığmazsa çubuk iki satıra bölünür, hiçbir etiket kırpılmaz.
+            VStack {
                 let selected = model.associatedFiles.filter { $0.isSelected && !$0.requiresSudo }
                 let total = selected.map(\.sizeBytes).saturatingSum()
                 let visibleSelectable = model.associatedFiles.filter { !$0.requiresSudo }
                 let allAssociatedSelected = !visibleSelectable.isEmpty && visibleSelectable.allSatisfy(\.isSelected)
 
-                Button(model.L(.buttonSelectAll)) {
-                    let target = !allAssociatedSelected
-                    for i in model.associatedFiles.indices where !model.associatedFiles[i].requiresSudo {
-                        model.associatedFiles[i].isSelected = target
+                let selectionButtons = HStack(spacing: 8) {
+                    Button(model.L(.buttonSelectAll)) {
+                        let target = !allAssociatedSelected
+                        for i in model.associatedFiles.indices where !model.associatedFiles[i].requiresSudo {
+                            model.associatedFiles[i].isSelected = target
+                        }
                     }
-                }
-                .buttonStyle(.glass)
-                .controlSize(.small)
-                .keyboardShortcut("a", modifiers: .command)
-                .disabled(model.isInspectingBundleLoading || visibleSelectable.isEmpty)
+                    .buttonStyle(.glass)
+                    .controlSize(.small)
+                    .keyboardShortcut("a", modifiers: .command)
+                    .disabled(model.isInspectingBundleLoading || visibleSelectable.isEmpty)
 
-                Button(model.L(.buttonDeselectAll)) {
-                    for i in model.associatedFiles.indices {
-                        model.associatedFiles[i].isSelected = false
+                    Button(model.L(.buttonDeselectAll)) {
+                        for i in model.associatedFiles.indices {
+                            model.associatedFiles[i].isSelected = false
+                        }
                     }
+                    .buttonStyle(.glass)
+                    .controlSize(.small)
+                    .disabled(model.isInspectingBundleLoading || selected.isEmpty)
                 }
-                .buttonStyle(.glass)
-                .controlSize(.small)
-                .disabled(model.isInspectingBundleLoading || selected.isEmpty)
-
-                Spacer()
-
-                if model.isInspectingBundleLoading {
-                    HStack(spacing: 6) {
-                        ProgressView()
-                            .controlSize(.small)
-                        Text(model.L(.uninstallerScanningAssociated))
-                            .font(.caption)
+                .fixedSize()
+                let summary = Group {
+                    if model.isInspectingBundleLoading {
+                        HStack(spacing: 6) {
+                            ProgressView()
+                                .controlSize(.small)
+                            Text(model.L(.uninstallerScanningAssociated))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        Text(model.LF(.auditSelectedSummary, Int64(selected.count), DiskSpace.formatBytes(total)))
+                            .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
-                } else {
-                    Text(model.LF(.auditSelectedSummary, Int64(selected.count), DiskSpace.formatBytes(total)))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
                 }
+                let actionButtons = HStack(spacing: 8) {
+                    Button(role: .cancel) {
+                        model.closeInspection()
+                    } label: {
+                        Label(model.L(.buttonCancel), systemImage: "xmark.circle")
+                    }
+                    .buttonStyle(.glass)
+                    .controlSize(.small)
 
-                Button(role: .cancel) {
-                    model.closeInspection()
-                } label: {
-                    Label(model.L(.buttonCancel), systemImage: "xmark.circle")
+                    Button {
+                        model.requestUninstallSelectedBundleToDatedTrash()
+                    } label: {
+                        Label(model.L(.buttonMoveToDatedTrash), systemImage: "trash")
+                    }
+                    .buttonStyle(.glassProminent)
+                    .disabled(bundle.isProtected || bundle.isSystemImmutable || selected.isEmpty || model.isBusy || model.isInspectingBundleLoading || (model.settings.protectRunningApps && bundle.isRunning))
                 }
-                .buttonStyle(.glass)
-                .controlSize(.small)
-
-                Button {
-                    model.requestUninstallSelectedBundleToDatedTrash()
-                } label: {
-                    Label(model.L(.buttonMoveToDatedTrash), systemImage: "trash")
+                .fixedSize()
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        selectionButtons
+                        Spacer()
+                        summary
+                        actionButtons
+                    }
+                    VStack(alignment: .trailing, spacing: 6) {
+                        HStack {
+                            selectionButtons
+                            Spacer()
+                            summary
+                        }
+                        actionButtons
+                    }
                 }
-                .buttonStyle(.glassProminent)
-                .disabled(bundle.isProtected || bundle.isSystemImmutable || selected.isEmpty || model.isBusy || model.isInspectingBundleLoading || (model.settings.protectRunningApps && bundle.isRunning))
             }
         }
     }
@@ -1319,7 +1349,6 @@ public struct DevAICleanupView: View {
                     Text(subTabSubtitle)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
                 }
                 Spacer(minLength: 16)
 
@@ -1679,7 +1708,6 @@ public struct BrowserCachesView: View {
                             Text("\(item.explanation) · \(item.url.path)")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
-                                .lineLimit(1)
                         }
                         Spacer()
                         Text(DiskSpace.formatBytes(item.sizeBytes))

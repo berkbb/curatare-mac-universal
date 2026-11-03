@@ -198,7 +198,6 @@ public struct SystemStatusView: View {
                     Text(model.L(.statusSubtitle))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                        .lineLimit(2)
                 }
                 Spacer(minLength: 16)
 
@@ -878,7 +877,6 @@ public struct SystemStatusView: View {
             }
             .font(.caption2)
             .foregroundStyle(.secondary)
-            .lineLimit(1)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1067,7 +1065,7 @@ public struct SystemStatusView: View {
                     }
                 }
                 .pickerStyle(.menu)
-                .frame(width: 220)
+                .fixedSize()
 
                 Spacer()
 
@@ -1228,8 +1226,6 @@ public struct SystemStatusView: View {
                             .font(.callout)
                     }
                 }
-                .lineLimit(1)
-                .truncationMode(.middle)
                 .textSelection(.enabled)
 
                 Text(model.L(.tweakScreenshotLocationDesc))
@@ -1407,7 +1403,6 @@ public struct SystemStatusView: View {
             Text(subtitle)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -1438,7 +1433,6 @@ public struct SystemStatusView: View {
 
                 Text(model.checksumResult?.fileName ?? model.L(.checksumDropPrompt))
                     .font(.headline)
-                    .lineLimit(1)
 
                 if let res = model.checksumResult {
                     Text(DiskSpace.formatBytes(res.fileSize))
@@ -1759,7 +1753,6 @@ public struct TrashHistoryView: View {
                 HStack(spacing: 6) {
                     Text(batch.title)
                         .font(.body.weight(.medium))
-                        .lineLimit(1)
                     if batch.isRestored {
                         Text(model.L(.trashBatchRestoredBadge))
                             .font(.caption2.weight(.semibold))
@@ -1917,8 +1910,6 @@ public struct TrashHistoryView: View {
                     Text(batch.batchDirectoryPath)
                         .font(.caption2.monospaced())
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
                 }
 
                 Spacer()
@@ -1950,12 +1941,14 @@ public struct TrashHistoryView: View {
                         .controlSize(.small)
                     }
                 }
+                // Düğmeler kendi genişliğini korur; uzun kimlik ve yol metni soldaki sütunda sarılır.
+                .fixedSize()
             }
 
             HStack(spacing: 12) {
-                badgeStat(label: "Öğe Sayısı", value: "\(batch.items.count)")
-                badgeStat(label: "Toplam Boyut", value: DiskSpace.formatBytes(batch.totalBytes))
-                badgeStat(label: "Tarih", value: batch.createdAt.formatted(date: .numeric, time: .shortened))
+                badgeStat(label: model.L(.trashStatItemCount), value: "\(batch.items.count)")
+                badgeStat(label: model.L(.trashStatTotalSize), value: DiskSpace.formatBytes(batch.totalBytes))
+                badgeStat(label: model.L(.trashStatDate), value: batch.createdAt.formatted(date: .numeric, time: .shortened))
             }
         }
         .padding(14)
@@ -1987,7 +1980,7 @@ public struct TrashHistoryView: View {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                         .foregroundStyle(.secondary)
                         .font(.caption)
-                    TextField("Dosyalar içinde filtrele…", text: $itemSearchText)
+                    TextField(model.L(.trashFilterItemsPlaceholder), text: $itemSearchText)
                         .textFieldStyle(.plain)
                         .font(.callout)
                     if !itemSearchText.isEmpty {
@@ -2043,12 +2036,9 @@ public struct TrashHistoryView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(item.trashedRelativePath)
                             .font(.callout.weight(.medium))
-                            .lineLimit(1)
                         Text(item.originalPath)
                             .font(.caption2.monospaced())
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.middle)
                     }
 
                     Spacer()

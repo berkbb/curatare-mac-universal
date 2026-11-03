@@ -339,6 +339,30 @@ public struct WelcomeView: View {
     }
 
     public var body: some View {
+        // Kısa pencerede içerik sıkıştırılıp metinler kırpılmasın diye kaydırılır; yer varsa Spacer'lar ortalar.
+        GeometryReader { proxy in
+            ScrollView {
+                welcomeContent
+                    .frame(minHeight: proxy.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+        .background {
+            LinearGradient(
+                colors: [Color.accentColor.opacity(0.10), .clear],
+                startPoint: .top,
+                endPoint: .center
+            )
+            .ignoresSafeArea()
+        }
+        .task {
+            if model.engineUpdateState == .idle && model.settings.checkUpdatesAtLaunch {
+                await model.checkMoleUpdate(interactive: false)
+            }
+        }
+    }
+
+    private var welcomeContent: some View {
         VStack(spacing: 28) {
             Spacer(minLength: 16)
 
@@ -350,11 +374,14 @@ public struct WelcomeView: View {
 
                 Text(model.L(.welcomeTitle))
                     .font(.system(size: 30, weight: .bold, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 Text(model.L(.welcomeSubtitle))
                     .font(.title3)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: 640)
             }
 
@@ -375,20 +402,7 @@ public struct WelcomeView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
         }
         .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background {
-            LinearGradient(
-                colors: [Color.accentColor.opacity(0.10), .clear],
-                startPoint: .top,
-                endPoint: .center
-            )
-            .ignoresSafeArea()
-        }
-        .task {
-            if model.engineUpdateState == .idle && model.settings.checkUpdatesAtLaunch {
-                await model.checkMoleUpdate(interactive: false)
-            }
-        }
+        .frame(maxWidth: .infinity)
     }
 
     private var moleFivePillarsGrid: some View {
@@ -452,6 +466,8 @@ public struct WelcomeView: View {
                     model.selectedSection = .systemStatus
                 }
             }
+            // Kartlar en uzun metne göre eşit boyda uzar; başlık ve açıklama kırpılmaz.
+            .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: 860)
     }
@@ -479,17 +495,17 @@ public struct WelcomeView: View {
                 Text(title)
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
-                    .lineLimit(1)
+                    .multilineTextAlignment(.leading)
 
                 Text(desc)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .lineLimit(2)
                     .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(9)
-            .frame(maxWidth: .infinity, minHeight: 82, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(minHeight: 82)
             .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
             .overlay {
                 RoundedRectangle(cornerRadius: 12)
@@ -597,6 +613,7 @@ private struct UpdateBanner: View {
 
                 Link(model.L(.appUpdateDownload), destination: release.htmlURL)
                     .buttonStyle(.glassProminent)
+                    .fixedSize()
             }
             .padding(14)
             .frame(maxWidth: 560)
@@ -628,12 +645,14 @@ private struct UpdateBanner: View {
                         Task { await model.installMoleUpdate(force: true) }
                     }
                     .buttonStyle(.glassProminent)
+                    .fixedSize()
 
                     Button(model.L(.updateLater)) {
                         model.updateBannerDismissed = true
                     }
                     .buttonStyle(.glass)
                     .controlSize(.small)
+                    .fixedSize()
                 }
                 .padding(14)
                 .frame(maxWidth: 560)

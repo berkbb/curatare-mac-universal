@@ -20,7 +20,8 @@ struct CuratareApp: App {
             ContentView(model: model)
                 .environment(\.locale, model.settings.locale)
                 .preferredColorScheme(model.settings.appearance.colorScheme)
-                .frame(minWidth: 960, minHeight: 620)
+                // Kaldırıcının liste + ayrıntı düzeni ve uzun tr/ro etiketleri 1180 pt altında sıkışıp taşar.
+                .frame(minWidth: 1180, minHeight: 700)
                 .onAppear {
                     appDelegate.model = model
                     NSApp.servicesProvider = FinderService(model: model)
@@ -28,7 +29,7 @@ struct CuratareApp: App {
                     model.presentPendingConsentIfIdle()
                 }
         }
-        .defaultSize(width: 1080, height: 700)
+        .defaultSize(width: 1280, height: 800)
         .commands {
             AppCommands(model: model, openWindow: openWindow)
         }
