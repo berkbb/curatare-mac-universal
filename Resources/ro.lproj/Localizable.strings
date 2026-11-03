@@ -478,8 +478,8 @@
 "tweakTextEditBlankDocumentDesc" = "Deschide direct un document gol la pornirea TextEdit în loc de panoul iCloud.";
 "tweakDockInstantAutohideTitle" = "Autohide instantaneu pentru Dock (fără întârziere)";
 "tweakDockInstantAutohideDesc" = "Elimină întârzierea la autohide, făcând Dock-ul să apară instantaneu la marginea ecranului.";
-"tweakSafariDevelopMenuTitle" = "Activează meniul Dezvoltator în Safari";
-"tweakSafariDevelopMenuDesc" = "Activează meniul Dezvoltator și inspectorul web în Safari.";
+"tweakSafariDevelopMenuTitle" = "Meniul Dezvoltator din Safari";
+"tweakSafariDevelopMenuDesc" = "Safari salvează consecvent această setare doar când este schimbată din Safari și o ignoră când este activată din exterior. Pentru a o activa sau dezactiva, folosește opțiunea pentru funcționalitățile destinate dezvoltatorilor web din Safari › Configurări › Avansat.";
 "tweakHideDesktopIconsTitle" = "Ascunde pictogramele de pe birou";
 "tweakHideDesktopIconsDesc" = "Ascunde toate fișierele, folderele și discurile de pe desktop pentru un ecran curat.";
 "tweakDisableWindowAnimationsTitle" = "Dezactivează animațiile de deschidere/închidere a ferestrelor";
@@ -540,6 +540,7 @@
 "tweakScreenshotLocationDefault" = "Birou (implicit macOS)";
 "tweakScreenshotLocationChoose" = "Alege folderul…";
 "tweakScreenshotLocationReset" = "Revino la implicit";
+"tweakSafariOpenButton" = "Deschide Safari";
 
 "toastTweakApplied" = "Setare aplicată: %@";
 "toastTweaksReset" = "Toate ajustările de sistem au fost resetate la valorile implicite.";

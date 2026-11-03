@@ -696,7 +696,7 @@ struct CuratareAppTests {
             startBackgroundWatchers: false
         )
 
-        #expect(model.systemTweaks.count == 33)
+        #expect(model.systemTweaks.count == 32)
         #expect(model.systemChoiceTweaks.count == 8)
         #expect(model.systemStatusSubTab == .systemCenter)
         #expect(model.systemCenterTab == .hardware)

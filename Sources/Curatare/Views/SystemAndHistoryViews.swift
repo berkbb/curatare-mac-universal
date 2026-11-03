@@ -1109,6 +1109,9 @@ public struct SystemStatusView: View {
                             screenshotNameCard
                             screenshotLocationCard
                         }
+                        if cat == .system {
+                            safariDevelopMenuCard
+                        }
                     }
                 }
                 .padding(.vertical, 2)
@@ -1216,12 +1219,18 @@ public struct SystemStatusView: View {
                     .disabled(model.screenshotLocation == nil)
                 }
 
-                Text(model.screenshotLocation.map { ($0 as NSString).abbreviatingWithTildeInPath }
-                     ?? model.L(.tweakScreenshotLocationDefault))
-                    .font(.callout.monospaced())
-                    .lineLimit(1)
-                    .truncationMode(.middle)
-                    .textSelection(.enabled)
+                Group {
+                    if let location = model.screenshotLocation {
+                        Text((location as NSString).abbreviatingWithTildeInPath)
+                            .font(.callout.monospaced())
+                    } else {
+                        Text(model.L(.tweakScreenshotLocationDefault))
+                            .font(.callout)
+                    }
+                }
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
 
                 Text(model.L(.tweakScreenshotLocationDesc))
                     .font(.caption)
@@ -1233,6 +1242,43 @@ public struct SystemStatusView: View {
         }
         .padding(14)
         .glassEffect(.regular, in: .rect(cornerRadius: 12))
+    }
+
+    /// Safari Geliştir menüsünün durumu; Safari dışarıdan açılan ayarı uygulamadığı için değiştirmek Safari'ye bırakılır.
+    /// Pencere yeniden etkinleşince durum tazelenir; kullanıcı Safari'de değiştirip döndüğünde kart güncel olur.
+    private var safariDevelopMenuCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "safari")
+                .font(.title3)
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 28, height: 28)
+                .padding(.top, 2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(model.L(.tweakSafariDevelopMenuTitle))
+                        .font(.body.weight(.medium))
+                    Spacer()
+                    Label(
+                        model.L(model.safariDevelopMenuShown ? .tweakOptionOn : .tweakOptionOff),
+                        systemImage: model.safariDevelopMenuShown ? "checkmark.circle.fill" : "circle"
+                    )
+                    .font(.callout)
+                    .foregroundStyle(model.safariDevelopMenuShown ? Color.green : Color.secondary)
+                    Button(model.L(.tweakSafariOpenButton), action: model.openSafari)
+                        .buttonStyle(.glass)
+                }
+
+                Text(model.L(.tweakSafariDevelopMenuDesc))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(14)
+        .glassEffect(.regular, in: .rect(cornerRadius: 12))
+        .onAppear { model.refreshSafariDevelopMenuState() }
+        .onChange(of: controlActiveState) { _, _ in model.refreshSafariDevelopMenuState() }
     }
 
     private func chooseScreenshotFolder() {

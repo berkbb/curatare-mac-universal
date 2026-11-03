@@ -426,6 +426,7 @@ public final class AppModel {
     public var screenshotFormat: ScreenshotFormat?
     public var screenshotNamePrefix: String = ""
     public var screenshotLocation: String?
+    public var safariDevelopMenuShown: Bool = false
     public let tweakManager: SystemTweakManager
     public var checksumResult: FileChecksumResult?
     public var checksumExpectedHash: String = ""
@@ -479,6 +480,7 @@ public final class AppModel {
         self.screenshotFormat = resolvedTweakManager.screenshotFormat()
         self.screenshotNamePrefix = resolvedTweakManager.screenshotNamePrefix()
         self.screenshotLocation = resolvedTweakManager.screenshotLocation()
+        self.safariDevelopMenuShown = resolvedTweakManager.safariDevelopMenuShown()
         self.currentAnalyzedURL = homeDirectoryURL
         self.trashBatches = resolvedTrash.listBatches()
         self.selectedSection = resolvedSettings.lastSelectedSection
@@ -1736,6 +1738,17 @@ public final class AppModel {
         screenshotFormat = tweakManager.screenshotFormat()
         screenshotNamePrefix = tweakManager.screenshotNamePrefix()
         screenshotLocation = tweakManager.screenshotLocation()
+        refreshSafariDevelopMenuState()
+    }
+
+    public func refreshSafariDevelopMenuState() {
+        safariDevelopMenuShown = tweakManager.safariDevelopMenuShown()
+    }
+
+    /// Geliştir menüsü Safari'nin kendi ayarından değiştirilir; burada yalnızca Safari açılır.
+    public func openSafari() {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: SafariDevelopMenu.bundleID) else { return }
+        NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
     }
 
     /// `nil` kayıt klasörünü macOS varsayılanına (Masaüstü) döndürür.
@@ -1795,6 +1808,7 @@ public final class AppModel {
         screenshotFormat = tweakManager.screenshotFormat()
         screenshotNamePrefix = tweakManager.screenshotNamePrefix()
         screenshotLocation = tweakManager.screenshotLocation()
+        safariDevelopMenuShown = tweakManager.safariDevelopMenuShown()
         showToast(L(.toastTweaksReset))
         log.info(.engine, "All system tweaks reset to defaults")
     }

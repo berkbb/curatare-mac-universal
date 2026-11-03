@@ -478,8 +478,8 @@
 "tweakTextEditBlankDocumentDesc" = "Opens an untitled blank document directly on TextEdit launch instead of the iCloud open panel.";
 "tweakDockInstantAutohideTitle" = "Instant Dock Autohide (Zero Delay)";
 "tweakDockInstantAutohideDesc" = "Eliminates the autohide hover delay so the Dock pops up instantly when moving to the screen edge.";
-"tweakSafariDevelopMenuTitle" = "Enable Safari Develop Menu";
-"tweakSafariDevelopMenuDesc" = "Enables the Develop menu and Web Inspector developer tools in Safari.";
+"tweakSafariDevelopMenuTitle" = "Safari Develop Menu";
+"tweakSafariDevelopMenuDesc" = "Safari only stores this setting consistently when it is changed in Safari itself and ignores it when turned on from outside. To turn it on or off, use “Show features for web developers” in Safari › Settings › Advanced.";
 "tweakHideDesktopIconsTitle" = "Hide Desktop Icons";
 "tweakHideDesktopIconsDesc" = "Hides all files, folders, and disk icons on the desktop for a clutter-free display.";
 "tweakDisableWindowAnimationsTitle" = "Disable Window Opening/Closing Animations";
@@ -540,6 +540,7 @@
 "tweakScreenshotLocationDefault" = "Desktop (macOS default)";
 "tweakScreenshotLocationChoose" = "Choose Folder…";
 "tweakScreenshotLocationReset" = "Use Default";
+"tweakSafariOpenButton" = "Open Safari";
 
 "toastTweakApplied" = "Setting applied: %@";
 "toastTweaksReset" = "All system tweaks have been reset to defaults.";

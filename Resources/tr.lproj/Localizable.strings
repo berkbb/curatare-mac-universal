@@ -478,8 +478,8 @@
 "tweakTextEditBlankDocumentDesc" = "TextEdit açıldığında iCloud dosya seçme penceresi yerine doğrudan boş yeni bir belge açar.";
 "tweakDockInstantAutohideTitle" = "Dock Açılma Gecikmesini Sıfırla (Anında Aç)";
 "tweakDockInstantAutohideDesc" = "Fare ekranın kenarına götürüldüğünde Dock'un beklemeden anında görünmesini sağlar.";
-"tweakSafariDevelopMenuTitle" = "Safari Geliştirici Menüsünü Etkinleştir";
-"tweakSafariDevelopMenuDesc" = "Safari menü çubuğunda Geliştirici (Develop) ve Web Denetçisi araçlarını açar.";
+"tweakSafariDevelopMenuTitle" = "Safari Geliştirme Menüsü";
+"tweakSafariDevelopMenuDesc" = "Safari bu ayarı yalnızca kendi ayarlarından değiştirilince tutarlı kaydeder; dışarıdan açılan ayarı uygulamaz. Açmak ya da kapatmak için Safari › Ayarlar › İleri Düzey bölümündeki “Web geliştiriciler için özellikleri göster” seçeneğini kullanın.";
 "tweakHideDesktopIconsTitle" = "Masaüstü Simgelerini Gizle";
 "tweakHideDesktopIconsDesc" = "Masaüstündeki tüm dosya, klasör ve disk simgelerini gizleyerek temiz bir masaüstü sunar.";
 "tweakDisableWindowAnimationsTitle" = "Pencere Açılış/Kapanış Animasyonlarını Kapat";
@@ -540,6 +540,7 @@
 "tweakScreenshotLocationDefault" = "Masaüstü (macOS varsayılanı)";
 "tweakScreenshotLocationChoose" = "Klasör Seç…";
 "tweakScreenshotLocationReset" = "Varsayılana Dön";
+"tweakSafariOpenButton" = "Safari'yi Aç";
 
 "toastTweakApplied" = "Ayar uygulandı: %@";
 "toastTweaksReset" = "Tüm sistem ayarları varsayılanlara sıfırlandı.";

@@ -225,6 +225,15 @@ public enum ScreenshotNamePrefix {
     }
 }
 
+/// Safari Geliştir menüsü yalnızca okunur: Safari'nin kendi ayarı korumasız `SandboxBroker` alanına ve korumalı
+/// kapsayıcıya birlikte yazar. Dışarıdan yalnızca bu anahtar değiştirilince Safari kapatmayı uygular ama açmayı
+/// uygulamaz (2026-11-03 canlı denemesi); bu yüzden Curatare durumu gösterir, değiştirmeyi Safari'ye bırakır.
+public enum SafariDevelopMenu {
+    public static let domain = "com.apple.Safari.SandboxBroker"
+    public static let key = "ShowDevelopMenu"
+    public static let bundleID = "com.apple.Safari"
+}
+
 /// Yeni ekran resimlerinin ve ekran kayıtlarının klasörü (`com.apple.screencapture` → `location`).
 /// Anahtar yoksa macOS Masaüstü'ne kaydeder.
 public enum ScreenshotLocation {
@@ -536,6 +545,11 @@ public struct SystemTweakManager: Sendable {
         if restartService {
             store.restartService(.systemUIServer)
         }
+    }
+
+    /// Safari'nin kendi ayarının son yazdığı Geliştir menüsü durumu; Curatare bu anahtara yazmaz.
+    public func safariDevelopMenuShown() -> Bool {
+        store.readBool(domain: SafariDevelopMenu.domain, key: SafariDevelopMenu.key, defaultValue: false)
     }
 
     /// Geçerli kayıt klasörü; anahtar yoksa `nil` (macOS varsayılanı Masaüstü).
@@ -939,19 +953,6 @@ public struct SystemTweakManager: Sendable {
             descriptionKey: .tweakTextEditBlankDocumentDesc,
             domain: "com.apple.TextEdit",
             key: "NSShowAppCentricOpenPanelInsteadOfUntitledFile",
-            defaultValue: false,
-            isEnabled: false,
-            restartService: .none
-        ),
-        SystemTweakItem(
-            id: "system.safariDevelopMenu",
-            category: .system,
-            titleKey: .tweakSafariDevelopMenuTitle,
-            descriptionKey: .tweakSafariDevelopMenuDesc,
-            // `com.apple.Safari` alanı korumalı Safari kapsayıcısına yönlenir ve Tam Disk Erişimi olmadan okunamaz;
-            // Safari Ayarları'ndaki "Web geliştiricileri için özellikleri göster" seçeneği bu anahtara yazar.
-            domain: "com.apple.Safari.SandboxBroker",
-            key: "ShowDevelopMenu",
             defaultValue: false,
             isEnabled: false,
             restartService: .none

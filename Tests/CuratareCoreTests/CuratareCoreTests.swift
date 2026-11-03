@@ -1616,7 +1616,7 @@ struct SystemTweaksTests {
         let manager = SystemTweakManager(store: mockStore)
         let tweaks = manager.loadAllTweaks()
 
-        #expect(tweaks.count == 33)
+        #expect(tweaks.count == 32)
         #expect(tweaks.contains(where: { $0.id == "finder.showHiddenFiles" }))
         #expect(tweaks.contains(where: { $0.id == "finder.showFullPathInTitle" }))
         #expect(tweaks.contains(where: { $0.id == "finder.hideDesktopIcons" }))
@@ -1627,7 +1627,7 @@ struct SystemTweaksTests {
         #expect(tweaks.contains(where: { $0.id == "system.windowDragOnGesture" }))
         #expect(tweaks.contains(where: { $0.id == "system.pressAndHoldRepeat" }))
         #expect(tweaks.contains(where: { $0.id == "system.textEditBlankDocument" }))
-        #expect(tweaks.contains(where: { $0.id == "system.safariDevelopMenu" }))
+        #expect(!tweaks.contains(where: { $0.id == "system.safariDevelopMenu" }))
         #expect(tweaks.contains(where: { $0.id == "system.disableWindowAnimations" }))
     }
 
@@ -1730,9 +1730,12 @@ struct SystemTweaksTests {
         #expect(!PreferenceValue.double(0).matches(.double(0.5)))
     }
 
-    @Test("SystemTweakManager: value toggles write numbers, read legacy strings and Safari uses its broker domain")
+    @Test("SystemTweakManager: value toggles write numbers, read legacy strings and Safari is read-only")
     func valueToggles() {
-        let mockStore = MockPreferenceStore(initialStrings: ["com.apple.dock:autohide-delay": "0"])
+        let mockStore = MockPreferenceStore(
+            initialBools: ["com.apple.Safari.SandboxBroker:ShowDevelopMenu": true],
+            initialStrings: ["com.apple.dock:autohide-delay": "0"]
+        )
         let manager = SystemTweakManager(store: mockStore)
 
         // Eski sürümün `-string 0` olarak yazdığı gecikme açık görünmeye devam eder.
@@ -1752,8 +1755,10 @@ struct SystemTweaksTests {
         _ = manager.applyTweak(id: "dock.showRecents", enabled: false)
         #expect(mockStore.readBool(domain: "com.apple.dock", key: "show-recents", defaultValue: true) == false)
 
-        let safari = manager.applyTweak(id: "system.safariDevelopMenu", enabled: true)
-        #expect(safari?.domain == "com.apple.Safari.SandboxBroker")
+        // Safari dışarıdan açılan ayarı uygulamaz: Curatare durumu yalnızca okur, Tümünü Sıfırla da ona dokunmaz.
+        #expect(manager.safariDevelopMenuShown() == true)
+        #expect(manager.applyTweak(id: "system.safariDevelopMenu", enabled: false) == nil)
+        _ = manager.restoreAllToDefaults()
         #expect(mockStore.readBool(domain: "com.apple.Safari.SandboxBroker", key: "ShowDevelopMenu", defaultValue: false) == true)
     }
 
