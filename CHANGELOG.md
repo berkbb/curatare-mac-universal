@@ -37,12 +37,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Full Disk Access banner:** When Full Disk Access is missing, a banner on every tab says what cannot work and opens the right System Settings pane. **Later** hides it for the session, and it updates by itself when you come back from System Settings. Accessibility access is not needed and is not asked for.
   - **Prompt-free check:** The access check no longer looks inside Mail's container, which could raise the "access data from other apps" prompt.
 
+- **Bundled Mole engine 1.68.0:** The embedded engine scripts and the universal `analyze-go` / `status-go` helpers were updated from 1.67.0, with the release archive checked by SHA-256.
+
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
 - **No more launch freeze from an Apple Music permission prompt:**
   - **Cause:** The Apple Music half-stars toggle read `com.apple.Music` at launch, so macOS asked for Media & Apple Music access and the app waited without showing a window.
   - **Removed:** That toggle and the TextEdit blank-document toggle. Both apps keep their preferences in protected containers, and these toggles could not reliably read or change them.
+- **Dock spacers without prompts:**
+  - **Remove Spacers** asked for permission to control System Events and ran `python3`, which on a Mac without the command line developer tools opened the tools installer.
+  - Adding and removing spacers now edits the Dock preferences directly, so no permission prompt or installer appears.
+  - Spacers are removed from both sides of the Dock and other tiles are kept.
+  - When there is nothing to remove, or the Dock preferences cannot be read, a message says so and nothing is written.
 - **Small localization fixes:**
   - An unknown Mole version now shows a translated "unknown" instead of a hardcoded version number.
   - Trailing "…" was removed from interface texts.

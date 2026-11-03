@@ -86,7 +86,7 @@ Curatare achieves 100% feature coverage across all 8 core functional areas of in
    - **Screenshot cards:** format (PNG, JPG, HEIC, PDF; `ScreenshotFormat`), sanitized file-name prefix (`ScreenshotNamePrefix`; no `/` or `:`, at most 60 characters) and save folder picker (`ScreenshotLocation`).
    - **Safari Develop menu** is a read-only status card (`SafariDevelopMenu`: `com.apple.Safari.SandboxBroker` `ShowDevelopMenu`) with an **Open Safari** button.
    - **Reset All** restores every toggle and choice plus the screenshot format, name and folder. It never touches Safari.
-   - **Dock spacers:** tiles can be added and removed.
+   - **Dock spacers:** tiles can be added and removed by editing `com.apple.dock` `persistent-apps` / `persistent-others` through CFPreferences; no System Events automation and no `python3`, so no permission prompt or developer tools installer appears.
    - **Preference store:** All reads and writes go through `PreferenceStoreProtocol`: `SystemPreferenceStore` on CFPreferences, `MockPreferenceStore` in tests.
      - `PreferenceValue` (bool, int, double, string) matches values that `defaults` wrote with another type. For example, a legacy `-string 0` still reads as `0`.
      - `NSGlobalDomain` must map to `kCFPreferencesAnyApplication`. Passed through as an app ID, it silently writes a stray `~/Library/Preferences/NSGlobalDomain.plist`.
