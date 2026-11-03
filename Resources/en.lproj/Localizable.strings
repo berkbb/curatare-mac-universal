@@ -280,7 +280,7 @@
 "optimizeQuickLook" = "Refresh QuickLook thumbnail cache (qlmanage -r cache)";
 "optimizeSavedState" = "Move saved window states older than 30 days to Dated Trash (Apple apps and open apps are skipped)";
 "optimizeDNS" = "Flush macOS DNS cache (gives an administrator command to run in Terminal)";
-"optimizeIconServices" = "Restart the icon service, Dock and Finder (the system icon cache is not deleted)";
+"optimizeIconServices" = "Restart Dock and Finder to redraw icons (the icon cache is not deleted)";
 "optimizeFontCache" = "Validate user font cache";
 "optimizeLaunchServices" = "Rebuild Open With (LaunchServices) database";
 "optimizeSpotlightIndex" = "Rebuild Spotlight search index (mdutil -E /)";

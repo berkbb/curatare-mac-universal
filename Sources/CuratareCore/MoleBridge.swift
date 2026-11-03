@@ -531,19 +531,28 @@ public struct MoleBridge: Sendable {
                     record(.failed, "Saved window states could not be moved to dated Trash")
                 }
             case .iconServicesRefresh:
-                // Sistem simge önbelleği root'a aittir ve `com.apple.*` dokunulmaz listesindedir; yalnızca kullanıcının
-                // simge servisi ile Dock ve Finder yeniden başlatılır, launchd onları hemen yeniden açar.
+                // Sistem simge önbelleği root'a aittir ve `com.apple.*` dokunulmaz listesindedir. Kullanıcının
+                // `iconservicesagent`'ı SIGTERM'i yok sayar (2026-11-03 canlı denemesi); bu yüzden yalnızca Dock ve Finder
+                // yeniden başlatılır, launchd onları hemen yeniden açar. Bir süreç ancak eski kopyası gerçekten kapandıysa
+                // yeniden başlatılmış sayılır; `killall`'ın çıkış kodu sinyalin iletildiğini gösterir, kapandığını değil.
                 let killall = URL(fileURLWithPath: "/usr/bin/killall")
                 var restarted: [String] = []
-                for process in ["iconservicesagent", "Dock", "Finder"] {
-                    if let res = try? await CommandRunner(executableURL: killall).run([process], timeout: 10), res.exitCode == 0 {
-                        restarted.append(process)
+                for (process, bundleID) in [("Dock", "com.apple.dock"), ("Finder", "com.apple.finder")] {
+                    let before = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).map(\.processIdentifier)
+                    guard !before.isEmpty else { continue }
+                    _ = try? await CommandRunner(executableURL: killall).run([process], timeout: 10)
+                    for _ in 0..<30 {
+                        if before.allSatisfy({ kill($0, 0) != 0 }) {
+                            restarted.append(process)
+                            break
+                        }
+                        try? await Task.sleep(for: .milliseconds(100))
                     }
                 }
                 if restarted.isEmpty {
-                    record(.failed, "Icon service, Dock and Finder could not be restarted")
+                    record(.failed, "Dock and Finder could not be restarted")
                 } else {
-                    record(.done, "Restarted \(restarted.joined(separator: ", ")) to redraw icons; the system icon cache was not touched")
+                    record(.done, "Restarted \(restarted.joined(separator: " and ")) to redraw icons; the icon cache was not touched")
                 }
             case .fontCacheRefresh:
                 let ats = URL(fileURLWithPath: "/usr/bin/atsutil")

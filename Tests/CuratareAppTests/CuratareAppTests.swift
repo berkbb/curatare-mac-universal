@@ -679,6 +679,14 @@ struct CuratareAppTests {
         #expect(alert?.message.contains(MoleOptimizationOutcome.dnsFlushCommand) == true)
         #expect(alert?.actionTitle == model.L(.optimizeCopyCommand))
         #expect(model.toastMessage == model.LF(.toastOptimizationDone, Int64(1)))
+
+        // Yalnızca yönetici komutu gereken çalıştırmada uyarının arkasında "0 görev tamamlandı" bildirimi çıkmaz.
+        model.toastMessage = nil
+        model.reportOptimizationOutcomes([
+            MoleOptimizationOutcome(kind: .dnsCacheFlush, status: .needsAdmin(command: MoleOptimizationOutcome.dnsFlushCommand), detail: "admin")
+        ])
+        #expect(model.toastMessage == nil)
+        #expect(model.alertItem != nil)
     }
 
     @Test("AppModel System Tweaks: apply tweak updates state and reset restores defaults")

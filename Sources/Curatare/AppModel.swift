@@ -1844,9 +1844,13 @@ public final class AppModel {
             }
         }
         let doneCount = outcomes.filter { $0.status == .done }.count
-        showToast(LF(.toastOptimizationDone, Int64(doneCount)))
+        let needsAttention = !failedTitles.isEmpty || !adminCommands.isEmpty
+        // Hiçbir görev tamamlanmadıysa uyarının arkasında "0 bakım görevi tamamlandı" gösterilmez.
+        if doneCount > 0 || !needsAttention {
+            showToast(LF(.toastOptimizationDone, Int64(doneCount)))
+        }
 
-        guard !failedTitles.isEmpty || !adminCommands.isEmpty else { return }
+        guard needsAttention else { return }
         var lines = failedTitles.map { LF(.optimizeFailedLine, $0) }
         guard !adminCommands.isEmpty else {
             alertItem = AlertItem(title: L(.optimizeAttentionTitle), message: lines.joined(separator: "\n\n"))

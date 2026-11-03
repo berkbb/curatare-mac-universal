@@ -280,7 +280,7 @@
 "optimizeQuickLook" = "Reîmprospătează cache-ul de miniaturi QuickLook (qlmanage -r cache)";
 "optimizeSavedState" = "Mută în Coșul Datat stările ferestrelor mai vechi de 30 de zile (fără aplicațiile Apple și cele deschise)";
 "optimizeDNS" = "Golește cache-ul DNS macOS (oferă o comandă de administrator pentru Terminal)";
-"optimizeIconServices" = "Repornește serviciul de pictograme, Dock și Finder (cache-ul de pictograme al sistemului nu este șters)";
+"optimizeIconServices" = "Repornește Dock și Finder pentru a redesena pictogramele (cache-ul de pictograme nu este șters)";
 "optimizeFontCache" = "Validează cache-ul de fonturi al utilizatorului";
 "optimizeLaunchServices" = "Reconstruiește baza de date Deschide cu (LaunchServices)";
 "optimizeSpotlightIndex" = "Reconstruiește indexul de căutare Spotlight (mdutil -E /)";
