@@ -1677,6 +1677,12 @@ struct SystemTweaksTests {
         #expect(mockStore.readBool(domain: "com.apple.dock", key: "static-only", defaultValue: true) == false)
     }
 
+    @Test("SystemPreferenceStore: NSGlobalDomain resolves to the global preferences domain")
+    func globalDomainMapping() {
+        #expect(SystemPreferenceStore.preferencesDomain(for: "NSGlobalDomain") == kCFPreferencesAnyApplication)
+        #expect(SystemPreferenceStore.preferencesDomain(for: "com.apple.dock") as String == "com.apple.dock")
+    }
+
     @Test("MoleOptimizationTask: includes extended maintenance tasks")
     func defaultOptimizationTasks() {
         let tasks = MoleOptimizationTask.defaultTasks

@@ -109,8 +109,14 @@ public protocol PreferenceStoreProtocol: Sendable {
 public struct SystemPreferenceStore: PreferenceStoreProtocol {
     public init() {}
 
+    /// `defaults` komutundaki `NSGlobalDomain` adını CFPreferences tanımaz; bu adla yazılan değer genel alana değil
+    /// ayrı bir `~/Library/Preferences/NSGlobalDomain.plist` dosyasına gider. Genel alan `kCFPreferencesAnyApplication`'dır.
+    public static func preferencesDomain(for domain: String) -> CFString {
+        domain == "NSGlobalDomain" ? kCFPreferencesAnyApplication : domain as CFString
+    }
+
     public func readBool(domain: String, key: String, defaultValue: Bool) -> Bool {
-        if let val = CFPreferencesCopyAppValue(key as CFString, domain as CFString) {
+        if let val = CFPreferencesCopyAppValue(key as CFString, Self.preferencesDomain(for: domain)) {
             if let b = val as? Bool { return b }
             if let num = val as? NSNumber { return num.boolValue }
             if let s = val as? String {
@@ -123,25 +129,28 @@ public struct SystemPreferenceStore: PreferenceStoreProtocol {
     }
 
     public func writeBool(domain: String, key: String, value: Bool) {
-        CFPreferencesSetAppValue(key as CFString, value ? kCFBooleanTrue : kCFBooleanFalse, domain as CFString)
-        CFPreferencesAppSynchronize(domain as CFString)
+        let cfDomain = Self.preferencesDomain(for: domain)
+        CFPreferencesSetAppValue(key as CFString, value ? kCFBooleanTrue : kCFBooleanFalse, cfDomain)
+        CFPreferencesAppSynchronize(cfDomain)
     }
 
     public func readString(domain: String, key: String, defaultValue: String) -> String {
-        if let val = CFPreferencesCopyAppValue(key as CFString, domain as CFString) as? String {
+        if let val = CFPreferencesCopyAppValue(key as CFString, Self.preferencesDomain(for: domain)) as? String {
             return val
         }
         return defaultValue
     }
 
     public func writeString(domain: String, key: String, value: String) {
-        CFPreferencesSetAppValue(key as CFString, value as CFString, domain as CFString)
-        CFPreferencesAppSynchronize(domain as CFString)
+        let cfDomain = Self.preferencesDomain(for: domain)
+        CFPreferencesSetAppValue(key as CFString, value as CFString, cfDomain)
+        CFPreferencesAppSynchronize(cfDomain)
     }
 
     public func removeValue(domain: String, key: String) {
-        CFPreferencesSetAppValue(key as CFString, nil, domain as CFString)
-        CFPreferencesAppSynchronize(domain as CFString)
+        let cfDomain = Self.preferencesDomain(for: domain)
+        CFPreferencesSetAppValue(key as CFString, nil, cfDomain)
+        CFPreferencesAppSynchronize(cfDomain)
     }
 
     public func restartService(_ service: SystemTweakItem.RestartService) {
