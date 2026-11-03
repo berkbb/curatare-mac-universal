@@ -3,7 +3,7 @@
 > **Memory Category:** TencentDB Code-Graph Memory Asset
 > **Scope:** Indexed modules, types, key methods, hub nodes, and impact map.
 > **Generated from:** `graphify-out/GRAPH_REPORT.md` and `graphify-out/graph.json` (graphifyy 0.9.101, local tree-sitter AST, `--code-only`, no LLM backend, network denied).
-> **Built at commit:** `2432dae` on 2026-11-03.
+> **Built at commit:** `2432dae` on 2026-11-03. Rebuilt at `06923ad` on the same day with identical results (2,437 nodes, 5,533 edges, 65 communities), since only localization strings changed in between.
 > **Regenerate:** `GRAPHIFY_NO_TIPS=1 GRAPHIFY_QUERY_LOG_DISABLE=1 GRAPHIFY_BACKEND=off graphify extract . --code-only`, then `GRAPHIFY_BACKEND=off graphify cluster-only . --no-label`, then rewrite this file from the new report. `graphify-out/` is git-ignored and never committed.
 
 ---
