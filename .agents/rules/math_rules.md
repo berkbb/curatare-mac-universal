@@ -5,10 +5,10 @@
 
 ---
 
-## 1. Saturating `Int64` Byte Arithmetic (`DiskSpace.saturatingAdd`)
+## 1. Saturating `Int64` Byte Arithmetic (`Int64.saturatingAdding`)
 
 - All file sizes, directory totals, reclaimable space summaries, and disk capacity values are stored as non-negative `Int64` byte counts.
-- Summing arbitrary file sizes across `~/Library` or `analyze-go` trees must use `DiskSpace.saturatingAdd(_:_:)` (`addingReportingOverflow`, clamping on overflow to `Int64.max` and clamping negative values to `0`) so malformed metadata can never trigger an integer overflow trap.
+- Summing arbitrary file sizes across `~/Library` or `analyze-go` trees must use `Int64.saturatingAdding(_:)` or `Sequence.saturatingSum()` (`DiskSpace.swift`; `addingReportingOverflow`, stopping at `Int64.max` / `Int64.min` on overflow) so malformed metadata can never trigger an integer overflow trap. Size walkers clamp each `st_size` with `max(0, …)` before adding, and `DiskSpace.formatBytes` clamps negative totals to `0`.
 
 ## 2. Human-Readable Size Parsing (`DiskSpace.parseHumanSize`)
 
