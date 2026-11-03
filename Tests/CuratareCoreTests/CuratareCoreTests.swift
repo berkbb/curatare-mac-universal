@@ -1860,6 +1860,21 @@ struct SystemCenterFormattingTests {
         #expect(table.string(SystemProfilerProfileKind.hardware.titleKey, language: "en") == "Hardware Overview")
         #expect(table.string(SystemCenterVolumeKind.data.titleKey, language: "ro") == "Volum de date APFS")
     }
+
+    @Test("Uninstaller leftover kinds map to distinct keys read from each language's own table")
+    func uninstallerKindLabels() {
+        let table = StringTable()
+        let keys = AssociatedFile.LocationKind.allCases.map(\.titleKey)
+        #expect(Set(keys).count == AssociatedFile.LocationKind.allCases.count)
+        for key in keys {
+            for code in AppLanguage.supportedCodes {
+                #expect(table.string(key, language: code) != key.rawValue, "Missing \(code) translation for \(key.rawValue)")
+            }
+        }
+        #expect(table.string(AssociatedFile.LocationKind.caches.titleKey, language: "tr") == "Önbellek")
+        #expect(table.string(AssociatedFile.LocationKind.caches.titleKey, language: "en") == "Caches")
+        #expect(table.string(AssociatedFile.LocationKind.caches.titleKey, language: "ro") == "Cache-uri")
+    }
 }
 
 @Suite("Disk Health & Screenshot Format Tests")

@@ -125,6 +125,13 @@ public enum LKey: String, CaseIterable, Sendable {
     case uninstallerDropHere, uninstallerSelectToView
     case uninstallerSectionUserApps, uninstallerSectionSystemApps
     case uninstallerButtonBack
+    case uninstallerKindAppBundle, uninstallerKindContainer, uninstallerKindGroupContainer, uninstallerKindApplicationSupport
+    case uninstallerKindCrashReporter, uninstallerKindCaches, uninstallerKindPreferences, uninstallerKindByHostPreferences
+    case uninstallerKindSyncedPreferences, uninstallerKindSavedState, uninstallerKindHTTPStorage, uninstallerKindCookies
+    case uninstallerKindWebKit, uninstallerKindLogs, uninstallerKindDiagnosticReports, uninstallerKindLaunchAgent
+    case uninstallerKindLaunchDaemon, uninstallerKindPrivilegedHelper, uninstallerKindApplicationScripts
+    case uninstallerKindAutosaveInformation, uninstallerKindRecentDocuments, uninstallerKindReceipts
+    case uninstallerKindSharedUserData, uninstallerKindPlugin, uninstallerKindSafariExtensions, uninstallerKindAccounts
 
     // 3. Geliştirme ve Yapay Zekâ Temizliği
     case devAITitle, devAISubtitle

@@ -1121,7 +1121,7 @@ public struct UninstallerView: View {
                             HStack(spacing: 6) {
                                 Text(file.url.lastPathComponent)
                                     .font(.callout.weight(.medium))
-                                Text(file.kind.label(language: model.settings.language))
+                                Text(model.L(file.kind.titleKey))
                                     .font(.caption2.weight(.semibold))
                                     .padding(.horizontal, 5)
                                     .padding(.vertical, 1.5)

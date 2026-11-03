@@ -49,95 +49,35 @@ public struct AssociatedFile: Sendable, Codable, Equatable, Identifiable {
         case safariExtensions
         case accounts
 
-        public func label(language: AppLanguage) -> String {
-            switch language.resolvedCode() {
-            case "en":
-                switch self {
-                case .appBundle: return "Application"
-                case .container: return "Container"
-                case .groupContainer: return "Group Container"
-                case .applicationSupport: return "Application Support"
-                case .crashReporter: return "Crash Reporter"
-                case .caches: return "Caches"
-                case .preferences: return "Preferences"
-                case .byHostPreferences: return "ByHost Preferences"
-                case .syncedPreferences: return "Synced Preferences"
-                case .savedState: return "Saved State"
-                case .httpStorage: return "HTTP Storage"
-                case .cookies: return "Cookies"
-                case .webKit: return "WebKit"
-                case .logs: return "Logs"
-                case .diagnosticReports: return "Diagnostic Reports"
-                case .launchAgent: return "Launch Agent"
-                case .launchDaemon: return "Launch Daemon"
-                case .privilegedHelper: return "Privileged Helper"
-                case .applicationScripts: return "Application Scripts"
-                case .autosaveInformation: return "Autosave Info"
-                case .recentDocuments: return "Recent Documents"
-                case .receipts: return "Install Receipt"
-                case .sharedUserData: return "Shared Data"
-                case .plugin: return "Plugin"
-                case .safariExtensions: return "Safari Extension"
-                case .accounts: return "Account Data"
-                }
-            case "ro":
-                switch self {
-                case .appBundle: return "Aplicație"
-                case .container: return "Container"
-                case .groupContainer: return "Container grup"
-                case .applicationSupport: return "Suport aplicație"
-                case .crashReporter: return "Raport blocare"
-                case .caches: return "Cache-uri"
-                case .preferences: return "Preferințe"
-                case .byHostPreferences: return "Preferințe ByHost"
-                case .syncedPreferences: return "Preferințe sincronizate"
-                case .savedState: return "Stare salvată"
-                case .httpStorage: return "Stocare HTTP"
-                case .cookies: return "Cookie-uri"
-                case .webKit: return "WebKit"
-                case .logs: return "Jurnale"
-                case .diagnosticReports: return "Rapoarte diagnostic"
-                case .launchAgent: return "Agent lansare"
-                case .launchDaemon: return "Serviciu daemon"
-                case .privilegedHelper: return "Ajutor privilegiat"
-                case .applicationScripts: return "Scripturi aplicație"
-                case .autosaveInformation: return "Salvare automată"
-                case .recentDocuments: return "Documente recente"
-                case .receipts: return "Chitanță instalare"
-                case .sharedUserData: return "Date partajate"
-                case .plugin: return "Modul"
-                case .safariExtensions: return "Extensie Safari"
-                case .accounts: return "Date cont"
-                }
-            default: // "tr"
-                switch self {
-                case .appBundle: return "Uygulama"
-                case .container: return "Konteyner"
-                case .groupContainer: return "Grup Konteyneri"
-                case .applicationSupport: return "Uygulama Desteği"
-                case .crashReporter: return "Çökme Raporu"
-                case .caches: return "Önbellek"
-                case .preferences: return "Tercihler"
-                case .byHostPreferences: return "Ana Bilgisayar Tercihleri"
-                case .syncedPreferences: return "Eşzamanlanan Tercihler"
-                case .savedState: return "Kayıtlı Durum"
-                case .httpStorage: return "Ağ Deposu"
-                case .cookies: return "Çerezler"
-                case .webKit: return "WebKit"
-                case .logs: return "Günlükler"
-                case .diagnosticReports: return "Tanılama Raporları"
-                case .launchAgent: return "Başlatma Ajanı"
-                case .launchDaemon: return "Arka Plan Hizmeti"
-                case .privilegedHelper: return "Yetkili Yardımcı"
-                case .applicationScripts: return "Uygulama Betikleri"
-                case .autosaveInformation: return "Otomatik Kayıt"
-                case .recentDocuments: return "Son Belgeler"
-                case .receipts: return "Kurulum Makbuzu"
-                case .sharedUserData: return "Paylaşılan Veri"
-                case .plugin: return "Eklenti"
-                case .safariExtensions: return "Safari Uzantısı"
-                case .accounts: return "Hesap Bilgileri"
-                }
+        /// Kalıntı türünün etiketi; metinler her dilin kendi `Localizable.strings` dosyasındadır.
+        public var titleKey: LKey {
+            switch self {
+            case .appBundle: .uninstallerKindAppBundle
+            case .container: .uninstallerKindContainer
+            case .groupContainer: .uninstallerKindGroupContainer
+            case .applicationSupport: .uninstallerKindApplicationSupport
+            case .crashReporter: .uninstallerKindCrashReporter
+            case .caches: .uninstallerKindCaches
+            case .preferences: .uninstallerKindPreferences
+            case .byHostPreferences: .uninstallerKindByHostPreferences
+            case .syncedPreferences: .uninstallerKindSyncedPreferences
+            case .savedState: .uninstallerKindSavedState
+            case .httpStorage: .uninstallerKindHTTPStorage
+            case .cookies: .uninstallerKindCookies
+            case .webKit: .uninstallerKindWebKit
+            case .logs: .uninstallerKindLogs
+            case .diagnosticReports: .uninstallerKindDiagnosticReports
+            case .launchAgent: .uninstallerKindLaunchAgent
+            case .launchDaemon: .uninstallerKindLaunchDaemon
+            case .privilegedHelper: .uninstallerKindPrivilegedHelper
+            case .applicationScripts: .uninstallerKindApplicationScripts
+            case .autosaveInformation: .uninstallerKindAutosaveInformation
+            case .recentDocuments: .uninstallerKindRecentDocuments
+            case .receipts: .uninstallerKindReceipts
+            case .sharedUserData: .uninstallerKindSharedUserData
+            case .plugin: .uninstallerKindPlugin
+            case .safariExtensions: .uninstallerKindSafariExtensions
+            case .accounts: .uninstallerKindAccounts
             }
         }
     }
