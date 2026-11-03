@@ -593,8 +593,8 @@
 "settingsLanguage" = "Application Language";
 "settingsLanguageNote" = "Language changes apply immediately across all windows.";
 "languageSystem" = "System Default";
-"restartMenuBarNotice" = "Restarting the app is recommended so macOS menu bar titles update completely.";
-"restartWarningTitle" = "Language Updated";
+"restartMenuBarNotice" = "Menubar and interface are dynamically translated. Restarting the application is recommended to also reload system-level dialogs.";
+"restartWarningTitle" = "Application Restart Recommended";
 "restartWarningMessage" = "The interface language has been updated immediately. Restart Curatare if you want the system menu bar to reflect the new language.";
 "settingsAppearance" = "Appearance";
 "appearanceSystem" = "System";

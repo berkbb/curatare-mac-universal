@@ -593,8 +593,8 @@
 "settingsLanguage" = "Limba Aplicației";
 "settingsLanguageNote" = "Schimbările de limbă se aplică imediat în toate ferestrele.";
 "languageSystem" = "Limba Sistemului";
-"restartMenuBarNotice" = "Se recomandă repornirea aplicației pentru actualizarea completă a barei de meniu macOS.";
-"restartWarningTitle" = "Limba a Fost Schimbată";
+"restartMenuBarNotice" = "Bara de meniu și interfața sunt traduse dinamic. Se recomandă repornirea aplicației pentru a reîncărca și dialogurile la nivel de sistem.";
+"restartWarningTitle" = "Este recomandată repornirea aplicației";
 "restartWarningMessage" = "Limba interfeței a fost actualizată imediat. Puteți reporni Curatare pentru a actualiza bara de meniu a sistemului.";
 "settingsAppearance" = "Aspect";
 "appearanceSystem" = "Sistem";
