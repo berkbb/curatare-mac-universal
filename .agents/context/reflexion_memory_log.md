@@ -877,3 +877,29 @@
 - **Fix:** `.graphifyrc` rewritten in the real format, `Vendor/` and `graphify-out/` excluded, `graphify-out/` added to `.gitignore`, and the wiki regenerated from `GRAPH_REPORT.md` (build run under `sandbox-exec` with outbound IP denied).
 - **Lesson:** A config file for a tool is checked against that tool's parser before it is committed. A memory asset written by hand drifts; regenerate it from the source and record the commit it was built at.
 - **Verification:** `graphify extract . --code-only` → 44 files, 2,437 nodes, 5,533 edges; `graphify cluster-only . --no-label` wrote `GRAPH_REPORT.md`; `swift test` passed (52 + 13 tests).
+
+### Episode 55 — Truncation Sweep and the `fixedSize` Trap, Again
+
+- **Date:** 2026-11-03
+- **Task:** The user asked that no interface text end in "…" or look cramped.
+- **How:**
+  - A scratchpad Accessibility driver toured every section, sub-tab, settings pane, About and Log in `tr`, `en` and `ro`.
+  - Vision OCR flagged every screenshot line containing an ellipsis.
+  - `caffeinate -d` keeps the display awake. A sleeping display makes `screencapture` return blank windows, which look like a rendering bug.
+- **Findings:**
+  - At the old 960×620 minimum, the uninstaller's master (320 pt) + detail (380 pt minimum) overflowed the window.
+  - Five pillar cards, header buttons and badges truncated.
+  - Three labels were hardcoded in Turkish or English.
+- **Mistake:**
+  - A bulk replace of every `.lineLimit(n)` with `.fixedSize(horizontal: false, vertical: true)` blanked System Status. This is exactly the Episode 50 regression: unbounded `fixedSize` text outside a scroll container makes `NavigationSplitView`'s near-zero-width probe report a huge height.
+  - Fixed by removing those modifiers. Text now wraps naturally; the shared safety banner keeps `lineLimit(3)`.
+- **Lesson:**
+  - Read the Reflexion log before a sweeping layout change.
+  - Use `fixedSize(vertical:)` only inside `ScrollView` or `List` content.
+  - Give buttons and badges `.fixedSize()`, and let the neighbouring text wrap.
+  - Use `ViewThatFits` for action bars.
+  - Raise the window minimum when a fixed-width split cannot fit.
+- **Verification:**
+  - Tours at 1180×700 leave only intentional ellipses: "Scanning…", "Choose Folder…", "Search…" placeholders, "Save…".
+  - `swift test` 65/65 passed.
+  - The three string tables hold 766 keys in identical order.

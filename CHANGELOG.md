@@ -35,6 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Faster scans:** The language ecosystem scan is about 5× faster (11.6–13.5 s → 2.3–2.7 s) and the Homebrew package list about 2× faster (4.0 s → 1.8 s) thanks to a parallel folder size walk (`DiskSpace.sizes(of:)`); the Homebrew status scan runs its `brew` calls concurrently (brew's own ~7 s `cleanup --dry-run` remains the floor). The Dev & AI tab no longer runs the Homebrew status scan it never displayed (about 10 s → 4 s on a warm cache), and the uninstaller's Homebrew shortcut no longer waits for a scan to appear.
 
 ### Fixed
+- **No truncated or cramped text in the interface:** Checked screen by screen in `tr`, `en` and `ro`.
+  - **Window size:** The main window's minimum size is now 1180×700 (default 1280×800). Below that, the uninstaller's list and detail panes overflowed the window.
+  - **Scrolling instead of squeezing:** The welcome screen and the Library audit intro scroll instead of squeezing their text.
+  - **Wrapping text:** Shortcut cards, descriptions, app names, file paths, log lines and trash batch titles wrap instead of ending in "…".
+  - **Buttons and badges keep their full width:** Tweak category picker, update banner, trash batch buttons and file kind badges. The uninstaller's action bar splits into two rows when it does not fit.
+  - **Localized labels:** The trash batch stats, the trash file filter and the Homebrew "Caveats" heading were hardcoded in Turkish or English; they now come from each language's `Localizable.strings`.
 - **Global tweaks had no effect:** Tweaks in the global domain (show all extensions, Ctrl+⌘ window drag, key repeat, window animations) were written to a separate `NSGlobalDomain.plist` instead of the real global preferences, so the switch moved but macOS ignored it. They now write to the global domain.
 - **Safari Develop menu is now a read-only status card:**
   - **Problem 1, wrong state:** The `com.apple.Safari` domain resolves to Safari's protected container. Without Full Disk Access it reads as empty, so the switch showed off even when the menu was on.
