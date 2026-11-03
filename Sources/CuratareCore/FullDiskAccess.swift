@@ -10,10 +10,16 @@ import Foundation
 public enum FullDiskAccess: Sendable {
     /// Uygulamanın Tam Disk Erişimi olup olmadığını sınar.
     public static var isGranted: Bool {
-        let home = NSHomeDirectory()
+        isGranted(homeDirectoryURL: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true))
+    }
+
+    /// Yalnızca Tam Disk Erişimiyle okunabilen yolları dener. Bu yollar izin yoksa sessizce reddedilir;
+    /// başka uygulamaların konteynerleri ("diğer uygulamaların verileri" sorusu) bilerek denenmez.
+    public static func isGranted(homeDirectoryURL: URL) -> Bool {
+        let home = homeDirectoryURL.path
         let testPaths = [
+            home + "/Library/Application Support/com.apple.TCC/TCC.db",
             home + "/Library/Safari/Bookmarks.plist",
-            home + "/Library/Containers/com.apple.mail/Data/Library/Mail",
             home + "/Library/Suggestions",
         ]
         let fm = FileManager.default

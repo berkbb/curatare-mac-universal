@@ -448,6 +448,14 @@ public final class AppModel {
     public var lastDroppedBundleID: String?
     public var alertItem: AlertItem?
     public var consentPending: Bool = false
+    /// Tam Disk Erişimi durumu; pencere görünüp denetlenene kadar `nil` (şerit yanıp sönmez).
+    public var fullDiskAccessGranted: Bool?
+    /// Kullanıcı izin şeridini "Sonra" ile kapattıysa bu oturumda yeniden gösterilmez.
+    public var permissionBannerDismissed: Bool = false
+
+    private let homeDirectoryURL: URL
+    /// Gerçek uygulamada açılış işleri pencere görünene kadar bekletilir (`windowDidAppear`).
+    private var launchWorkPending: Bool = false
 
     private var activeOperationID: UUID?
     private var activeCancelToken: ScanCancellationToken?
@@ -467,6 +475,7 @@ public final class AppModel {
         let resolvedSettings = settings ?? AppSettings()
         self.settings = resolvedSettings
         self.log = log
+        self.homeDirectoryURL = homeDirectoryURL
         let resolvedTrash = trashService ?? DatedTrashService(homeDirectoryURL: homeDirectoryURL)
         self.trashService = resolvedTrash
         self.libraryScanner = libraryScanner ?? LibraryScanner(homeDirectoryURL: homeDirectoryURL)
@@ -476,14 +485,7 @@ public final class AppModel {
         self.tweakManager = resolvedTweakManager
         self.systemStatusSubTab = resolvedSettings.lastSystemStatusSubTab
         self.systemCenterTab = resolvedSettings.lastSystemCenterTab
-        self.systemTweaks = resolvedTweakManager.loadAllTweaks()
-        self.systemChoiceTweaks = resolvedTweakManager.loadChoiceTweaks()
-        self.screenshotFormat = resolvedTweakManager.screenshotFormat()
-        self.screenshotNamePrefix = resolvedTweakManager.screenshotNamePrefix()
-        self.screenshotLocation = resolvedTweakManager.screenshotLocation()
-        self.safariDevelopMenuShown = resolvedTweakManager.safariDevelopMenuShown()
         self.currentAnalyzedURL = homeDirectoryURL
-        self.trashBatches = resolvedTrash.listBatches()
         self.selectedSection = resolvedSettings.lastSelectedSection
         self.uninstallerMode = resolvedSettings.uninstallerMode
         self.selectedUninstallerKind = resolvedSettings.selectedUninstallerKind
@@ -493,22 +495,55 @@ public final class AppModel {
         self.trashHistoryFilter = resolvedSettings.lastTrashHistoryFilter
         self.homebrewZapCasks = resolvedSettings.homebrewZapCasks
 
+        // Gerçek uygulamada init yalnızca kendi ayarlarını okur. Başka uygulamaların tercihleri, ~/.Trash ve motor
+        // pencere göründükten sonra okunur: macOS bir izin sorarsa ya da bir okuma takılırsa arayüz zaten ekrandadır.
         if startBackgroundWatchers {
+            launchWorkPending = true
+        } else {
+            loadLocalState()
+        }
+    }
+
+    /// İnce ayar tercihleri ve Tarihli Çöp turları.
+    private func loadLocalState() {
+        refreshSystemTweaks()
+        trashBatches = trashService.listBatches()
+    }
+
+    /// Ana pencere her göründüğünde çağrılır; açılış işleri yalnızca ilk seferde, ilk kare çizildikten sonra başlar.
+    public func windowDidAppear() {
+        guard launchWorkPending else {
+            refreshPermissionStatus()
+            presentPendingConsentIfIdle()
+            return
+        }
+        launchWorkPending = false
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(300))
+            loadLocalState()
+            refreshPermissionStatus()
             configureSmartDeleteWatcher()
-            Task {
-                await refreshEngine()
-                // Açılışta yalnızca hafif canlı ölçümler (alt başlıktaki sağlık puanı); Sistem Merkezi ve güvenlik
-                // durumu Sistem Durumu sekmesi ilk açıldığında yüklenir.
-                await refreshLiveMetrics()
-                if !resolvedSettings.updateConsentAsked {
-                    consentPending = true
-                    presentPendingConsentIfIdle()
-                } else if resolvedSettings.checkUpdatesAtLaunch {
-                    await checkMoleUpdate(interactive: false)
-                    await checkAppUpdate(interactive: false)
-                }
+            await refreshEngine()
+            // Açılışta yalnızca hafif canlı ölçümler (alt başlıktaki sağlık puanı); Sistem Merkezi ve güvenlik
+            // durumu Sistem Durumu sekmesi ilk açıldığında yüklenir.
+            await refreshLiveMetrics()
+            if !settings.updateConsentAsked {
+                consentPending = true
+                presentPendingConsentIfIdle()
+            } else if settings.checkUpdatesAtLaunch {
+                await checkMoleUpdate(interactive: false)
+                await checkAppUpdate(interactive: false)
             }
         }
+    }
+
+    /// Tam Disk Erişimini yeniden denetler; uygulama öne geldiğinde de çağrılır (Sistem Ayarları'ndan dönüş).
+    public func refreshPermissionStatus() {
+        fullDiskAccessGranted = FullDiskAccess.isGranted(homeDirectoryURL: homeDirectoryURL)
+    }
+
+    public var showsPermissionBanner: Bool {
+        fullDiskAccessGranted == false && !permissionBannerDismissed
     }
 
     public func L(_ key: LKey) -> String { settings.L(key) }

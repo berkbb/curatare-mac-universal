@@ -26,7 +26,7 @@ struct CuratareApp: App {
                     appDelegate.model = model
                     NSApp.servicesProvider = FinderService(model: model)
                     NSApp.appearance = model.settings.appearance.nsAppearance
-                    model.presentPendingConsentIfIdle()
+                    model.windowDidAppear()
                 }
         }
         .defaultSize(width: 1280, height: 800)
