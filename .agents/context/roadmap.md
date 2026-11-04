@@ -25,3 +25,5 @@
 ## 2. Future Milestones (Post-v1.0)
 
 _No open milestones. Add new items only after a codebase audit and a check against `user_rejected_spec.md`._
+
+**Direction (user decision, 04.11.2026):** Curatare already covers enough ground. Prefer deepening, simplifying and hardening existing features over adding new tabs or feature areas.

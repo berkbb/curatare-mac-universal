@@ -22,3 +22,6 @@
 
 ## 6. Cleanup Reminders and Unsolicited Notifications are Rejected
 - **Rule:** Never add scheduled cleanup reminders, nudges or other notifications that the user did not trigger, even optional, off by default or notification-only (rejected roadmap item 2a, 03.11.2026: "rahatsız etmeyelim", "let's not disturb the user"). Curatare speaks only while the user is using it: in-window banners, toasts and alerts that follow a user action or explain a missing permission are fine.
+
+## 7. Developer ID Signing and Notarization Proposals are Rejected
+- **Rule:** Curatare is ad-hoc signed by the user's choice (04.11.2026). Do not propose Apple Developer ID signing, notarization or a paid certificate, and do not flag ad-hoc signing or Gatekeeper rejection as a defect. App updates arrive through GitHub releases that the user publishes; do not re-propose a different update channel.
