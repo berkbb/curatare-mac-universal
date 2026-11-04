@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Code layout (no behavior change):** `AppModel` (2,356 lines) is split into per-feature extension files, and the two largest view files into one file per screen, with System Status and the uninstaller further split by sub-tab and panel. The largest app source file is now about 1,100 lines.
+
 ## [1.1.0] - 2026-11-04
 
 ### Added

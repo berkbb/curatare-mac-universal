@@ -101,14 +101,19 @@ Graphify leaves communities as `Community N` without an LLM backend; the names b
 | File | Types |
 | :--- | :--- |
 | `CuratareApp.swift` | `CuratareApp`, `AppDelegate`, `AppCommands`, `MenuBarQuickPanel`, `WindowID` |
-| `AppModel.swift` | `AppModel`, `StudioSection`, `DevAISubTab`, `LanguageEcosystemOriginTab`, `PendingTrashConfirmation`, `EngineUpdateUIState`, `AppUpdateUIState`, `AlertItem`, `AppIconCache` |
+| `AppModel.swift` | `AppModel` stored state, `init`, launch work (`windowDidAppear`), permissions, `L` / `LF`, shared helpers |
+| `AppModel+<Feature>.swift` | `extension AppModel` per feature: `Operations`, `SmartDelete`, `Updates`, `LibraryAudit`, `Uninstaller`, `DevAI`, `LanguageEcosystems`, `Homebrew`, `BrowserCaches`, `DiskAnalyzer`, `SystemStatus`, `TrashHistory`, `PortableRules` |
+| `AppModelTypes.swift` | `StudioSection`, `EngineUpdateUIState`, `AppUpdateUIState`, `PendingTrashConfirmation`, `DevAISubTab`, `DiskAnalyzerSubTab`, `LanguageEcosystemOriginTab`, `AlertItem` |
+| `AppIconCache.swift` | `AppIconCache` |
 | `AppSettings.swift` | `AppSettings`, `AppInfo`, `AppLinks`, `SystemStatusSubTab`, `SystemCenterTab`, `LicenseDocument`, `AppAppearance`, `KeyboardShortcutData`, `ShortcutAction` |
 | `FinderService.swift` | `FinderService` (`uninstallWithCuratare`) |
 | `Views/ContentView.swift` | `ContentView`, `WelcomeView`, `DropZone`, `EngineStatusView`, `UpdateBanner`, `ProgressOverlay`, `ToastView` |
-| `Views/StudioSectionsView.swift` | `LibraryAuditView`, `UninstallerView`, `DevAICleanupView`, `BrowserCachesView` |
+| `Views/LibraryAuditView.swift`, `Views/DevAICleanupView.swift`, `Views/BrowserCachesView.swift` | One studio view per file |
+| `Views/UninstallerView.swift` (+ `+Sidebar`, `+ListRow`, `+Detail`) | `UninstallerView`, split by panel |
 | `Views/HomebrewPackagesView.swift` | `HomebrewStudioView`, `HomebrewPackagesMasterDetailView`, `FlowLayout` |
 | `Views/LanguageEcosystemsView.swift` | `LanguageEcosystemsMasterDetailView` |
-| `Views/SystemAndHistoryViews.swift` | `DiskAnalyzerView`, `SystemStatusView`, `TrashHistoryView` |
+| `Views/DiskAnalyzerView.swift`, `Views/DuplicateDownloadsView.swift`, `Views/TrashHistoryView.swift` | One view per file |
+| `Views/SystemStatusView.swift` (+ `+SystemCenter`, `+Dashboard`, `+Tweaks`, `+Checksum`) | `SystemStatusView`, split by sub-tab |
 | `Views/SettingsLogAboutViews.swift` | `SettingsView` (`General`, `Protection`, `Shortcuts`, `Advanced`), `LogView`, `AboutView`, `LicenseViewerSheet` |
 
 ## 7. Tests & Scripts

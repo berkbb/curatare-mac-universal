@@ -903,3 +903,19 @@
   - Tours at 1180×700 leave only intentional ellipses: "Scanning…", "Choose Folder…", "Search…" placeholders, "Save…".
   - `swift test` 65/65 passed.
   - The three string tables hold 766 keys in identical order.
+
+### Episode 56 — Splitting `AppModel` and the Largest Views Without Changing Behavior
+- **Task:** `AppModel.swift` (2,356 lines), `SystemAndHistoryViews.swift` (2,176) and `StudioSectionsView.swift` (1,825) caused merge conflicts whenever two sessions touched features in parallel.
+- **Action:**
+  - A scratchpad script split the files by brace-counting member blocks.
+  - In `AppModel`, stored properties and `init` stayed in the class. `@Observable` needs stored state in the main declaration, and a class's designated `init` cannot move to an extension.
+  - Methods and computed properties moved to `extension AppModel` files chosen by their `// MARK:` section.
+  - Each studio view got its own file. `SystemStatusView` and `UninstallerView` members moved to extensions by their inner MARK sections.
+- **Pitfalls:**
+  - Members moved to another file lose access to `private` members. The fix relaxed only the members the compiler named, and for views only inside the split view's own files, because `headerBar` and similar names exist in several views.
+  - In zsh, an unquoted `$names` is not word-split. A `for n in $names` loop passed every name as one argument and changed nothing. Read names line by line with `while read`.
+- **Verification:**
+  - Code line counts matched before and after the split, apart from one closing brace per new extension.
+  - `swift build` had no warnings, and `swift test` passed 62 + 16, including the off-screen render of every view in three languages.
+  - A live tour checked System Center, the dashboard, tweaks, checksum, the uninstaller list and detail, and Trash History.
+
