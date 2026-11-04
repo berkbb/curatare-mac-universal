@@ -969,15 +969,6 @@
 "aboutCopyright" = "© 2026 Babadogan Tech and Edu. Toate drepturile rezervate.";
 "aboutRepository" = "Depozit GitHub";
 
-"aboutFamilyTitle" = "Familia de Aplicații Mac Babadogan";
-"aboutFamilySubtitle" = "Instrumente native de înaltă performanță dezvoltate pentru macOS de Babadogan Tech and Edu.";
-"aboutFamilyArhivarDesc" = "Manager de Arhive 7-Zip de Înaltă Securitate";
-"aboutFamilyCopiatorDesc" = "Manager Rapid de Clipboard și Copiere";
-"aboutFamilyDescarcatorDesc" = "Descărcător Securizat și Studio Media";
-"aboutFamilyCuratareDesc" = "Curățare Sistem, Dezinstalator și Mentenanță";
-"aboutFamilyOpenApp" = "Deschide";
-"aboutFamilyInstalled" = "Instalat";
-"aboutFamilyCurrentApp" = "Această Aplicație";
 
 "welcomePillarsHeader" = "Capabilități de Bază Mole și Mentenanță Sistem";
 "welcomePillarCleanTitle" = "1. Curăță (Clean)";

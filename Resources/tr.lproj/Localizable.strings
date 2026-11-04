@@ -969,15 +969,6 @@
 "aboutCopyright" = "© 2026 Babadogan Tech and Edu. Tüm hakları saklıdır.";
 "aboutRepository" = "GitHub Deposu";
 
-"aboutFamilyTitle" = "Babadogan Mac Araçları Ailesi";
-"aboutFamilySubtitle" = "Babadogan Tech and Edu tarafından macOS için geliştirilen yüksek performanslı araçlar.";
-"aboutFamilyArhivarDesc" = "7-Zip & Yüksek Güvenlikli Arşiv Yöneticisi";
-"aboutFamilyCopiatorDesc" = "Hızlı Pano ve Kopyalama Yöneticisi";
-"aboutFamilyDescarcatorDesc" = "Güvenli İndirme ve Medya Yöneticisi";
-"aboutFamilyCuratareDesc" = "Sistem Temizlik, Kaldırıcı & Bakım Stüdyosu";
-"aboutFamilyOpenApp" = "Aç";
-"aboutFamilyInstalled" = "Kurulu";
-"aboutFamilyCurrentApp" = "Bu Uygulama";
 
 "welcomePillarsHeader" = "Mole Temel Yetenekleri ve Sistem Bakımı";
 "welcomePillarCleanTitle" = "1. Temizle (Clean)";

@@ -102,7 +102,7 @@ Graphify leaves communities as `Community N` without an LLM backend; the names b
 | :--- | :--- |
 | `CuratareApp.swift` | `CuratareApp`, `AppDelegate`, `AppCommands`, `MenuBarQuickPanel`, `WindowID` |
 | `AppModel.swift` | `AppModel`, `StudioSection`, `DevAISubTab`, `LanguageEcosystemOriginTab`, `PendingTrashConfirmation`, `EngineUpdateUIState`, `AppUpdateUIState`, `AlertItem`, `AppIconCache` |
-| `AppSettings.swift` | `AppSettings`, `AppInfo`, `AppLinks`, `FamilyApps`, `SystemStatusSubTab`, `SystemCenterTab`, `LicenseDocument`, `AppAppearance`, `KeyboardShortcutData`, `ShortcutAction` |
+| `AppSettings.swift` | `AppSettings`, `AppInfo`, `AppLinks`, `SystemStatusSubTab`, `SystemCenterTab`, `LicenseDocument`, `AppAppearance`, `KeyboardShortcutData`, `ShortcutAction` |
 | `FinderService.swift` | `FinderService` (`uninstallWithCuratare`) |
 | `Views/ContentView.swift` | `ContentView`, `WelcomeView`, `DropZone`, `EngineStatusView`, `UpdateBanner`, `ProgressOverlay`, `ToastView` |
 | `Views/StudioSectionsView.swift` | `LibraryAuditView`, `UninstallerView`, `DevAICleanupView`, `BrowserCachesView` |

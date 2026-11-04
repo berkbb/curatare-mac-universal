@@ -969,15 +969,6 @@
 "aboutCopyright" = "© 2026 Babadogan Tech and Edu. All rights reserved.";
 "aboutRepository" = "GitHub Repository";
 
-"aboutFamilyTitle" = "Babadogan Mac Apps Family";
-"aboutFamilySubtitle" = "High-performance native utilities developed for macOS by Babadogan Tech and Edu.";
-"aboutFamilyArhivarDesc" = "7-Zip & High-Assurance Archive Manager";
-"aboutFamilyCopiatorDesc" = "Fast Clipboard & Copy Manager";
-"aboutFamilyDescarcatorDesc" = "Secure Downloader & Media Studio";
-"aboutFamilyCuratareDesc" = "System Cleaner, Uninstaller & Maintenance Studio";
-"aboutFamilyOpenApp" = "Open";
-"aboutFamilyInstalled" = "Installed";
-"aboutFamilyCurrentApp" = "This App";
 
 "welcomePillarsHeader" = "Mole Core Capabilities & System Maintenance";
 "welcomePillarCleanTitle" = "1. Clean";

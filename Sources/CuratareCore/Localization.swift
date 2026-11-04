@@ -385,9 +385,6 @@ public enum LKey: String, CaseIterable, Sendable {
     case aboutLicense, aboutAppLicense, aboutNotices, aboutCopyright, aboutRepository
 
     // Babadogan Mac Araçları Ailesi (AboutView)
-    case aboutFamilyTitle, aboutFamilySubtitle
-    case aboutFamilyArhivarDesc, aboutFamilyCopiatorDesc, aboutFamilyDescarcatorDesc, aboutFamilyCuratareDesc
-    case aboutFamilyOpenApp, aboutFamilyInstalled, aboutFamilyCurrentApp
 
     // Mole 5 Temel Sütunu (WelcomeView)
     case welcomePillarsHeader
