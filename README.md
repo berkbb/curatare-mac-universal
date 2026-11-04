@@ -2,8 +2,6 @@
 
 Curatare (Romanian *Curățare* = Cleaning) is a native, high-assurance macOS system cleaner, library orphan auditor, application and plugin uninstaller, developer & AI cache cleaner, interactive disk usage analyzer, and system maintenance studio. Designed for macOS 26 (Tahoe) and later, it is written in **Swift 6.2** with **SwiftUI (Liquid Glass)** as a universal binary (`arm64` + `x86_64`).
 
-Curatare shares its architectural foundation, safety standards, and native design language with its sibling apps: **Arhivar**, **Copiator**, and **Descarcator**.
-
 ---
 
 ## Three Core Pillars
@@ -98,6 +96,5 @@ swift test
 Curatare is licensed under the **GNU General Public License v3.0 or later** ([GPL-3.0-or-later](LICENSE)).
 
 - **Mole:** © Tw93 and contributors, licensed under the GNU General Public License v3.0 ([github.com/tw93/mole](https://github.com/tw93/mole)).
-- **Arhivar & Copiator (derived components):** © Babadogan Tech and Edu, licensed under the MIT and GPL-3.0-or-later licenses.
 
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for full license texts and attributions.

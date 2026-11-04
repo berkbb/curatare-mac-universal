@@ -11,7 +11,7 @@
 
 ## 1. Mission & Identity
 
-**Curatare** (Romanian *Curățare* = Cleaning) is a native, high-assurance macOS system cleaner, library orphan auditor, application/plugin uninstaller, developer & AI cache cleaner, disk usage analyzer, and system maintenance studio. It unites three pillars in a single macOS 26 Liquid Glass application aligned with its sibling apps (**Arhivar**, **Copiator**, **Descarcator**):
+**Curatare** (Romanian *Curățare* = Cleaning) is a native, high-assurance macOS system cleaner, library orphan auditor, application/plugin uninstaller, developer & AI cache cleaner, disk usage analyzer, and system maintenance studio. It unites three pillars in a single macOS 26 Liquid Glass application:
 
 1. **Mole Engine (`tw93/mole`)** — Fast deep cleaning (`mole clean`), project artifact purging (`mole purge`), installer discovery (`mole installer`), universal binary slimming (`mole slim`), system health & maintenance (`mole optimize` + `status-go --json`), and interactive disk usage analysis (`analyze-go --json`), with one-click GitHub updates (`Scripts/update-mole.sh` / `Mole-Guncelle.command` / Settings → Update Mole).
 2. **Library & Ecosystem Audit (`library_clean.md` Methodology)** — Five-group (`A`–`E`) `~/Library` and `/Library` orphan detection (including iOS/iPadOS `Wrapper/*.app` bundle resolution, dead `containermanagerd` project containers, bare-named `swift run` traces, dead `LaunchAgents`/`LaunchDaemons`, orphaned `pkgutil` receipts, safe copyable `sudo` one-liner generation ending with `echo TAMAM`, GitHub ignored build outputs with tracked-file protection, AI tool footprint auditing, browser site data / heavy app cache scanning, and Time Machine local snapshot thinning).

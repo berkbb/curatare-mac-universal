@@ -94,8 +94,7 @@ Curatare, geleneksel bakım ve kaldırma araçlarının sunduğu taban yetenekle
 2. **Kapsamlı Geliştirici ve AI Ekosistemleri Temizliği:** 12 programlama dili ekosistemi (pip, cargo, npm, gradle, maven, swiftpm, pub, ccache, go-build vb.), Homebrew indirme önbelleği ve yerel yapay zeka modelleri (Ollama, LM Studio, Hugging Face).
 3. **5-Grup Kütüphane Yetim Mimarisi (`library_clean.md`):** Yalnızca yüzeysel önbellekleri değil; derleme ve test artıklarını (Grup A), ölü kapsayıcı meta verilerini (Grup B), bare ikili çalıştırma izlerini (Grup C), yetim uygulama verilerini (Grup D) ve yetim sistem servislerini (Grup E) tespit eder.
 4. **Kesintisiz Geri Alınabilirlik:** Yapılan her temizlik işlemi `~/.Trash` içinde zaman damgalı bir klasörde `manifest.json` dosyasıyla saklanır. Kullanıcı "Tarihli Çöp Turları" ekranından tek tıkla herhangi bir temizliği orijinal konumuna geri yükleyebilir.
-5. **Babadogan Mac Araçları Aile Entegrasyonu:** Arhivar, Copiator, Descarcator ve Curatare arasında karşılıklı koruma ve entegrasyon.
-6. **Üç Dilde Kusursuz Yerelleştirme:** Türkçe (varsayılan), İngilizce ve Rumence dillerinde tam 1:1 katalog uyumu.
+5. **Üç Dilde Kusursuz Yerelleştirme:** Türkçe (varsayılan), İngilizce ve Rumence dillerinde tam 1:1 katalog uyumu.
 
 ---
 
