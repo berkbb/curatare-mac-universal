@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-04
+
 ### Added
 - **Portable protection rules** in Settings → Protection:
   - **Export** writes the custom whitelist and the Mole purge paths (`~/.config/mole/purge_paths`) to a versioned JSON file. Paths inside the home folder are written as `~/`, so they open correctly on a Mac with another user name.
