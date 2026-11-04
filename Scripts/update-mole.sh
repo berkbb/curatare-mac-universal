@@ -183,7 +183,8 @@ prepare_payload_from_local_seed() {
   ensure_universal_helper "$PAYLOAD/bin/analyze-go" "analyze-go"
   ensure_universal_helper "$PAYLOAD/bin/status-go" "status-go"
   TAG="$(engine_version "$PAYLOAD/mole")"
-  [ -n "$TAG" ] || TAG="1.67.0"
+  # Sürüm okunamazsa uydurulmaz: yanlış etiketle kurulan motor güncelleme denetimini yanıltır.
+  [ -n "$TAG" ] || fail "Yerel Mole kurulumunun sürümü okunamadı ($seed_dir/mole --version)"
   RAW_TAG="V$TAG"
   SOURCE_DESC="local-seed:$seed_dir"
   ACTUAL_SHA="local-seed"
