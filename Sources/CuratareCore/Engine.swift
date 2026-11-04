@@ -115,7 +115,9 @@ public enum EngineLocator {
     public static func inspect(customPath: String? = nil, bundle: Bundle = .main) async -> EngineInfo? {
         guard let found = locate(customPath: customPath, bundle: bundle) else { return nil }
         let runner = CommandRunner(executableURL: found.url)
-        let output = (try? await runner.run(["--version"], timeout: 5).stdout) ?? ""
+        // `mole --version` boşta ~0,5 sn sürer; işlemci yükü altında (oturum açılışı, paralel testler) 7 sn'yi
+        // geçebilir. Süre kısa olursa motor bulunduğu halde sürümü "bilinmiyor" görünür.
+        let output = (try? await runner.run(["--version"], timeout: 20).stdout) ?? ""
         let version = parseVersion(from: output) ?? "unknown"
         return EngineInfo(url: found.url, version: version, source: found.source)
     }
