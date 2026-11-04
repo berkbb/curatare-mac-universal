@@ -2,6 +2,8 @@
 
 Curatare (Romanian *Curățare* = Cleaning) is a native, high-assurance macOS system cleaner, library orphan auditor, application and plugin uninstaller, developer & AI cache cleaner, interactive disk usage analyzer, and system maintenance studio. Designed for macOS 26 (Tahoe) and later, it is written in **Swift 6.2** with **SwiftUI (Liquid Glass)** as a universal binary (`arm64` + `x86_64`).
 
+![Curatare home screen in English](docs/screenshots/home-en.png)
+
 ---
 
 ## Three Core Pillars
