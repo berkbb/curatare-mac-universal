@@ -7,15 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-- **A newer bundled Mole is no longer hidden by an older in-app update:** a Mole copy updated from Settings (`~/Library/Application Support/Curatare/engine`) used to win over the engine inside the app in every case. After an upgrade from 1.1.0 to 1.1.1, an older copy updated under 1.1.0 kept running and the app offered Mole 1.70.0 even though 1.1.1 ships it. The engine locator now reads the `VERSION` line of both scripts and uses the updated copy only when it is strictly newer; an equal or older copy is skipped, not deleted. Tests: `EngineLocatorPreferenceTests`.
-
 ## [1.1.1] - 2026-11-08
 
 ### Added
 - On the first launch of a new build, Curatare re-registers its bundle with Launch Services by itself (`LSRegisterURL`), so Finder picks up the application-bundle type claim, the Finder service and the app icon after an upgrade without a manual `lsregister`. Tests: `LaunchServicesRegistrationTests`.
 
 ### Fixed
+- **A newer bundled Mole is no longer hidden by an older in-app update:** a Mole copy updated from Settings (`~/Library/Application Support/Curatare/engine`) used to win over the engine inside the app in every case. After an app upgrade, an older copy updated under the previous version kept running, so the first 1.1.1 build (build 3) offered Mole 1.70.0 although it ships it. The engine locator now reads the `VERSION` line of both scripts and uses the updated copy only when it is strictly newer; an equal or older copy is skipped, not deleted. The 1.1.1 package was rebuilt with this fix as build 4. Tests: `EngineLocatorPreferenceTests`.
 - The Mole updater (`Scripts/update-mole.sh`, also inside the app) no longer gives up when GitHub's `github.com/…` download endpoints answer with a server error: the source archive is retried from `api.github.com/repos/tw93/Mole/tarball/<tag>` and each `analyze-go` / `status-go` binary from the GitHub API asset URL that the release listing names (`Accept: application/octet-stream`), with the usual SHA-256 checks. All download addresses are now accepted only under the `tw93/Mole` repository prefixes. On 2026-11-08 GitHub's Frankfurt edge answered 504 for every release download while the API still worked.
 
 ### Changed
