@@ -230,6 +230,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         ChildProcessGuard.install()
+        // Yeni derlemenin ilk açılışında Launch Services kaydı tazelenir (uygulama paketi türü, Finder servisi, simge).
+        LaunchServicesRegistration.registerIfBuildChanged()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
