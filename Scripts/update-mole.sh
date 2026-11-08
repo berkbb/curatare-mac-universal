@@ -18,6 +18,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 API_URL="${CURATARE_MOLE_API_URL:-https://api.github.com/repos/tw93/Mole/releases/latest}"
+REPO="tw93/Mole"
+# İndirme adresleri yalnızca bu depoya ait olabilir; sürüm listesi başka bir adres verirse kullanılmaz.
+DOWNLOAD_PREFIX="https://github.com/$REPO/releases/download/"
+# github.com indirme ucu yanıt vermezse aynı dosya GitHub API'nin asset adresinden de iner (08.11.2026: GitHub'ın
+# Frankfurt ucu her depo için 504 verirken API çalışıyordu).
+ASSET_API_PREFIX="https://api.github.com/repos/$REPO/releases/assets/"
+ARCHIVE_PREFIX="https://github.com/$REPO/archive/refs/tags/"
+ARCHIVE_API_PREFIX="https://api.github.com/repos/$REPO/tarball/"
 
 COMMAND="${1:-install}"
 shift || true
@@ -54,6 +62,25 @@ fi
 
 log()  { echo "▸ $*" >&2; }
 fail() { echo "✗ $*" >&2; exit 1; }
+
+# $1 adresi $2 önekiyle başlıyorsa adresi, başlamıyorsa boş yazar (yalnızca beklenen deponun adresleri indirilir).
+only_under() {
+  case "$1" in "$2"*) echo "$1" ;; *) echo "" ;; esac
+}
+
+# download_release_file URL API_URL HEDEF [SÜRE]: önce github.com adresinden, o yanıt vermezse GitHub API adresinden
+# ("application/octet-stream") indirir; curl -o yarım dosyanın üzerine yazar. İkisi de olmazsa 1 döner.
+download_release_file() {
+  local url="$1" api_url="$2" target="$3" seconds="${4:-600}"
+  [ -n "$url" ] || return 1
+  if curl -fL --proto '=https' --tlsv1.2 --max-time "$seconds" -A "Curatare-Mac/1.0" --progress-bar "$url" -o "$target"; then
+    return 0
+  fi
+  [ -n "$api_url" ] || return 1
+  log "github.com indirme adresi yanıt vermedi; GitHub API adresinden deneniyor: $(basename "$target")"
+  curl -fL --proto '=https' --tlsv1.2 --max-time "$seconds" -A "Curatare-Mac/1.0" --progress-bar \
+    -H "Accept: application/octet-stream" "$api_url" -o "$target"
+}
 
 normalize_version() {
   echo "$1" | sed -E 's/^[vV]//'
@@ -250,7 +277,11 @@ function run(argv) {
     statusArm.browser_download_url || "",
     statusArm.digest || "",
     statusAmd.browser_download_url || "",
-    statusAmd.digest || ""
+    statusAmd.digest || "",
+    analyzeArm.url || "",
+    analyzeAmd.url || "",
+    statusArm.url || "",
+    statusAmd.url || ""
   ].join("\n");
 }
 JSEOF
@@ -267,8 +298,20 @@ JSEOF
   STATUS_ARM_DIGEST="$(printf '%s\n' "$PARSED" | sed -n '9p')"
   STATUS_AMD_URL="$(printf '%s\n' "$PARSED" | sed -n '10p')"
   STATUS_AMD_DIGEST="$(printf '%s\n' "$PARSED" | sed -n '11p')"
+  # Yedek (API asset) adresleri; yalnızca aynı deponun adresleri kabul edilir.
+  ANALYZE_ARM_API="$(only_under "$(printf '%s\n' "$PARSED" | sed -n '12p')" "$ASSET_API_PREFIX")"
+  ANALYZE_AMD_API="$(only_under "$(printf '%s\n' "$PARSED" | sed -n '13p')" "$ASSET_API_PREFIX")"
+  STATUS_ARM_API="$(only_under "$(printf '%s\n' "$PARSED" | sed -n '14p')" "$ASSET_API_PREFIX")"
+  STATUS_AMD_API="$(only_under "$(printf '%s\n' "$PARSED" | sed -n '15p')" "$ASSET_API_PREFIX")"
+  # github.com indirme adresleri de yalnızca bu deponun olabilir.
+  ANALYZE_ARM_URL="$(only_under "$ANALYZE_ARM_URL" "$DOWNLOAD_PREFIX")"
+  ANALYZE_AMD_URL="$(only_under "$ANALYZE_AMD_URL" "$DOWNLOAD_PREFIX")"
+  STATUS_ARM_URL="$(only_under "$STATUS_ARM_URL" "$DOWNLOAD_PREFIX")"
+  STATUS_AMD_URL="$(only_under "$STATUS_AMD_URL" "$DOWNLOAD_PREFIX")"
 
   [ -n "$TAG" ] || fail "Sürüm etiketi boş döndü"
+  [[ "$SRC_URL" == "$ARCHIVE_PREFIX"* ]] || fail "Beklenmeyen kaynak adresi: $SRC_URL"
+  SRC_API_URL="$ARCHIVE_API_PREFIX$RAW_TAG"
   SOURCE_DESC="$SRC_URL"
 
   echo "LATEST=$TAG"
@@ -306,8 +349,7 @@ JSEOF
   fi
 
   log "Kaynak paket indiriliyor: $SRC_URL"
-  curl -fL --proto '=https' --tlsv1.2 --max-time 600 -A "Curatare-Mac/1.0" --progress-bar "$SRC_URL" -o "$WORK/mole-src.tar.gz" \
-    || fail "Kaynak paket indirilemedi"
+  download_release_file "$SRC_URL" "$SRC_API_URL" "$WORK/mole-src.tar.gz" || fail "Kaynak paket indirilemedi"
   ACTUAL_SHA="$(shasum -a 256 "$WORK/mole-src.tar.gz" | awk '{ print $1 }')"
 
   mkdir -p "$WORK/src"
@@ -336,8 +378,8 @@ JSEOF
   # 1. Analyze yardımcı ikilisi (universal)
   if [ -n "$ANALYZE_ARM_URL" ] && [ -n "$ANALYZE_AMD_URL" ]; then
     log "Universal analyze-go indiriliyor (arm64 + x86_64)…"
-    curl -fL --proto '=https' --tlsv1.2 --max-time 300 -A "Curatare-Mac/1.0" "$ANALYZE_ARM_URL" -o "$WORK/analyze-arm64" 2>/dev/null || true
-    curl -fL --proto '=https' --tlsv1.2 --max-time 300 -A "Curatare-Mac/1.0" "$ANALYZE_AMD_URL" -o "$WORK/analyze-amd64" 2>/dev/null || true
+    download_release_file "$ANALYZE_ARM_URL" "$ANALYZE_ARM_API" "$WORK/analyze-arm64" 300 2>/dev/null || rm -f "$WORK/analyze-arm64"
+    download_release_file "$ANALYZE_AMD_URL" "$ANALYZE_AMD_API" "$WORK/analyze-amd64" 300 2>/dev/null || rm -f "$WORK/analyze-amd64"
     if [ -f "$WORK/analyze-arm64" ] && [ -f "$WORK/analyze-amd64" ]; then
       verify_digest "$WORK/analyze-arm64" "$ANALYZE_ARM_DIGEST"
       verify_digest "$WORK/analyze-amd64" "$ANALYZE_AMD_DIGEST"
@@ -350,8 +392,8 @@ JSEOF
   # 2. Status yardımcı ikilisi (universal)
   if [ -n "$STATUS_ARM_URL" ] && [ -n "$STATUS_AMD_URL" ]; then
     log "Universal status-go indiriliyor (arm64 + x86_64)…"
-    curl -fL --proto '=https' --tlsv1.2 --max-time 300 -A "Curatare-Mac/1.0" "$STATUS_ARM_URL" -o "$WORK/status-arm64" 2>/dev/null || true
-    curl -fL --proto '=https' --tlsv1.2 --max-time 300 -A "Curatare-Mac/1.0" "$STATUS_AMD_URL" -o "$WORK/status-amd64" 2>/dev/null || true
+    download_release_file "$STATUS_ARM_URL" "$STATUS_ARM_API" "$WORK/status-arm64" 300 2>/dev/null || rm -f "$WORK/status-arm64"
+    download_release_file "$STATUS_AMD_URL" "$STATUS_AMD_API" "$WORK/status-amd64" 300 2>/dev/null || rm -f "$WORK/status-amd64"
     if [ -f "$WORK/status-arm64" ] && [ -f "$WORK/status-amd64" ]; then
       verify_digest "$WORK/status-arm64" "$STATUS_ARM_DIGEST"
       verify_digest "$WORK/status-amd64" "$STATUS_AMD_DIGEST"
