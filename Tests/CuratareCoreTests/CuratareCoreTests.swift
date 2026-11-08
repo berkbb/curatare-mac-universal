@@ -654,6 +654,8 @@ struct ExtendedAndMoleTests {
         let info = try #require(await EngineLocator.inspect())
         #expect(!info.version.isEmpty)
         #expect(info.version != "unknown")
+        // Betikteki `VERSION="…"` satırı `mole --version` çıktısıyla aynı sürümü vermeli.
+        #expect(EngineLocator.scriptVersion(at: info.url) == info.version)
 
         let bridge = MoleBridge(engine: info)
         let status = try await bridge.fetchSystemStatus()
@@ -764,6 +766,99 @@ struct ExtendedAndMoleTests {
         let map = UpdateChecksums.parse(checksumsText)
         #expect(map["Curatare-1.0.0.dmg"] == hex)
         #expect(map["Curatare-1.0.0.zip"] == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+    }
+}
+
+@Suite("Engine Locator Version Preference Tests")
+struct EngineLocatorPreferenceTests {
+    /// Geçici klasörde `VERSION="…"` satırı olan sahte bir `mole` betiği oluşturur.
+    private func makeEngine(in root: URL, name: String, version: String?) throws -> URL {
+        let dir = root.appendingPathComponent(name, isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let script = dir.appendingPathComponent("mole")
+        let versionLine = version.map { "VERSION=\"\($0)\"\n" } ?? ""
+        try Data("#!/bin/bash\n# fixture\n\(versionLine)echo \"Mole version ${VERSION:-0}\"\n".utf8).write(to: script)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: script.path)
+        return script
+    }
+
+    private func withTempRoot<T>(_ body: (URL) throws -> T) throws -> T {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("curatare-engine-pref-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        return try body(root)
+    }
+
+    @Test("scriptVersion reads the VERSION line, follows symlinks and ignores scripts without one")
+    func scriptVersionParsing() throws {
+        try withTempRoot { root in
+            let script = try makeEngine(in: root, name: "resources", version: "1.70.0")
+            #expect(EngineLocator.scriptVersion(at: script) == "1.70.0")
+
+            let link = root.appendingPathComponent("mole-link")
+            try FileManager.default.createSymbolicLink(at: link, withDestinationURL: script)
+            #expect(EngineLocator.scriptVersion(at: link) == "1.70.0")
+
+            let noVersion = try makeEngine(in: root, name: "plain", version: nil)
+            #expect(EngineLocator.scriptVersion(at: noVersion) == nil)
+            #expect(EngineLocator.scriptVersion(at: root.appendingPathComponent("missing/mole")) == nil)
+        }
+    }
+
+    @Test("A newer bundled engine wins over an older user-updated copy")
+    func bundledNewerWins() throws {
+        try withTempRoot { root in
+            let user = try makeEngine(in: root, name: "user", version: "1.68.0")
+            let bundled = try makeEngine(in: root, name: "bundled", version: "1.70.0")
+            let chosen = try #require(EngineLocator.preferredEngine(userURL: user, bundledURL: bundled))
+            #expect(chosen.url == bundled)
+            #expect(chosen.source == .bundled)
+        }
+    }
+
+    @Test("An equal-version user copy yields to the bundled engine")
+    func equalVersionPrefersBundled() throws {
+        try withTempRoot { root in
+            let user = try makeEngine(in: root, name: "user", version: "1.70.0")
+            let bundled = try makeEngine(in: root, name: "bundled", version: "1.70.0")
+            let chosen = try #require(EngineLocator.preferredEngine(userURL: user, bundledURL: bundled))
+            #expect(chosen.source == .bundled)
+        }
+    }
+
+    @Test("A strictly newer user-updated copy wins over the bundled engine")
+    func userNewerWins() throws {
+        try withTempRoot { root in
+            let user = try makeEngine(in: root, name: "user", version: "1.71.0")
+            let bundled = try makeEngine(in: root, name: "bundled", version: "1.70.0")
+            let chosen = try #require(EngineLocator.preferredEngine(userURL: user, bundledURL: bundled))
+            #expect(chosen.url == user)
+            #expect(chosen.source == .userUpdated)
+
+            let twoDigit = try makeEngine(in: root, name: "user-two-digit", version: "1.100.0")
+            let chosenTwoDigit = try #require(EngineLocator.preferredEngine(userURL: twoDigit, bundledURL: bundled))
+            #expect(chosenTwoDigit.source == .userUpdated)
+        }
+    }
+
+    @Test("Unreadable versions fall back safely and single engines are used as they are")
+    func fallbacksAndSingleEngines() throws {
+        try withTempRoot { root in
+            let bundled = try makeEngine(in: root, name: "bundled", version: "1.70.0")
+            let user = try makeEngine(in: root, name: "user", version: "1.68.0")
+            let unknownUser = try makeEngine(in: root, name: "user-unknown", version: nil)
+            let unknownBundled = try makeEngine(in: root, name: "bundled-unknown", version: nil)
+
+            // Kullanıcı kopyasının sürümü okunamıyorsa sürümü bilinen paketteki motor seçilir.
+            #expect(EngineLocator.preferredEngine(userURL: unknownUser, bundledURL: bundled)?.source == .bundled)
+            // Paketteki motorun sürümü okunamıyorsa eski davranış: kullanıcı kopyası.
+            #expect(EngineLocator.preferredEngine(userURL: user, bundledURL: unknownBundled)?.source == .userUpdated)
+
+            #expect(EngineLocator.preferredEngine(userURL: user, bundledURL: nil)?.source == .userUpdated)
+            #expect(EngineLocator.preferredEngine(userURL: nil, bundledURL: bundled)?.source == .bundled)
+            #expect(EngineLocator.preferredEngine(userURL: nil, bundledURL: nil) == nil)
+        }
     }
 }
 
