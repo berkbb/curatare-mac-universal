@@ -30,7 +30,7 @@
 | Script | Description |
 | :--- | :--- |
 | `./Scripts/update-mole.sh check` | Queries GitHub (`tw93/Mole`) for the latest Mole release. |
-| `./Scripts/update-mole.sh install` | Downloads and installs the latest Mole scripts and universal `analyze-go` / `status-go` binaries into `Vendor/mole`. |
+| `./Scripts/update-mole.sh install` | Downloads and installs the latest Mole scripts and universal `analyze-go` / `status-go` binaries into `Vendor/mole`. Download addresses are accepted only under the `tw93/Mole` prefixes; when a `github.com` download fails, the same file is fetched from the GitHub API (`…/tarball/<tag>` for the sources, `…/releases/assets/<id>` with `Accept: application/octet-stream` for the binaries) and verified the same way. |
 | `swift test` | Executes the complete Swift Testing suite using temporary sandboxed fixtures. |
 | `./Scripts/build_app.sh` | Compiles the universal (`arm64` + `x86_64`) `build/Curatare.app` bundle and embeds the Mole suite. |
 | `./Scripts/verify_bundle.sh` | Verifies bundle structure, universal binary architectures, localization catalogs, licenses, and ad-hoc code signature. |

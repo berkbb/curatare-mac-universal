@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- On the first launch of a new build, Curatare re-registers its bundle with Launch Services by itself (`LSRegisterURL`), so Finder picks up the application-bundle type claim, the Finder service and the app icon after an upgrade without a manual `lsregister`. Tests: `LaunchServicesRegistrationTests`.
+
+### Fixed
+- The Mole updater (`Scripts/update-mole.sh`, also inside the app) no longer gives up when GitHub's `github.com/…` download endpoints answer with a server error: the source archive is retried from `api.github.com/repos/tw93/Mole/tarball/<tag>` and each `analyze-go` / `status-go` binary from the GitHub API asset URL that the release listing names (`Accept: application/octet-stream`), with the usual SHA-256 checks. All download addresses are now accepted only under the `tw93/Mole` repository prefixes. On 2026-11-08 GitHub's Frankfurt edge answered 504 for every release download while the API still worked.
+
 ### Changed
+- Developer tooling: the test `UserDefaults` helper synchronizes the domain (`CFPreferencesAppSynchronize`) before deleting its folder, so cfprefsd's delayed write cannot recreate it.
 - **Code layout (no behavior change):** `AppModel` (2,356 lines) is split into per-feature extension files, and the two largest view files into one file per screen, with System Status and the uninstaller further split by sub-tab and panel. The largest app source file is now about 1,100 lines.
 - **Agent governance:** A2UI v1.0 recorded as current and the Mistral standard updated to the Agents SDK and Managed Agents in `.agents/rules` (index: `.agents/rules/about_rules.md`).
 
