@@ -45,9 +45,10 @@ public struct EngineInfo: Sendable, Equatable {
 /// Arama sırası:
 /// 1. Kullanıcının seçtiği özel yol veya `CURATARE_MOLE` ortam değişkeni
 /// 2. Kullanıcının uygulama içinden GitHub'dan güncellediği motor (`~/Library/Application Support/Curatare/engine/mole`)
-/// 3. Uygulama paketinin içindeki motor (`Curatare.app/Contents/Resources/mole/mole` veya `Contents/MacOS/mole`)
-/// 4. Geliştirme ağacındaki `Vendor/mole/mole`
-/// 5. Homebrew / yerel kurulum yolları (`/opt/homebrew/opt/mole/libexec/mole`, `/opt/homebrew/bin/mole`, `/usr/local/bin/mole`)
+///    ile uygulama paketinin içindeki motor (`Curatare.app/Contents/MacOS/mole` veya `Contents/Resources/mole/mole`;
+///    geliştirmede `Vendor/mole/mole`): ikisi de varsa kullanıcı kopyası yalnızca paketteki motordan **kesinlikle
+///    yeniyse** seçilir. Böylece uygulamanın yeni sürümüyle gelen motoru, önceki bir güncellemeden kalan eski kopya gölgelemez.
+/// 3. Homebrew / yerel kurulum yolları (`/opt/homebrew/opt/mole/libexec/mole`, `/opt/homebrew/bin/mole`, `/usr/local/bin/mole`)
 public enum EngineLocator {
     public static var userEngineDirectory: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
@@ -78,21 +79,32 @@ public enum EngineLocator {
             return (URL(fileURLWithPath: env), .custom)
         }
 
-        let userBin = userEngineURL
-        if fm.isExecutableFile(atPath: userBin.path) {
-            return (userBin, .userUpdated)
+        let userBin = fm.isExecutableFile(atPath: userEngineURL.path) ? userEngineURL : nil
+        if let chosen = preferredEngine(userURL: userBin, bundledURL: bundledEngineURL(bundle: bundle)) {
+            return chosen
         }
+
+        for (path, source) in searchPaths where fm.isExecutableFile(atPath: path) {
+            return (URL(fileURLWithPath: path), source)
+        }
+
+        return nil
+    }
+
+    /// Uygulama paketindeki (geliştirmede `Vendor/mole/mole`) çalıştırılabilir motorun yolu.
+    static func bundledEngineURL(bundle: Bundle) -> URL? {
+        let fm = FileManager.default
 
         if let execDir = bundle.executableURL?.deletingLastPathComponent() {
             let bundled = execDir.appendingPathComponent("mole")
             if fm.isExecutableFile(atPath: bundled.path) {
-                return (bundled, .bundled)
+                return bundled
             }
         }
 
         if let resURL = bundle.resourceURL?.appendingPathComponent("mole/mole"),
            fm.isExecutableFile(atPath: resURL.path) {
-            return (resURL, .bundled)
+            return resURL
         }
 
         // Geliştirme sırasında (`swift test` / `swift run`) proje kökündeki `Vendor/mole/mole`
@@ -102,14 +114,50 @@ public enum EngineLocator {
             .deletingLastPathComponent()
             .appendingPathComponent("Vendor/mole/mole")
         if fm.isExecutableFile(atPath: repoVendor.path) {
-            return (repoVendor, .bundled)
-        }
-
-        for (path, source) in searchPaths where fm.isExecutableFile(atPath: path) {
-            return (URL(fileURLWithPath: path), source)
+            return repoVendor
         }
 
         return nil
+    }
+
+    /// Kullanıcının güncellediği motor ile paketteki motor arasından kullanılacak olanı seçer.
+    ///
+    /// Kullanıcı kopyası yalnızca sürümü paketteki motordan kesinlikle yeniyse seçilir; eşit veya eski bir kopya
+    /// silinmez, yalnızca atlanır. Paketteki motorun sürümü okunamazsa eski davranış korunur ve kullanıcı kopyası seçilir.
+    public static func preferredEngine(userURL: URL?, bundledURL: URL?) -> (url: URL, source: EngineInfo.Source)? {
+        switch (userURL, bundledURL) {
+        case (nil, nil):
+            return nil
+        case (let user?, nil):
+            return (user, .userUpdated)
+        case (nil, let bundled?):
+            return (bundled, .bundled)
+        case (let user?, let bundled?):
+            guard let bundledVersion = scriptVersion(at: bundled) else {
+                return (user, .userUpdated)
+            }
+            if let userVersion = scriptVersion(at: user),
+               AppUpdater.isNewer(userVersion, than: bundledVersion) {
+                return (user, .userUpdated)
+            }
+            return (bundled, .bundled)
+        }
+    }
+
+    /// `mole` betiğindeki `VERSION="1.70.0"` satırından sürümü okur; betiği çalıştırmaz (sembolik bağlantıları izler).
+    public static func scriptVersion(at url: URL) -> String? {
+        guard let handle = try? FileHandle(forReadingFrom: url.resolvingSymlinksInPath()) else { return nil }
+        defer { try? handle.close() }
+        // Betik ~15 KB; ikili bir dosyanın tamamını belleğe almamak için ilk 256 KB okunur.
+        guard let data = try? handle.read(upToCount: 256 * 1024) else { return nil }
+        let text = String(decoding: data, as: UTF8.self)
+        let pattern = #"^VERSION="[vV]?([0-9]+(?:\.[0-9]+)+)""#
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: .anchorsMatchLines),
+              let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+              let range = Range(match.range(at: 1), in: text) else {
+            return nil
+        }
+        return String(text[range])
     }
 
     public static func inspect(customPath: String? = nil, bundle: Bundle = .main) async -> EngineInfo? {
