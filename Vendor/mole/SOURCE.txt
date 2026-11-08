@@ -1,4 +1,4 @@
-version=1.68.0
-tag=V1.68.0
-source=https://github.com/tw93/Mole/archive/refs/tags/V1.68.0.tar.gz
-sha256=750b67f7428075e536d42788968502fc94e1c8e42bcc7d6da9f8b16968ebe106
+version=1.70.0
+tag=V1.70.0
+source=https://github.com/tw93/Mole/archive/refs/tags/V1.70.0.tar.gz
+sha256=38e100862d8648c9afbe0ce78d328c1934c2774ced63ea7e6d8ecc35de377d60
