@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-11-08
+
 ### Added
 - On the first launch of a new build, Curatare re-registers its bundle with Launch Services by itself (`LSRegisterURL`), so Finder picks up the application-bundle type claim, the Finder service and the app icon after an upgrade without a manual `lsregister`. Tests: `LaunchServicesRegistrationTests`.
 

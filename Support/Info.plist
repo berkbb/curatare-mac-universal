@@ -6,6 +6,23 @@
 	<string>tr</string>
 	<key>CFBundleDisplayName</key>
 	<string>Curatare</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Application Bundle</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.application-bundle</string>
+				<string>com.apple.bundle</string>
+				<string>com.apple.package</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>Curatare</string>
 	<key>CFBundleIconFile</key>
@@ -25,9 +42,9 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.0</string>
+	<string>1.1.1</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>CuratareRepository</key>
 	<string>berkbb/curatare-mac-universal</string>
 	<key>CuratareUpdatePublicEDKey</key>
@@ -40,23 +57,6 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>Babadogan Tech and Edu. GPL-3.0-or-later. Mole © Tw93 (GPL-3.0).</string>
-	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>Application Bundle</string>
-			<key>CFBundleTypeRole</key>
-			<string>Viewer</string>
-			<key>LSHandlerRank</key>
-			<string>Alternate</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.apple.application-bundle</string>
-				<string>com.apple.bundle</string>
-				<string>com.apple.package</string>
-			</array>
-		</dict>
-	</array>
 	<key>NSServices</key>
 	<array>
 		<dict>
