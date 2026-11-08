@@ -15,6 +15,8 @@ enum TestDefaults {
         let defaults = UserDefaults(suiteName: suitePath)!
         return (defaults, {
             defaults.removePersistentDomain(forName: suitePath)
+            // cfprefsd zaman uyumsuz yazar: eşzamanlanmazsa sonradan gelen yazma silinen klasörü yeniden açar.
+            CFPreferencesAppSynchronize(suitePath as CFString)
             try? FileManager.default.removeItem(at: dir)
         })
     }
