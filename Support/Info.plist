@@ -44,7 +44,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.1.1</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>4</string>
 	<key>CuratareRepository</key>
 	<string>berkbb/curatare-mac-universal</string>
 	<key>CuratareUpdatePublicEDKey</key>
