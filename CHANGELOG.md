@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **A newer bundled Mole is no longer hidden by an older in-app update:** a Mole copy updated from Settings (`~/Library/Application Support/Curatare/engine`) used to win over the engine inside the app in every case. After an upgrade from 1.1.0 to 1.1.1, an older copy updated under 1.1.0 kept running and the app offered Mole 1.70.0 even though 1.1.1 ships it. The engine locator now reads the `VERSION` line of both scripts and uses the updated copy only when it is strictly newer; an equal or older copy is skipped, not deleted. Tests: `EngineLocatorPreferenceTests`.
+
 ## [1.1.1] - 2026-11-08
 
 ### Added

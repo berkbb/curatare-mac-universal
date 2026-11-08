@@ -80,7 +80,7 @@ Graphify leaves communities as `Community N` without an LLM backend; the names b
 | `CommandRunner.swift` | `ProcessResult`, `EngineError`, `CommandRunner`, `ProcessBox`, `RunState` | `run` |
 | `ChildProcessGuard.swift` | `ChildProcessGuard`, `Slot` | `install`, `register`, `unregister`, `terminateAll`, `reapOrphansFromPreviousRun` |
 | `Sandbox.swift` | `SandboxProfile` | `readingOnly`, `forMole`, `launchArguments`, `escapeSchemeString`, `sensitiveCredentialFolders` |
-| `Engine.swift` | `EngineInfo`, `EngineLocator`, `EngineUpdateResult`, `EngineUpdater` | `locate`, `inspect`, `check`, `install` |
+| `Engine.swift` | `EngineInfo`, `EngineLocator`, `EngineUpdateResult`, `EngineUpdater` | `locate`, `preferredEngine`, `scriptVersion`, `inspect`, `check`, `install` |
 | `ProtectionRules.swift` | `ProtectionCategory`, `ProtectionDecision`, `ProtectionRules`, `RunningProcessSnapshot` | `evaluate`, `isProcessRunning`, `loadUserWhitelist`, `stripKnownSuffixes` |
 | `DatedTrash.swift` | `TrashedItemRecord`, `TrashBatchManifest`, `DatedTrashError`, `TrashHistoryFilterKind`, `DatedTrashMoveCandidate`, `DatedTrashService` | `moveToDatedTrash`, `restoreBatch`, `listBatches`, `purgeBatch`, `purgeTrashedItems`, `purgeAllBatches` |
 | `LibraryScanner.swift` | `AuditGroup`, `LibraryFinding`, `InstalledBundleIndex`, `LibraryAuditReport`, `LibraryScanner` | `buildInstalledIndex`, `scanAll`, `generateSudoCommand`, `shellQuote` |
