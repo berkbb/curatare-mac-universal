@@ -301,6 +301,7 @@ private struct ProtectionSettingsView: View {
                                 }
                                 .buttonStyle(.plain)
                                 .disabled(selectedWhitelistPath == nil)
+                                .keyboardShortcut(.delete, modifiers: [])
                                 .help(model.L(.settingsWhitelistRemove))
                             }
                             .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 4))

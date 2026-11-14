@@ -398,6 +398,8 @@ public enum LKey: String, CaseIterable, Sendable {
     case statusScanning, statusMovingToTrash, statusRestoring
     case toastMovedToDatedTrash, toastRestoredBatch, toastOptimizationDone, toastScanCancelled
     case errorTitle, errorProtectedTarget, errorProcessRunning, errorEngineNotFound
+    // Çıkış koruması
+    case quitConfirmTitle, quitConfirmMessage, quitConfirmButton
 }
 
 extension StringTable {

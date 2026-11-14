@@ -234,6 +234,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         LaunchServicesRegistration.registerIfBuildChanged()
     }
 
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        Self.terminationReply(isBusy: model?.isBusy ?? false) {
+            guard let model else { return true }
+            let alert = NSAlert()
+            alert.messageText = model.L(.quitConfirmTitle)
+            alert.informativeText = model.L(.quitConfirmMessage)
+            alert.addButton(withTitle: model.L(.quitConfirmButton))
+            alert.addButton(withTitle: model.L(.buttonCancel))
+            return alert.runModal() == .alertFirstButtonReturn
+        }
+    }
+
+    static func terminationReply(isBusy: Bool, confirm: () -> Bool) -> NSApplication.TerminateReply {
+        guard isBusy else { return .terminateNow }
+        return confirm() ? .terminateNow : .terminateCancel
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         ChildProcessGuard.terminateAll()
         model?.clearDockProgress()

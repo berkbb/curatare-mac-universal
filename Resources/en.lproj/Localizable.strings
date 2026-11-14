@@ -998,3 +998,7 @@
 "toggleOn" = "ON";
 "moleEngineVersionBadge" = "Mole Engine: v%@";
 "moleUpdateAvailableBadge" = "Mole %@ available";
+
+"quitConfirmTitle" = "Quit Curatare?";
+"quitConfirmMessage" = "A scan, cleanup, or restore operation is currently running. Quitting now will stop it.";
+"quitConfirmButton" = "Quit";

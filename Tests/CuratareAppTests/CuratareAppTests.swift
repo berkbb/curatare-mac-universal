@@ -969,4 +969,24 @@ struct PortableRulesAppModelTests {
         #expect(throws: PortableRulesError.unreadable) { try model.validatePortableRules(at: broken) }
         #expect(model.portableRulesErrorMessage(PortableRulesError.unreadable) == settings.L(.rulesErrorUnreadable))
     }
+
+    @Test func terminationReplyPromptsOnlyWhenBusy() {
+        var prompted = false
+        let idle = AppDelegate.terminationReply(isBusy: false) {
+            prompted = true
+            return false
+        }
+        #expect(idle == .terminateNow)
+        #expect(!prompted)
+
+        let cancelBusy = AppDelegate.terminationReply(isBusy: true) {
+            prompted = true
+            return false
+        }
+        #expect(cancelBusy == .terminateCancel)
+        #expect(prompted)
+
+        let confirmBusy = AppDelegate.terminationReply(isBusy: true) { true }
+        #expect(confirmBusy == .terminateNow)
+    }
 }

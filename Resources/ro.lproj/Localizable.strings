@@ -998,3 +998,7 @@
 "toggleOn" = "PORNIT";
 "moleEngineVersionBadge" = "Motorul Mole: v%@";
 "moleUpdateAvailableBadge" = "Mole %@ este disponibil";
+
+"quitConfirmTitle" = "Închideți Curatare?";
+"quitConfirmMessage" = "În acest moment rulează o operație de scanare, curățare sau restaurare. Închiderea acum o va opri.";
+"quitConfirmButton" = "Închide";

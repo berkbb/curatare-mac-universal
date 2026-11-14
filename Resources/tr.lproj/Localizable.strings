@@ -998,3 +998,7 @@
 "toggleOn" = "AÇIK";
 "moleEngineVersionBadge" = "Mole Motoru: v%@";
 "moleUpdateAvailableBadge" = "Mole %@ mevcut";
+
+"quitConfirmTitle" = "Curatare'dan çıkılsın mı?";
+"quitConfirmMessage" = "Şu anda bir tarama, temizlik veya geri yükleme işlemi sürüyor. Şimdi çıkarsanız işlem durdurulur.";
+"quitConfirmButton" = "Çık";

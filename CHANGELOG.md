@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Dock icon progress bar:** long-running operations and sustained inline scans (after a 350 ms debounce) now display a progress bar at the bottom of the Curatare Dock icon (`DockProgress`), synchronized live with Settings → Show progress on Dock icon (`showDockProgress`) and cleared on completion, cancellation, or quit. Tests: `DockProgressTests`.
+- **Quit protection while busy (`applicationShouldTerminate`):** quitting while a scan, cleanup, or restore operation is active now prompts for confirmation (`AppDelegate.terminationReply`).
+- **`Delete` (`⌫`) key support:** added keyboard delete support to the Settings custom whitelist path removal button and `.onDeleteCommand` (opening the existing purge confirmation dialog) on the Dated Trash batch list.
 
 ### Fixed
 - `cancelActiveOperation()` now resets `isBusyInline` alongside `isBusy` and refreshes Dock progress and pending consent prompts.

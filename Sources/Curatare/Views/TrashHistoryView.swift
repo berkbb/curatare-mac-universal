@@ -161,6 +161,12 @@ public struct TrashHistoryView: View {
                 }
                 .listStyle(.inset)
                 .scrollContentBackground(.hidden)
+                .onDeleteCommand {
+                    if let id = model.selectedTrashBatchID,
+                       let batch = model.filteredTrashBatches.first(where: { $0.id == id }) {
+                        batchToPurge = batch
+                    }
+                }
             }
             Divider()
             masterBottomBar
