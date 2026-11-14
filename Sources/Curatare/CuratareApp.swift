@@ -236,6 +236,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         ChildProcessGuard.terminateAll()
+        model?.clearDockProgress()
     }
 
     func application(_ application: NSApplication, open urls: [URL]) {

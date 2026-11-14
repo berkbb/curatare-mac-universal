@@ -246,6 +246,12 @@ public final class AppModel {
 
     var activeCancelHandler: (() -> Void)?
 
+    @ObservationIgnored public var dockProgress = DockProgress()
+
+    @ObservationIgnored var dockProgressDelayTask: Task<Void, Never>?
+
+    @ObservationIgnored public var dockProgressInlineDelay: Duration = .milliseconds(350)
+
     public init(
         settings: AppSettings? = nil,
         log: AppLog = .shared,
@@ -279,6 +285,10 @@ public final class AppModel {
         self.languageEcosystemFilter = resolvedSettings.lastLanguageEcosystemFilter
         self.trashHistoryFilter = resolvedSettings.lastTrashHistoryFilter
         self.homebrewZapCasks = resolvedSettings.homebrewZapCasks
+
+        resolvedSettings.onDockProgressSettingChanged = { [weak self] in
+            self?.syncDockProgress(respectInlineDelay: false)
+        }
 
         // Gerçek uygulamada init yalnızca kendi ayarlarını okur. Başka uygulamaların tercihleri, ~/.Trash ve motor
         // pencere göründükten sonra okunur: macOS bir izin sorarsa ya da bir okuma takılırsa arayüz zaten ekrandadır.

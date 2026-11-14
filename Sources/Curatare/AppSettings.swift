@@ -312,6 +312,7 @@ public enum ShortcutAction: String, CaseIterable, Identifiable, Sendable {
 public final class AppSettings {
     private let defaults: UserDefaults
     public let strings: StringTable
+    @ObservationIgnored public var onDockProgressSettingChanged: (@MainActor () -> Void)?
 
     public var language: AppLanguage {
         didSet {
@@ -360,7 +361,12 @@ public final class AppSettings {
     }
 
     public var showDockProgress: Bool {
-        didSet { defaults.set(showDockProgress, forKey: Keys.showDockProgress) }
+        didSet {
+            defaults.set(showDockProgress, forKey: Keys.showDockProgress)
+            if oldValue != showDockProgress {
+                onDockProgressSettingChanged?()
+            }
+        }
     }
 
     public var sandboxEngine: Bool {
