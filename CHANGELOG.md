@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-14
+
+### Added
+- **Dock icon progress bar:** long-running operations and sustained inline scans (after a 350 ms debounce) now display a progress bar at the bottom of the Curatare Dock icon (`DockProgress`), synchronized live with Settings → Show progress on Dock icon (`showDockProgress`) and cleared on completion, cancellation, or quit. Tests: `DockProgressTests`.
+
+### Fixed
+- `cancelActiveOperation()` now resets `isBusyInline` alongside `isBusy` and refreshes Dock progress and pending consent prompts.
+- `LaunchdManager` now routes `launchctl` invocations through `runLaunchctl(_:executableURL:)` and catches `Process.run()` failures safely instead of reading `terminationStatus` on an unstarted process. Tests: `LaunchdAndDiagnosticsTests`.
+
 ## [1.1.1] - 2026-11-08
 
 ### Added
