@@ -1093,6 +1093,9 @@ struct LaunchdAndDiagnosticsTests {
         // unloadJob and loadJob should execute without throwing on valid or mock URLs
         _ = LaunchdManager.unloadJob(at: validPlist, isUserAgent: true)
         _ = LaunchdManager.loadJob(at: validPlist, isUserAgent: true)
+
+        let missingExecutable = tmp.appendingPathComponent("missing-launchctl")
+        #expect(LaunchdManager.runLaunchctl(["version"], executableURL: missingExecutable) == false)
     }
 
     @Test("FullDiskAccess: Diagnostics check and system preferences URL validation")

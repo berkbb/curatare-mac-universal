@@ -178,39 +178,34 @@ public enum LaunchdManager: Sendable {
         let uid = getuid()
         let domain = isUserAgent ? "gui/\(uid)" : "system"
         if let label = extractLabel(from: plistURL), !label.isEmpty {
-            let p = Process()
-            p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-            p.arguments = ["bootout", "\(domain)/\(label)"]
-            try? p.run()
-            p.waitUntilExit()
-            if p.terminationStatus == 0 { return true }
+            if runLaunchctl(["bootout", "\(domain)/\(label)"]) { return true }
         }
-
-        let p2 = Process()
-        p2.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        p2.arguments = ["unload", plistURL.path]
-        try? p2.run()
-        p2.waitUntilExit()
-        return p2.terminationStatus == 0
+        return runLaunchctl(["unload", plistURL.path])
     }
 
     @discardableResult
     public static func loadJob(at plistURL: URL, isUserAgent: Bool = true) -> Bool {
         let uid = getuid()
         let domain = isUserAgent ? "gui/\(uid)" : "system"
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        p.arguments = ["bootstrap", domain, plistURL.path]
-        try? p.run()
-        p.waitUntilExit()
-        if p.terminationStatus == 0 { return true }
+        if runLaunchctl(["bootstrap", domain, plistURL.path]) { return true }
+        return runLaunchctl(["load", plistURL.path])
+    }
 
-        let p2 = Process()
-        p2.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        p2.arguments = ["load", plistURL.path]
-        try? p2.run()
-        p2.waitUntilExit()
-        return p2.terminationStatus == 0
+    /// Runs `launchctl` and returns whether it exited cleanly, avoiding `terminationStatus` access if `run()` fails.
+    @discardableResult
+    public static func runLaunchctl(_ arguments: [String], executableURL: URL = URL(fileURLWithPath: "/bin/launchctl")) -> Bool {
+        let process = Process()
+        process.executableURL = executableURL
+        process.arguments = arguments
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+        } catch {
+            return false
+        }
+        process.waitUntilExit()
+        return process.terminationStatus == 0
     }
 }
 
