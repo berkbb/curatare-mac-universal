@@ -26,6 +26,27 @@ extension AppModel {
         )
     }
 
+    public static var isEditingText: Bool { NSApp?.keyWindow?.firstResponder is NSText }
+
+    /// Disk analizi listesinde seçili öğenin açılabilir klasör URL'sini döndürür (`→` / Return).
+    public func diskAnalyzerTargetFolder(
+        for entryID: MoleDiskEntry.ID?,
+        editingText: Bool = AppModel.isEditingText
+    ) -> URL? {
+        guard !editingText,
+              let entryID,
+              let entry = diskAnalysis?.entries.first(where: { $0.id == entryID }),
+              entry.isDir else {
+            return nil
+        }
+        return URL(fileURLWithPath: entry.path, isDirectory: true)
+    }
+
+    /// Disk analizinde bir üst klasöre çıkılabiliyor mu (`←` / Üst Klasör).
+    public func canNavigateUpDiskAnalyzer(editingText: Bool = AppModel.isEditingText) -> Bool {
+        !editingText && currentAnalyzedURL.deletingLastPathComponent().path != currentAnalyzedURL.path
+    }
+
     public func navigateUpDiskAnalyzer() async {
         let parent = currentAnalyzedURL.deletingLastPathComponent()
         guard parent.path != currentAnalyzedURL.path else { return }

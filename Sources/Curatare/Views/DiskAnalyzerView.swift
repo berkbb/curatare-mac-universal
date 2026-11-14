@@ -7,6 +7,8 @@ import SwiftUI
 
 public struct DiskAnalyzerView: View {
     @Bindable public var model: AppModel
+    @State private var selectedEntryID: MoleDiskEntry.ID?
+    @State private var pendingSelectionID: MoleDiskEntry.ID?
 
     public init(model: AppModel) {
         self.model = model
@@ -110,7 +112,7 @@ public struct DiskAnalyzerView: View {
 
             if let analysis = model.diskAnalysis, !analysis.entries.isEmpty {
                 let maxSize = max(1, analysis.entries.first?.size ?? 1)
-                List(analysis.entries) { entry in
+                List(analysis.entries, selection: $selectedEntryID) { entry in
                     HStack(spacing: 10) {
                         Image(systemName: entry.isDir ? "folder.fill" : "doc.fill")
                             .foregroundStyle(entry.isDir ? .blue : .secondary)
@@ -174,6 +176,14 @@ public struct DiskAnalyzerView: View {
                     }
                 }
                 .listStyle(.inset)
+                .onKeyPress(keys: [.rightArrow, .return], phases: .down) { press in
+                    guard press.modifiers.intersection([.command, .option, .control]).isEmpty,
+                          let target = model.diskAnalyzerTargetFolder(for: selectedEntryID) else {
+                        return .ignored
+                    }
+                    Task { await model.analyzeFolder(target) }
+                    return .handled
+                }
             } else if model.isBusy {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -185,6 +195,27 @@ public struct DiskAnalyzerView: View {
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+        }
+        .onKeyPress(.leftArrow, phases: .down) { press in
+            guard press.modifiers.intersection([.command, .option, .control]).isEmpty,
+                  model.canNavigateUpDiskAnalyzer() else {
+                return .ignored
+            }
+            Task { await model.navigateUpDiskAnalyzer() }
+            return .handled
+        }
+        .onChange(of: model.currentAnalyzedURL) { oldURL, newURL in
+            selectedEntryID = nil
+            pendingSelectionID = oldURL.standardizedFileURL.deletingLastPathComponent().path == newURL.standardizedFileURL.path
+                ? oldURL.standardizedFileURL.path
+                : nil
+        }
+        .onChange(of: model.diskAnalysis) { _, analysis in
+            guard let pending = pendingSelectionID else { return }
+            if analysis?.entries.contains(where: { $0.id == pending }) == true {
+                selectedEntryID = pending
+            }
+            pendingSelectionID = nil
         }
     }
 

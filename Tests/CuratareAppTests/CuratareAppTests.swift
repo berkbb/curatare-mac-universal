@@ -989,4 +989,37 @@ struct PortableRulesAppModelTests {
         let confirmBusy = AppDelegate.terminationReply(isBusy: true) { true }
         #expect(confirmBusy == .terminateNow)
     }
+
+    @Test func diskAnalyzerArrowNavigationTargetsOnlyDirectoriesAndStopsAtRoot() {
+        let (defaults, cleanup) = TestDefaults.make()
+        defer { cleanup() }
+
+        let model = AppModel(
+            settings: AppSettings(defaults: defaults),
+            log: AppLog(directory: nil),
+            startBackgroundWatchers: false
+        )
+        model.currentAnalyzedURL = URL(fileURLWithPath: "/Users/berk", isDirectory: true)
+        model.diskAnalysis = MoleDiskAnalysis(
+            path: "/Users/berk",
+            entries: [
+                MoleDiskEntry(name: "Downloads", path: "/Users/berk/Downloads", size: 200, isDir: true),
+                MoleDiskEntry(name: "notes.txt", path: "/Users/berk/notes.txt", size: 50, isDir: false),
+            ],
+            totalSize: 250
+        )
+
+        #expect(
+            model.diskAnalyzerTargetFolder(for: "/Users/berk/Downloads", editingText: false)
+                == URL(fileURLWithPath: "/Users/berk/Downloads", isDirectory: true)
+        )
+        #expect(model.diskAnalyzerTargetFolder(for: "/Users/berk/Downloads", editingText: true) == nil)
+        #expect(model.diskAnalyzerTargetFolder(for: "/Users/berk/notes.txt", editingText: false) == nil)
+        #expect(model.diskAnalyzerTargetFolder(for: nil, editingText: false) == nil)
+        #expect(model.canNavigateUpDiskAnalyzer(editingText: false))
+        #expect(!model.canNavigateUpDiskAnalyzer(editingText: true))
+
+        model.currentAnalyzedURL = URL(fileURLWithPath: "/", isDirectory: true)
+        #expect(!model.canNavigateUpDiskAnalyzer(editingText: false))
+    }
 }
